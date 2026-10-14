@@ -269,6 +269,7 @@ pub async fn run(arguments : Array[String]) -> Int32 {
       ["verify-pack", directory] => verify_pack(directory)
       ["collect", spec, root] => collect(spec, root)
       ["collect-zip", spec, path] => collect_zip(spec, path)
+      ["collect-tar", spec, path] => collect_tar(spec, path)
       ["zip-pack", path, destination] => zip_pack(path, destination)
       ["restore-zip", path] => restore_zip(path, false)
       ["verify-zip", path] => restore_zip(path, true)
@@ -281,6 +282,9 @@ pub async fn run(arguments : Array[String]) -> Int32 {
       ["append", path, bundle] => append(path, bundle)
       ["repetitions", _, _, ..] => repetitions(arguments[1:])
       ["--help"] | ["help"] => {
+        @stdio.stdout.write(
+          "Declared USTAR collection:\n  collect-tar COLLECTION.json FILE.tar\nOnly exact declared regular XML members; unknown files/extensions return 2. Missing reports remain incomplete; verify the emitted archive for its original gate.\n",
+        )
         @stdio.stdout.write(
           "Declared ZIP collection:\n  collect-zip COLLECTION.json FILE.zip\nOnly exact declared XML members; missing remains incomplete, unlisted files/unsupported ZIP features return 2. Creation returns 0; verify the emitted archive for its 0/1/3 gate.\n",
         )

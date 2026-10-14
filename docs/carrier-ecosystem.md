@@ -1,5 +1,7 @@
 # Carrier boundary review — 2026-10-15
 
+USTAR collection supplies the same declared-inventory evidence contract for ordinary tar artifacts. It reuses the narrow private USTAR guard; no generic tar API is exported. Existing MoonBit tar generation helpers and flaker ingestion remain adjacent prior work. Independent GNU tar fixtures substantiate supported interoperability, not universal format compatibility or originality of tar encoding.
+
 Direct ZIP collection extends the existing declaration-based adapter: `CollectionSpec.collect_zip` takes the complete expected test inventory, not just a ZIP/path list, and returns replayable full-plan evidence. Missing artifacts do not redefine the plan, unknown carrier members are refused, and exact XML plus bindings/policy remain inspectable. Generic archive codecs already exist and are reused; this addition is complementary CI evidence reconciliation. Adjacent flaker artifact ingestion remains acknowledged; no ecosystem-wide exclusivity is claimed.
 
 Queries: `MoonBit ZIP archive Mooncakes zip extract API`, `MoonBit "test evidence" "pack"`, `MoonBit "junit" "artifact" "manifest"`, `MoonBit "tar" Mooncakes archive library`, `site:github.com/mizchi/flaker "artifact" zip`.

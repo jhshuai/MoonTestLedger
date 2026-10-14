@@ -1,5 +1,11 @@
 # Evidence transport profiles
 
+## Declared USTAR collection
+
+`CollectionSpec.collect_tar(bytes, limits~, max_bytes~)` / `collect-tar COLLECTION.json FILE.tar` collect exact declared regular XML files using the same full-plan semantics as ZIP collection. Missing reports/cases remain incomplete; malformed sources, duplicate/extra/wrong-case paths and unsupported USTAR features refuse the entire operation. The specification supplies all identities and policy. The same binary/source/count budgets apply; no extraction directory is created, no ancillary members are ignored, and no compressed tar/PAX/GNU/sparse support is implied.
+
+Independent GNU tar fixtures are bundled with exact generation commands, hashes and licenses in [examples/transport](../examples/transport/README.md). Run `moon run --target wasm cmd/moontestledger -- collect-tar examples/upstream/collection.json examples/transport/jest-reports.tar` (creation 0), save UTF-8 stdout, then `verify` that file (expected 1). Missing and denied-recovery scenarios are also documented there. E2E evaluation needs only MoonBit and the repository, without an archiver installation or private service.
+
 ## Declared ZIP collection
 
 `CollectionSpec.collect_zip(bytes, limits~, max_bytes~)` / `collect-zip COLLECTION.json FILE.zip` ingest raw XML archives directly without extracting files. The existing spec supplies the complete run/revision/report/case inventory and recovery policy; archive paths supply no identities. Missing declared files stay incomplete, present empty/partial reports are replayed against their declared testcases, and malformed XML refuses the whole operation. Collect returns an archive independently of its test gate (CLI creation 0); run `verify` on that output for 0/1/3.

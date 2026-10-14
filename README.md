@@ -1,6 +1,6 @@
 # MoonTestLedger
 
-Direct ZIP report collection: `CollectionSpec.collect_zip()` / `collect-zip COLLECTION.json FILE.zip` preserve the declared inventory without filesystem extraction. Missing remains incomplete and unlisted members are refused; see [workflow and profile](docs/transports.md).
+Direct ZIP/USTAR report collection: `CollectionSpec.collect_zip()` / `collect_tar()` and `collect-zip` / `collect-tar` preserve the declared inventory without filesystem extraction. Missing remains incomplete and unlisted members are refused; see [workflows and profiles](docs/transports.md).
 
 ZIP and USTAR file-pack transport: `Evidence.zip_pack()` / `tar_pack()`, `decode_zip_pack()` / `decode_tar_pack()` and their pack/restore/verify commands preserve the full plan, exact XML and gate. See [supported profiles and runnable examples](docs/transports.md).
 

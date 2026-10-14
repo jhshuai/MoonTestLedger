@@ -69,6 +69,7 @@ pub fn CollectionFile::to_repr(Self) -> @debug.Repr
 
 type CollectionSpec
 pub fn CollectionSpec::collect(Self, ArrayView[CollectedXml], limits? : @ledger.Limits) -> Evidence raise @ledger.InputError
+pub fn CollectionSpec::collect_tar(Self, Bytes, limits? : @ledger.Limits, max_bytes? : Int) -> Evidence raise @ledger.InputError
 pub fn CollectionSpec::collect_zip(Self, Bytes, limits? : @ledger.Limits, max_bytes? : Int) -> Evidence raise @ledger.InputError
 pub fn CollectionSpec::encode(Self, limits? : @ledger.Limits) -> String raise @ledger.InputError
 pub fn CollectionSpec::files(Self) -> Array[CollectionFile]

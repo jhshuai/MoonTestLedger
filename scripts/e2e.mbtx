@@ -287,6 +287,70 @@ async fn zip_collection_workflow(
 }
 
 ///|
+async fn tar_collection_workflow(
+  target : String,
+  archive : Json,
+  summary : Json,
+) -> Unit {
+  let directory = @fs.tmpdir(prefix="moontestledger-collect-tar")
+  defer @fs.rmdir(directory)
+  let packed = directory + "/reports.tar"
+  let output = directory + "/evidence.json"
+  let changed_spec = directory + "/collection.json"
+  defer @fs.remove(packed)
+  defer @fs.remove(output)
+  defer @fs.remove(changed_spec)
+  let spec = "examples/upstream/collection.json"
+  @fs.write_file(changed_spec, @fs.read_file(spec))
+  @fs.write_file(packed, Bytes::make(1024, b'\x00'))
+  let pending = cli(target, ["collect-tar", spec, packed], 0)
+  @fs.write_file(output, pending.stringify())
+  let missing = cli(target, ["verify", output], 3)
+  guard missing is { "missing_reports": [String("jest-main")], .. } else {
+    fail("USTAR must retain the full declared inventory")
+  }
+  let reference = @fs.read_file("examples/transport/jest-reports.tar").binary()
+  @fs.write_file(packed, reference)
+  assert_eq(cli(target, ["collect-tar", spec, packed], 0), archive)
+  @fs.write_file(output, archive.stringify())
+  assert_eq(cli(target, ["verify", output], 1), summary)
+  let corrupted = reference.to_array()
+  corrupted[512] = b'\xff'
+  @fs.write_file(packed, Bytes::from_array(corrupted[:]))
+  let invalid = cli(target, ["collect-tar", spec, packed], 2)
+  guard invalid is { "error": { "code": String("InvalidUtf8"), .. }, .. } else {
+    fail("USTAR collection must reject malformed XML bytes")
+  }
+  @fs.write_file(packed, reference[:511])
+  ignore(cli(target, ["collect-tar", spec, packed], 2))
+  @fs.write_file(packed, reference)
+  @fs.write_file(
+    changed_spec,
+    @fs.read_file(spec)
+    .text()
+    .replace(old="jest-junit.xml", new="Jest-junit.xml"),
+  )
+  let wrong_case = cli(target, ["collect-tar", changed_spec, packed], 2)
+  guard wrong_case
+    is { "error": { "code": String("UnexpectedArtifact"), .. }, .. } else {
+    fail("Archive casing must exactly match declaration")
+  }
+  assert_eq(cli(target, ["collect-tar", spec, packed], 0), archive)
+  let retry_spec = "examples/retry/collection.json"
+  @fs.write_file(packed, @fs.read_file("examples/transport/retry-first.tar"))
+  @fs.write_file(
+    output,
+    cli(target, ["collect-tar", retry_spec, packed], 0).stringify(),
+  )
+  ignore(cli(target, ["verify", output], 3))
+  @fs.write_file(packed, @fs.read_file("examples/transport/retry-reports.tar"))
+  let retry = cli(target, ["collect-tar", retry_spec, packed], 0)
+  assert_eq(retry, cli(target, ["collect", retry_spec, "examples/retry"], 0))
+  @fs.write_file(output, retry.stringify())
+  ignore(cli(target, ["verify", output], 1))
+}
+
+///|
 async fn main {
   let target = @env.args().get(1).unwrap_or("wasm")
   assert_true(target == "wasm" || target == "native")
@@ -625,6 +689,7 @@ async fn main {
   pack_workflow(target, incomplete_archive, missing, 3)
   collection_workflow(target, archive, original)
   zip_collection_workflow(target, archive, original)
+  tar_collection_workflow(target, archive, original)
   for format in ["zip", "tar"] {
     carrier_workflow(target, format, archive, original, 1)
     carrier_workflow(target, format, incomplete_archive, missing, 3)

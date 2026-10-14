@@ -27,6 +27,8 @@ The declared directory collection API, portable path validation, specification J
 
 ## Research and format references
 
+Direct USTAR collection and boundary tests are project-authored Apache-2.0. GNU tar 1.34 generated the three [reference archives](examples/transport/README.md); the GPLv3+ tool/source is not bundled or copied. Archive data retain their original licenses: unchanged dorny/test-reporter Jest XML is MIT with its copied notice, synthetic retry XML is Apache-2.0. Exact generation commands and archive hashes are recorded alongside fixtures. Tests check independent-producer input, not just the project's own writer.
+
 The direct declared ZIP collection adapter/CLI/tests and test-generated archive payloads are project-authored Apache-2.0, using pinned fzip for archive generation and bounded expansion. Public real XML retains the upstream MIT license. No archive extraction filesystem utility or upstream test implementation is copied.
 
 The narrow USTAR carrier implementation/tests are project-authored Apache-2.0. [Go archive/tar format.go](https://github.com/golang/go/blob/master/src/archive/tar/format.go) was read as format documentation (Go repository BSD-3-Clause); no source/test implementation was copied or ported. Existing MoonBit tar helper APIs were inspected for overlap, not reused.
