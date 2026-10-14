@@ -27,6 +27,8 @@ The declared directory collection API, portable path validation, specification J
 
 ## Research and format references
 
+The direct declared ZIP collection adapter/CLI/tests and test-generated archive payloads are project-authored Apache-2.0, using pinned fzip for archive generation and bounded expansion. Public real XML retains the upstream MIT license. No archive extraction filesystem utility or upstream test implementation is copied.
+
 The narrow USTAR carrier implementation/tests are project-authored Apache-2.0. [Go archive/tar format.go](https://github.com/golang/go/blob/master/src/archive/tar/format.go) was read as format documentation (Go repository BSD-3-Clause); no source/test implementation was copied or ported. Existing MoonBit tar helper APIs were inspected for overlap, not reused.
 
 ZIP transport depends on [hustcer/fzip 0.8.8](https://mooncakes.io/docs/hustcer/fzip) ([source](https://github.com/hustcer/fzip)), Apache-2.0, for ZIP generation, bounded DEFLATE and CRC-32. It describes lineage from [101arrowz/fflate](https://github.com/101arrowz/fflate) (MIT); compression is not claimed as project-original. Moon fetches the dependency; it is not vendored. Container guards, adapters, CLI and tests are project-authored Apache-2.0. The [PKWARE APPNOTE](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT) is linked only; no specification text is copied.

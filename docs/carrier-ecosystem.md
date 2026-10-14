@@ -1,5 +1,7 @@
 # Carrier boundary review — 2026-10-15
 
+Direct ZIP collection extends the existing declaration-based adapter: `CollectionSpec.collect_zip` takes the complete expected test inventory, not just a ZIP/path list, and returns replayable full-plan evidence. Missing artifacts do not redefine the plan, unknown carrier members are refused, and exact XML plus bindings/policy remain inspectable. Generic archive codecs already exist and are reused; this addition is complementary CI evidence reconciliation. Adjacent flaker artifact ingestion remains acknowledged; no ecosystem-wide exclusivity is claimed.
+
 Queries: `MoonBit ZIP archive Mooncakes zip extract API`, `MoonBit "test evidence" "pack"`, `MoonBit "junit" "artifact" "manifest"`, `MoonBit "tar" Mooncakes archive library`, `site:github.com/mizchi/flaker "artifact" zip`.
 
 Existing general archive APIs include [hustcer/fzip](https://github.com/hustcer/fzip) (`zip_sync_checked`, `unzip_sync`, `unzip_list`, `inflate_sync`, `crc32`), [moonbitstack/moonzip](https://mooncakes.io/docs/moonbitstack/moonzip), and the community flate ZIP package. Inspected registry metadata: fzip 0.8.8 Apache-2.0, published 2026-10-13, 16,951 cumulative downloads; moonzip 0.3.0 Apache-2.0, published 2026-09-21, 434 downloads. Downloads are installations, not distinct users. [mizchi/bit_archive](https://mooncakes.io/docs/mizchi/bit_archive) includes USTAR header/generation helpers; tar support is not claimed absent. These existing boundaries make a new generic archive library redundant; ZIP compression is reused.

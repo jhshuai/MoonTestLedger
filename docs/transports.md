@@ -1,5 +1,13 @@
 # Evidence transport profiles
 
+## Declared ZIP collection
+
+`CollectionSpec.collect_zip(bytes, limits~, max_bytes~)` / `collect-zip COLLECTION.json FILE.zip` ingest raw XML archives directly without extracting files. The existing spec supplies the complete run/revision/report/case inventory and recovery policy; archive paths supply no identities. Missing declared files stay incomplete, present empty/partial reports are replayed against their declared testcases, and malformed XML refuses the whole operation. Collect returns an archive independently of its test gate (CLI creation 0); run `verify` on that output for 0/1/3.
+
+Archive collection accepts only exact declared regular-file paths, including nested paths. Unknown files, wrong casing, case aliases, duplicate members, unsafe names and all unsupported ZIP profile features are refused with actionable diagnostics. Unlike directory collection's selected-path traversal, this archive API has a closed input set and does not ignore ancillary files. Prepare an artifact ZIP containing only the explicitly declared XML files. The same transport/source budgets apply. It is not a generic ZIP importer and does not support every producer's ZIP extensions.
+
+For the bundled real Jest report, create a reference with PowerShell `Compress-Archive -LiteralPath examples/upstream/jest-junit.xml -DestinationPath output/jest-reports.zip`, then run `moon run --target wasm cmd/moontestledger -- collect-zip examples/upstream/collection.json output/jest-reports.zip`. Save stdout to a new UTF-8 JSON file and run `verify` on it (expected 1). The E2E script generates archives itself, verifies identical evidence against directory collection, preserves missing reports, rejects extras/malformed bytes, recovers after correction and retains denied recovery for the synthetic retry workflow; it requires no CI account or private infrastructure.
+
 ## USTAR
 
 `Evidence.tar_pack(limits~, max_bytes~)` / `decode_tar_pack(bytes, limits~, max_bytes~)` and `tar-pack` / `restore-tar` / `verify-tar` provide the same sealed full-plan workflow in an uncompressed POSIX USTAR carrier. For the real demo: `moon run --target wasm cmd/moontestledger -- tar-pack output/jest-evidence.json output/jest.tar`, then `restore-tar output/jest.tar` or `verify-tar output/jest.tar`. Use a new file. Creation returns 0, real Jest verification returns 1, and malformed packs return 2. Library calls support all four targets; CLI supports Wasm/native.

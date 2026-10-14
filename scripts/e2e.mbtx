@@ -1,5 +1,6 @@
 ///|
 import {
+  "hustcer/fzip",
   "moonbitlang/async",
   "moonbitlang/async/shell",
   "moonbitlang/async/fs",
@@ -210,6 +211,78 @@ async fn collection_workflow(
   )
   let retry = cli(target, ["collect", spec_path, "examples/retry"], 0)
   @fs.write_file(output, retry.stringify())
+  ignore(cli(target, ["verify", output], 1))
+}
+
+///|
+async fn write_collection_zip(
+  path : String,
+  entries : Array[(String, Bytes)],
+) -> Unit {
+  let bytes = @fzip.zip_sync_checked(
+    entries.map(pair => (pair.0, pair.1.to_fixedarray())),
+  )
+  @fs.write_file(path, Bytes::from_array(bytes[:]))
+}
+
+///|
+async fn zip_collection_workflow(
+  target : String,
+  archive : Json,
+  summary : Json,
+) -> Unit {
+  let directory = @fs.tmpdir(prefix="moontestledger-collect-zip")
+  defer @fs.rmdir(directory)
+  let packed = directory + "/reports.zip"
+  let output = directory + "/evidence.json"
+  defer @fs.remove(packed)
+  defer @fs.remove(output)
+  let spec = "examples/upstream/collection.json"
+  write_collection_zip(packed, [])
+  let pending = cli(target, ["collect-zip", spec, packed], 0)
+  @fs.write_file(output, pending.stringify())
+  let missing = cli(target, ["verify", output], 3)
+  guard missing is { "missing_reports": [String("jest-main")], .. } else {
+    fail("ZIP must retain declared missing reports")
+  }
+  let original = @fs.read_file("examples/upstream/jest-junit.xml").binary()
+  write_collection_zip(packed, [("jest-junit.xml", original)])
+  assert_eq(cli(target, ["collect-zip", spec, packed], 0), archive)
+  @fs.write_file(output, archive.stringify())
+  assert_eq(cli(target, ["verify", output], 1), summary)
+  write_collection_zip(packed, [
+    ("jest-junit.xml", original),
+    ("unlisted.txt", b"\xff"),
+  ])
+  let extra = cli(target, ["collect-zip", spec, packed], 2)
+  guard extra is { "error": { "code": String("UnexpectedArtifact"), .. }, .. } else {
+    fail("ZIP collection cannot silently discard extras")
+  }
+  write_collection_zip(packed, [("jest-junit.xml", b"\xff")])
+  let invalid = cli(target, ["collect-zip", spec, packed], 2)
+  guard invalid is { "error": { "code": String("InvalidUtf8"), .. }, .. } else {
+    fail("Declared XML must be strict UTF8")
+  }
+  @fs.write_file(packed, b"bad ZIP")
+  ignore(cli(target, ["collect-zip", spec, packed], 2))
+  write_collection_zip(packed, [("jest-junit.xml", original)])
+  assert_eq(cli(target, ["collect-zip", spec, packed], 0), archive)
+  let retry_spec = "examples/retry/collection.json"
+  let first = @fs.read_file("examples/retry/first.xml").binary()
+  let second = @fs.read_file("examples/retry/second.xml").binary()
+  write_collection_zip(packed, [("first.xml", first)])
+  @fs.write_file(
+    output,
+    cli(target, ["collect-zip", retry_spec, packed], 0).stringify(),
+  )
+  ignore(cli(target, ["verify", output], 3))
+  write_collection_zip(packed, [("second.xml", second), ("first.xml", first)])
+  let recovered = cli(target, ["collect-zip", retry_spec, packed], 0)
+  assert_eq(
+    recovered,
+    cli(target, ["collect", retry_spec, "examples/retry"], 0),
+  )
+  @fs.write_file(output, recovered.stringify())
   ignore(cli(target, ["verify", output], 1))
 }
 
@@ -551,6 +624,7 @@ async fn main {
   pack_workflow(target, archive, original, 1)
   pack_workflow(target, incomplete_archive, missing, 3)
   collection_workflow(target, archive, original)
+  zip_collection_workflow(target, archive, original)
   for format in ["zip", "tar"] {
     carrier_workflow(target, format, archive, original, 1)
     carrier_workflow(target, format, incomplete_archive, missing, 3)
