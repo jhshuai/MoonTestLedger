@@ -7,6 +7,7 @@
 | MoonBit core | toolchain v0.10.15+943464bfa; [source](https://github.com/moonbitlang/core) | Apache-2.0 | collections, JSON, UTF-8, environment and testing |
 | Milky2018/xml | 0.6.1; [Mooncakes](https://mooncakes.io/docs/Milky2018/xml), [source](https://github.com/moonbit-community/xml-mbt) | Apache-2.0 | well-formed XML pull reader and source spans |
 | moonbitlang/async | 0.22.4; [Mooncakes](https://mooncakes.io/docs/moonbitlang/async), [source](https://github.com/moonbitlang/async) | Apache-2.0 | CLI file/stdio I/O and .mbtx automation processes |
+| moonbitlang/x/crypto | x 0.5.5; [Mooncakes](https://mooncakes.io/docs/moonbitlang/x/crypto), [source](https://github.com/moonbitlang/x/tree/main/crypto) | Apache-2.0 | SHA-256 primitive and hexadecimal rendering for evidence manifests; experimental upstream package |
 
 These packages are resolved as dependencies, not copied wholesale into project source. Their original licenses accompany the packages. Moon.mod pins the Mooncakes versions. Third-party internals are not presented as original MoonTestLedger algorithms.
 
@@ -29,6 +30,8 @@ The offline HTML renderer, CSS, hostile-text test data and render-demo automatio
 - MoonBit packages and public API sources used in differentiation review are linked in [docs/ecosystem-review.md](docs/ecosystem-review.md). Referenced project implementations were not copied.
 - [MoonBit package management documentation](https://docs.moonbitlang.com/en/stable/toolchain/moon/package-manage-tour.html) and [Moon manual](https://moonbitlang.github.io/moon/commands.html) informed current configuration and commands.
 - Project license text is the standard [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0.txt).
+- [NIST secure hashing validation resources](https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/secure-hashing) and [FIPS 180-4](https://doi.org/10.6028/NIST.FIPS.180-4) are SHA-256 references. Adapter tests use the published empty/abc/multi-block known answers; test code is project-authored. These checks do not imply NIST validation or cryptographic audit.
+- [GitHub artifact storage/validation](https://docs.github.com/en/actions/tutorials/store-and-share-data#validating-artifacts) documents SHA-256 artifact checks across jobs. This motivates a complete test-evidence manifest; the project does not copy GitHub's implementation or implement signed artifact attestation.
 
 ## CI services
 

@@ -257,6 +257,21 @@ Default library limits are 256 reports, 100,000 expected/accepted observations, 
 
 Summary JSON is a derived evidence view, not a lossless JUnit conversion. It includes case outcomes, ordered attempts, diagnostics and failure/error text. Inert XML metadata/output remains available through retained source. Input files are never rewritten.
 
+## Verify transferred or retained evidence
+
+~~~sh
+moon run scripts/render-demo.mbtx wasm
+moon run --target wasm cmd/moontestledger -- check-integrity output/jest-evidence.json output/jest-integrity.json
+~~~
+
+The demo saves the unmodified upstream Jest report as an archive, HTML and checksum manifest. `check-integrity` validates every component then returns the original test gate: this six-test/four-failure example exits **1**, even though integrity succeeds. Missing evidence still exits **3**. A mismatch or invalid input exits **2** with a diagnostic and no summary. No private infrastructure is required. Wasm/native file CLIs and all four library backends are supported.
+
+For an existing archive, `integrity evidence.json` emits a schema-1 manifest to stdout and exits 0 on creation. Save it separately as UTF-8. Keep the expected manifest in a trusted location or verify its digest/signature through your existing CI artifact infrastructure; anyone who can rewrite both archive and manifest can recompute the checksums. This feature does not sign artifacts, authenticate authors, prove test execution or replace an attestation service.
+
+Library flow: `let manifest = evidence.integrity(); let saved = manifest.encode(); evidence.check_integrity(decode_integrity(saved))`. These operations accept `limits~`. The opaque manifest exposes independent `documents()` receipts (full binding, lowercase SHA-256 and UTF-8 byte length) and `missing_reports()`. It binds the **full** expected inventory, revision/run, recovery policy, accepted empty/partial reports and exact original XML; removing an expected test cannot be concealed by hashing only received reports. Mismatch diagnostics identify inventory, policy or report source. Inputs remain unchanged after refusal.
+
+Archive JSON is revalidated and re-encoded before hashing, so JSON layout/object-key ordering can change; original XML whitespace and metadata remain significant. Case array order remains significant. The versioned `mtl-evidence-v1` contract is documented in [formats](docs/formats.md); it is not a general JSON canonicalization standard. Changing an archive through merge/retry/append requires creating a new manifest. The pinned experimental `moonbitlang/x` SHA-256 implementation is reused, with known-answer and real-fixture checks; no cryptographic audit is claimed.
+
 ## Development and validation
 
 Use MoonBit v0.10.15 for this version. The validated toolchain is moonc v0.10.15+943464bfa / moon 0.1.20261012. Dependencies are pinned in moon.mod; the project uses current moon.mod and moon.pkg formats.

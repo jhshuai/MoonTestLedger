@@ -40,6 +40,9 @@ pub using @wire {
   prepare_retry,
   decode_retry_reports,
   encode_retry_reports,
+  type IntegrityManifest,
+  type IntegrityDocument,
+  decode_integrity,
 }
 
 ///|

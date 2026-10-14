@@ -49,7 +49,8 @@ Acceptance requires actual report files from documented producers or clearly sou
 4. Same-run archive merging and offline HTML rendering are implemented. Full plans/policies must agree before evidence can be combined. The read-only renderer retains attempts, diagnostics, missing inventory and original XML as escaped text, with a refusal rather than truncation when its output budget is exceeded.
 5. Selective retry continuation is implemented: extend a complete run with exact final adverse identities and fresh group report IDs, then atomically collect new original XML into an independent archive. The test runner remains caller-owned; missing evidence cannot be bypassed by another retry.
 6. Same-revision repeated-run analysis is implemented: distinct runs, exact shared testcase/environment inventory, separate retry/independent-run counts, full sample evidence and conservative incomplete gating. It describes observed mixtures, without claiming a statistical flakiness diagnosis.
-7. Integration with CI artifact manifests and additional producer profiles after local semantics remain stable. No dashboard or hosted backend is necessary for adoption.
+7. Evidence integrity manifests are implemented: full inventory/policy/archive hashes, exact XML receipts and bounded strict offline verification. The existing test gate survives successful integrity validation. Trusted-manifest distribution/signature/attestation remains caller-owned.
+8. Additional named producer profiles and CI artifact adapters after local semantics remain stable. No dashboard or hosted backend is necessary for adoption. General flaky classification/quarantine is outside this project's boundary; see the updated ecosystem review.
 
 ## Validation
 

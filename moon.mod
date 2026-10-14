@@ -19,4 +19,5 @@ supported_targets = "+wasm+wasm-gc+js+native"
 import {
   "Milky2018/xml@0.6.1",
   "moonbitlang/async@0.22.4",
+  "moonbitlang/x@0.5.5",
 }

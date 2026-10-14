@@ -315,7 +315,68 @@ async fn main {
   guard inconclusive is { "complete": False, .. } else {
     fail("Missing repeated-run evidence must be inconclusive")
   }
+  @fs.write_file(path, archive.stringify())
+  let manifest = cli(target, ["integrity", path], 0)
+  // Independent Get-FileHash SHA-256 values of the exact indent-2 UTF-8
+  // encoder outputs without a trailing newline; freeze mtl-evidence-v1.
+  guard manifest
+    is {
+      "archive_sha256": String(archive_hash),
+      "plan_sha256": String(plan_hash),
+      ..
+    } else {
+    fail("Expected canonical archive and inventory hashes")
+  }
+  assert_eq(
+    archive_hash, "1fc6df0a332c2648e14246c0670fd8d7f94d19d05d36f93678fb932e16a0411e",
+  )
+  assert_eq(
+    plan_hash, "544790a21bb9d6c444de05a0a4414358bd3b8b2ab7136cad1e5477c3da113794",
+  )
+  guard manifest is { "documents": [{ "sha256": String(hash), .. }], .. } else {
+    fail("Expected one real Jest receipt")
+  }
+  assert_eq(
+    hash, "8e18da3a6e4252c34fe7899fad28f8eceeb43849329989b36f2ff68dc7698e58",
+  )
+  @fs.write_file(other_path, manifest.stringify())
+  assert_eq(cli(target, ["check-integrity", path, other_path], 1), original)
+  let reformatted = archive.stringify(indent=4)
+  @fs.write_file(path, reformatted)
+  assert_eq(cli(target, ["integrity", path], 0), manifest)
+  assert_eq(cli(target, ["check-integrity", path, other_path], 1), original)
+  @fs.write_file(
+    path,
+    reformatted.replace(old="<testsuites", new="<testsuites "),
+  )
+  let tampered = cli(target, ["check-integrity", path, other_path], 2)
+  guard tampered
+    is {
+      "error": {
+        "code": String("IntegrityMismatch"),
+        "path": String(diagnostic_path),
+        ..
+      },
+      ..
+    } else {
+    fail("Changed original XML must fail integrity")
+  }
+  assert_true(diagnostic_path.contains("/documents/"))
+  @fs.write_file(path, incomplete_archive.stringify())
+  let incomplete_manifest = cli(target, ["integrity", path], 0)
+  @fs.write_file(other_path, incomplete_manifest.stringify())
+  assert_eq(cli(target, ["check-integrity", path, other_path], 3), missing)
+  @fs.write_file(path, strict_archive.stringify())
+  @fs.write_file(other_path, cli(target, ["integrity", path], 0).stringify())
+  assert_eq(cli(target, ["check-integrity", path, other_path], 1), denied)
+  @fs.write_file(path, merged.stringify())
+  @fs.write_file(other_path, cli(target, ["integrity", path], 0).stringify())
+  assert_eq(cli(target, ["check-integrity", path, other_path], 0), recovered)
+  @fs.write_file(other_path, "{\"schema\":2}")
+  ignore(cli(target, ["check-integrity", path, other_path], 2))
+  @fs.write_file(other_path, cli(target, ["integrity", path], 0).stringify())
+  assert_eq(cli(target, ["check-integrity", path, other_path], 0), recovered)
   println(
-    "End-to-end checks passed on \{target}: real Jest, retry continuation, repetitions, archives, merging, offline HTML, policy, comparison and malformed counters.",
+    "End-to-end checks passed on \{target}: real Jest, retry continuation, repetitions, archives, integrity/tampering, merging, offline HTML, policy, comparison and malformed counters.",
   )
 }

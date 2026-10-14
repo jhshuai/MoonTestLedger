@@ -67,6 +67,34 @@ async fn html(path : String) -> Int32 {
 }
 
 ///|
+async fn integrity(path : String) -> Int32 {
+  let evidence = @ledger.decode_evidence(
+    read_text(path, @ledger.Limits::default()),
+  )
+  @stdio.stdout.write(evidence.integrity().encode() + "\n")
+  0
+}
+
+///|
+async fn check_integrity(path : String, manifest_path : String) -> Int32 {
+  let limits = @ledger.Limits::default()
+  let evidence = @ledger.decode_evidence(read_text(path, limits), limits~)
+  let manifest = @ledger.decode_integrity(
+    read_text(manifest_path, limits),
+    limits~,
+  )
+  evidence.check_integrity(manifest, limits~)
+  @stdio.stdout.write(
+    @ledger.encode_summary(
+      evidence.summary(),
+      deny_recovered=evidence.deny_recovered(),
+    ) +
+    "\n",
+  )
+  evidence.exit_code()
+}
+
+///|
 async fn compare(before_path : String, after_path : String) -> Int32 {
   let limits = @ledger.Limits::default()
   let before = @ledger.decode_evidence(read_text(before_path, limits), limits~)
@@ -234,6 +262,8 @@ pub async fn run(arguments : Array[String]) -> Int32 {
         archive(plan, bundle, true)
       ["verify", path] => verify(path)
       ["html", path] => html(path)
+      ["integrity", path] => integrity(path)
+      ["check-integrity", path, manifest] => check_integrity(path, manifest)
       ["compare", before, after] => compare(before, after)
       ["merge", _, _, ..] => merge(arguments[1:])
       ["retry", path, requests] => retry(path, requests)
@@ -241,13 +271,13 @@ pub async fn run(arguments : Array[String]) -> Int32 {
       ["repetitions", _, _, ..] => repetitions(arguments[1:])
       ["--help"] | ["help"] => {
         @stdio.stdout.write(
-          "MoonTestLedger\n  audit PLAN.json BUNDLE.json [--deny-recovered]\n  capture BUNDLE.json\n  archive PLAN.json BUNDLE.json [--deny-recovered]\n  verify EVIDENCE.json\n  compare BEFORE.json AFTER.json\n  merge FIRST.json SECOND.json [MORE.json ...]\n  html EVIDENCE.json\n  retry EVIDENCE.json RETRY-REPORTS.json\n  append EVIDENCE.json BUNDLE.json\n  repetitions FIRST.json SECOND.json [MORE.json ...]\nArchive/capture/merge/html/retry/append: 0 on creation. Audit/verify: 0 passing, 1 failing, 2 invalid input, 3 incomplete. Compare: 0 no new adverse result, 1 regression, 2 invalid input, 3 inconclusive. Repetitions: 0 no observed mixture, 1 pass plus failure/error observed, 2 invalid input, 3 incomplete.\n",
+          "MoonTestLedger\n  audit PLAN.json BUNDLE.json [--deny-recovered]\n  capture BUNDLE.json\n  archive PLAN.json BUNDLE.json [--deny-recovered]\n  verify EVIDENCE.json\n  compare BEFORE.json AFTER.json\n  merge FIRST.json SECOND.json [MORE.json ...]\n  html EVIDENCE.json\n  retry EVIDENCE.json RETRY-REPORTS.json\n  append EVIDENCE.json BUNDLE.json\n  repetitions FIRST.json SECOND.json [MORE.json ...]\n  integrity EVIDENCE.json\n  check-integrity EVIDENCE.json MANIFEST.json\nArchive/capture/merge/html/retry/append/integrity: 0 on creation. Audit/verify/check-integrity: 0 passing, 1 failing, 2 invalid input or integrity mismatch, 3 incomplete. Compare: 0 no new adverse result, 1 regression, 2 invalid input, 3 inconclusive. Repetitions: 0 no observed mixture, 1 pass plus failure/error observed, 2 invalid input, 3 incomplete.\n",
         )
         0
       }
       _ =>
         raise refusal(
-          "Usage", "/arguments", "Use audit, capture, archive, verify, compare, merge, html, retry, append or repetitions; --help shows arguments",
+          "Usage", "/arguments", "Use audit, capture, archive, verify, compare, merge, html, retry, append, repetitions, integrity or check-integrity; --help shows arguments",
         )
     }
   } catch {

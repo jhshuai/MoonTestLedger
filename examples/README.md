@@ -2,6 +2,12 @@
 
 Run commands from the module root. Every bundle's XML paths resolve relative to that bundle.
 
+## Evidence integrity workflow
+
+`moon run scripts/render-demo.mbtx wasm` also writes `output/jest-integrity.json` as UTF-8 from the unmodified Jest archive. Run `moon run --target wasm cmd/moontestledger -- check-integrity output/jest-evidence.json output/jest-integrity.json`: expected exit **1** with the unchanged six-case/four-failure summary. Integrity success preserves the failed test gate. Supply `native` to both commands for native execution with a working compiler.
+
+Keep the expected manifest in a separately trusted location before transferring evidence. The E2E evaluator verifies the receipt SHA-256 against the independently recorded upstream file hash below, accepts archive JSON reformatting, changes only original XML whitespace to obtain `IntegrityMismatch` (2), checks incomplete evidence still exits 3, preserves denied recovery (1) and successful recovery (0), and recovers after a malformed manifest. No altered upstream fixture is committed. These tests and manifest workflow are project-authored Apache-2.0; the original XML retains its MIT license. Checksums authenticate neither the creator nor the execution environment.
+
 ## Unmodified upstream reports
 
 Repository: [dorny/test-reporter](https://github.com/dorny/test-reporter), commit [cc52f364a405169afe07bb00dab3d375b451229d](https://github.com/dorny/test-reporter/commit/cc52f364a405169afe07bb00dab3d375b451229d), MIT license. Files were downloaded on 2026-10-13 without transformation. The complete upstream license is retained at upstream/LICENSE.dorny-test-reporter.

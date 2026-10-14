@@ -105,7 +105,7 @@ fn strict_json(
         // The core parser may discard decimal lexemes after Double rounding.
         // Check our integer fields against authored digits before using that
         // projection. Type errors are handled by the schema decoder below.
-        if key == "schema" || key == "attempt" {
+        if key == "schema" || key == "attempt" || key == "utf8_bytes" {
           let mut token_start = next + 1
           while token_start < chars.length() && whitespace(chars[token_start]) {
             token_start += 1

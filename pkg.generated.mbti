@@ -16,6 +16,8 @@ pub fn decode_bundle(String, limits? : @ledger.Limits) -> @wire.Bundle raise @le
 
 pub fn decode_evidence(String, limits? : @ledger.Limits) -> @wire.Evidence raise @ledger.InputError
 
+pub fn decode_integrity(String, limits? : @ledger.Limits) -> @wire.IntegrityManifest raise @ledger.InputError
+
 pub fn decode_plan(String, limits? : @ledger.Limits) -> @ledger.RunPlan raise @ledger.InputError
 
 pub fn decode_retry_reports(String, limits? : @ledger.Limits) -> Array[@wire.RetryReport] raise @ledger.InputError
@@ -68,6 +70,10 @@ pub using @wire {type Evidence}
 pub using @ledger {type ExpectedReport}
 
 pub using @ledger {type InputError}
+
+pub using @wire {type IntegrityDocument}
+
+pub using @wire {type IntegrityManifest}
 
 pub using @ledger {type Ledger}
 

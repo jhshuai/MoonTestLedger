@@ -3,4 +3,6 @@ import {
   "jhshuai/moontestledger/ledger",
   "moonbitlang/core/debug",
   "moonbitlang/core/json",
+  "moonbitlang/core/encoding/utf8",
+  "moonbitlang/x/crypto",
 }

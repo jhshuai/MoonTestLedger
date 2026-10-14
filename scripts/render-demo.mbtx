@@ -30,9 +30,11 @@ async fn main {
     "archive", "examples/upstream/plan.json", "examples/upstream/bundle.json",
   ])
   @fs.write_file("output/jest-evidence.json", archive)
+  let manifest = command(target, ["integrity", "output/jest-evidence.json"])
+  @fs.write_file("output/jest-integrity.json", manifest)
   let page = command(target, ["html", "output/jest-evidence.json"])
   @fs.write_file("output/jest-report.html", page)
   println(
-    "Created output/jest-report.html and replayable output/jest-evidence.json from the unmodified upstream Jest fixture (six cases, four failures). Creation succeeds; verify still exits 1.",
+    "Created output/jest-report.html, replayable output/jest-evidence.json and output/jest-integrity.json from the unmodified upstream Jest fixture (six cases, four failures). Creation succeeds; verify/check-integrity still exit 1. Keep the expected checksum manifest in a separately trusted location.",
   )
 }
