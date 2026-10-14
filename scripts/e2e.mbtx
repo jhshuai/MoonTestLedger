@@ -42,6 +42,80 @@ async fn cli(target : String, args : Array[String], expected : Int32) -> Json {
 }
 
 ///|
+async fn pack_workflow(
+  target : String,
+  archive : Json,
+  summary : Json,
+  gate : Int32,
+) -> Unit {
+  let directory = @fs.tmpdir(prefix="moontestledger-pack")
+  defer @fs.rmdir(directory)
+  let source = directory + "/source.json"
+  defer @fs.remove(source)
+  @fs.write_file(source, archive.stringify())
+  let destination = directory + "/new-pack"
+  let owned : Array[String] = []
+  defer {
+    for path in owned {
+      @fs.remove(path)
+    }
+    @fs.rmdir(destination)
+  }
+  let index = cli(target, ["detach", source, destination], 0)
+  owned.push(destination + "/index.json")
+  guard index is { "integrity": { "documents": Array(receipts), .. }, .. } else {
+    fail("Expected detached index")
+  }
+  let names : Set[String] = Set([])
+  for receipt in receipts {
+    guard receipt is { "sha256": String(hash), .. } else {
+      fail("Expected receipt")
+    }
+    names.add("sha256-" + hash + ".xml")
+  }
+  for name in names {
+    owned.push(destination + "/" + name)
+  }
+  assert_eq(cli(target, ["restore-pack", destination], 0), archive)
+  assert_eq(cli(target, ["verify-pack", destination], gate), summary)
+  // Existing destinations are refused, preserving the existing complete pack.
+  ignore(cli(target, ["detach", source, destination], 2))
+  assert_eq(cli(target, ["verify-pack", destination], gate), summary)
+  let extra = destination + "/undeclared.txt"
+  @fs.write_file(extra, "not a declared artifact")
+  let refused = cli(target, ["verify-pack", destination], 2)
+  guard refused is { "error": { "code": String("UnexpectedPackFile"), .. }, .. } else {
+    fail("Closed member set must reject extras")
+  }
+  @fs.remove(extra)
+  for name in names {
+    let member_path = destination + "/" + name
+    let original = @fs.read_file(member_path).text()
+    @fs.write_file(member_path, original + "\n")
+    let changed = cli(target, ["restore-pack", destination], 2)
+    guard changed
+      is { "error": { "code": String("IntegrityMismatch"), .. }, .. } else {
+      fail("Raw XML corruption must fail")
+    }
+    @fs.remove(member_path)
+    let missing = cli(target, ["restore-pack", destination], 2)
+    guard missing is { "error": { "code": String("MissingPackFile"), .. }, .. } else {
+      fail("Accepted pack member cannot disappear")
+    }
+    @fs.mkdir(member_path)
+    let special = cli(target, ["restore-pack", destination], 2)
+    guard special is { "error": { "code": String("PackFileKind"), .. }, .. } else {
+      fail("Directory must not be accepted as XML")
+    }
+    @fs.rmdir(member_path)
+    @fs.write_file(member_path, original)
+    break
+  }
+  assert_eq(cli(target, ["restore-pack", destination], 0), archive)
+  assert_eq(cli(target, ["verify-pack", destination], gate), summary)
+}
+
+///|
 async fn main {
   let target = @env.args().get(1).unwrap_or("wasm")
   assert_true(target == "wasm" || target == "native")
@@ -376,6 +450,8 @@ async fn main {
   ignore(cli(target, ["check-integrity", path, other_path], 2))
   @fs.write_file(other_path, cli(target, ["integrity", path], 0).stringify())
   assert_eq(cli(target, ["check-integrity", path, other_path], 0), recovered)
+  pack_workflow(target, archive, original, 1)
+  pack_workflow(target, incomplete_archive, missing, 3)
   println(
     "End-to-end checks passed on \{target}: real Jest, retry continuation, repetitions, archives, integrity/tampering, merging, offline HTML, policy, comparison and malformed counters.",
   )

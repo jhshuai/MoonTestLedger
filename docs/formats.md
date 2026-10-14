@@ -61,6 +61,12 @@ Both source/output JSON are bounded by `max_source_units`; accepted + missing re
 
 Trust the expected manifest independently. Checksums do not authenticate the creator or prevent replacement of both files. No signature, timestamp, filesystem permission guarantee, security certification, generic hash-file command or statistical testing API is included.
 
+## Detached file-pack profile
+
+The schema-1 index has exactly `schema`, `kind` = `moontestledger/file-pack`, `plan` (full schema-1 inventory), and `integrity` (the complete integrity manifest). Every planned report must have exactly one correctly bound receipt or an explicit missing-report ID. Plan/run/revision hashes must agree before member filenames are exposed. Filenames are derived solely as `sha256-<64 lowercase hex>.xml`; arbitrary paths are not part of the format. Identical XML sources deduplicate physical storage, but every report receipt/binding remains separate. Encoders and returned filename/member arrays are deterministic and independent copies. Unknown/duplicate/numerically rounded fields are refused as in other codecs.
+
+Restore requires the exact unique filename set, checks UTF-8 byte lengths and SHA-256, reparses every declared report against the full plan, then checks the complete integrity manifest. No summary or supplied projection replaces original XML. All existing input, expected report/case, aggregate XML/problem and output budgets apply; unique member input bytes and expanded per-report replay are both bounded. A declared accepted member being absent is `MissingPackFile` (2); a report explicitly missing in the preserved plan remains incomplete (3). Undeclared members, duplicate inputs, changed XML and invalid file kinds are refused. This profile is not a generic archive/container or signed evidence standard. CLI reading assumes a locally stable directory, rejects symlink entries and requires regular files; concurrent filesystem races are outside the guarantee.
+
 ## Replayable evidence archives
 
 The schema-1 envelope has exactly `schema`, `kind` (`moontestledger/evidence`), `deny_recovered` (boolean), `plan` (the complete schema-1 plan) and `documents`. Each document has exactly `id`, `run_id`, `revision`, `environment`, `shard`, `attempt`, and `xml` (original decoded XML). Duplicate report IDs are rejected. No report paths or projected summary replace the authored source.

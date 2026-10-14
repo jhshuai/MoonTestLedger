@@ -264,12 +264,18 @@ pub async fn run(arguments : Array[String]) -> Int32 {
       ["html", path] => html(path)
       ["integrity", path] => integrity(path)
       ["check-integrity", path, manifest] => check_integrity(path, manifest)
+      ["detach", path, directory] => detach(path, directory)
+      ["restore-pack", directory] => restore_pack(directory)
+      ["verify-pack", directory] => verify_pack(directory)
       ["compare", before, after] => compare(before, after)
       ["merge", _, _, ..] => merge(arguments[1:])
       ["retry", path, requests] => retry(path, requests)
       ["append", path, bundle] => append(path, bundle)
       ["repetitions", _, _, ..] => repetitions(arguments[1:])
       ["--help"] | ["help"] => {
+        @stdio.stdout.write(
+          "File packs:\n  detach EVIDENCE.json NEW-DIRECTORY\n  restore-pack DIRECTORY\n  verify-pack DIRECTORY\nDetach/restore-pack: 0 on creation; verify-pack: original 0/1/3 test gate; invalid/missing/corrupt pack members: 2.\n",
+        )
         @stdio.stdout.write(
           "MoonTestLedger\n  audit PLAN.json BUNDLE.json [--deny-recovered]\n  capture BUNDLE.json\n  archive PLAN.json BUNDLE.json [--deny-recovered]\n  verify EVIDENCE.json\n  compare BEFORE.json AFTER.json\n  merge FIRST.json SECOND.json [MORE.json ...]\n  html EVIDENCE.json\n  retry EVIDENCE.json RETRY-REPORTS.json\n  append EVIDENCE.json BUNDLE.json\n  repetitions FIRST.json SECOND.json [MORE.json ...]\n  integrity EVIDENCE.json\n  check-integrity EVIDENCE.json MANIFEST.json\nArchive/capture/merge/html/retry/append/integrity: 0 on creation. Audit/verify/check-integrity: 0 passing, 1 failing, 2 invalid input or integrity mismatch, 3 incomplete. Compare: 0 no new adverse result, 1 regression, 2 invalid input, 3 inconclusive. Repetitions: 0 no observed mixture, 1 pass plus failure/error observed, 2 invalid input, 3 incomplete.\n",
         )

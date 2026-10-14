@@ -43,6 +43,9 @@ pub using @wire {
   type IntegrityManifest,
   type IntegrityDocument,
   decode_integrity,
+  type PackIndex,
+  type PackFile,
+  decode_pack_index,
 }
 
 ///|

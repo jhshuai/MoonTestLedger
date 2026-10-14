@@ -13,6 +13,8 @@ pub fn decode_evidence(String, limits? : @ledger.Limits) -> Evidence raise @ledg
 
 pub fn decode_integrity(String, limits? : @ledger.Limits) -> IntegrityManifest raise @ledger.InputError
 
+pub fn decode_pack_index(String, limits? : @ledger.Limits) -> PackIndex raise @ledger.InputError
+
 pub fn decode_plan(String, limits? : @ledger.Limits) -> @ledger.RunPlan raise @ledger.InputError
 
 pub fn decode_retry_reports(String, limits? : @ledger.Limits) -> Array[RetryReport] raise @ledger.InputError
@@ -46,6 +48,7 @@ pub fn Bundle::to_repr(Self) -> @debug.Repr
 type Evidence
 pub fn Evidence::check_integrity(Self, IntegrityManifest, limits? : @ledger.Limits) -> Unit raise @ledger.InputError
 pub fn Evidence::deny_recovered(Self) -> Bool
+pub fn Evidence::detach(Self, limits? : @ledger.Limits) -> (PackIndex, Array[PackFile]) raise @ledger.InputError
 pub fn Evidence::encode(Self, limits? : @ledger.Limits) -> String raise @ledger.InputError
 pub fn Evidence::exit_code(Self) -> Int
 pub fn Evidence::ingest_reports(Self, ArrayView[@ledger.Document], limits? : @ledger.Limits) -> Self raise @ledger.InputError
@@ -67,6 +70,19 @@ type IntegrityManifest
 pub fn IntegrityManifest::documents(Self) -> Array[IntegrityDocument]
 pub fn IntegrityManifest::encode(Self, limits? : @ledger.Limits) -> String raise @ledger.InputError
 pub fn IntegrityManifest::missing_reports(Self) -> Array[String]
+
+pub(all) struct PackFile {
+  name : String
+  xml : String
+} derive(Eq, @debug.Debug)
+pub fn PackFile::equal(Self, Self) -> Bool
+pub fn PackFile::not_equal(Self, Self) -> Bool
+pub fn PackFile::to_repr(Self) -> @debug.Repr
+
+type PackIndex
+pub fn PackIndex::encode(Self, limits? : @ledger.Limits) -> String raise @ledger.InputError
+pub fn PackIndex::filenames(Self) -> Array[String]
+pub fn PackIndex::restore(Self, ArrayView[PackFile], limits? : @ledger.Limits) -> Evidence raise @ledger.InputError
 
 pub(all) struct ReportFile {
   binding : @ledger.ReportBinding

@@ -272,6 +272,19 @@ Library flow: `let manifest = evidence.integrity(); let saved = manifest.encode(
 
 Archive JSON is revalidated and re-encoded before hashing, so JSON layout/object-key ordering can change; original XML whitespace and metadata remain significant. Case array order remains significant. The versioned `mtl-evidence-v1` contract is documented in [formats](docs/formats.md); it is not a general JSON canonicalization standard. Changing an archive through merge/retry/append requires creating a new manifest. The pinned experimental `moonbitlang/x` SHA-256 implementation is reused, with known-answer and real-fixture checks; no cryptographic audit is claimed.
 
+## Portable XML file packs
+
+~~~sh
+moon run scripts/render-demo.mbtx wasm
+moon run --target wasm cmd/moontestledger -- detach output/jest-evidence.json output/jest-pack
+moon run --target wasm cmd/moontestledger -- verify-pack output/jest-pack
+moon run --target wasm cmd/moontestledger -- restore-pack output/jest-pack > restored.json
+~~~
+
+Use a **new directory** for detach. It creates `index.json` and flat `sha256-<digest>.xml` members, preserving the entire expected plan, source bindings and recovery policy. Exact identical sources share one physical member without merging their report identities. Both detach and restore-pack exit 0 on creation; the real Jest verify-pack exits 1 with the same original six-case/four-failure summary. Missing expected reports still yield 3; missing stored members, changed bytes and undeclared directory entries yield 2. Existing destinations are refused. XML remains ordinary UTF-8, directly readable by other tools. There is no ZIP/TAR container, compression, arbitrary file bundling or new trust/signature mechanism.
+
+Portable library flow: `let (index, files) = evidence.detach(); let loaded = decode_pack_index(index.encode()); let restored = loaded.restore(files[:])`. `PackFile` has `name` and `xml`; `PackIndex` is opaque and exposes `filenames()`. Every operation validates limits and refuses unsupported content. Strict member validation precedes complete XML replay and archive digest verification. CLI checks the closed member set, regular-file kinds and symlinks, creates new files exclusively and publishes the index last. Failed publication attempts clean up only files successfully created by that operation; no transactional guarantee against concurrent hostile filesystem changes is claimed. The current input/inline replay budget still applies: this feature does not bypass archive size limits. Keep the pack index independently trusted when that trust is required.
+
 ## Development and validation
 
 Use MoonBit v0.10.15 for this version. The validated toolchain is moonc v0.10.15+943464bfa / moon 0.1.20261012. Dependencies are pinned in moon.mod; the project uses current moon.mod and moon.pkg formats.
