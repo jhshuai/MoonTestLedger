@@ -1,5 +1,15 @@
 # Evidence transport profiles
 
+## USTAR
+
+`Evidence.tar_pack(limits~, max_bytes~)` / `decode_tar_pack(bytes, limits~, max_bytes~)` and `tar-pack` / `restore-tar` / `verify-tar` provide the same sealed full-plan workflow in an uncompressed POSIX USTAR carrier. For the real demo: `moon run --target wasm cmd/moontestledger -- tar-pack output/jest-evidence.json output/jest.tar`, then `restore-tar output/jest.tar` or `verify-tar output/jest.tar`. Use a new file. Creation returns 0, real Jest verification returns 1, and malformed packs return 2. Library calls support all four targets; CLI supports Wasm/native.
+
+Headers must have POSIX USTAR magic/version, valid checksum, nonnegative octal numbers, ordinary-file type, empty link target/device metadata, supported header bytes and portable ASCII paths. The reader supports USTAR prefix/name fields, checks every member and padding block, requires two zero end blocks, and accepts additional whole zero tail blocks. It refuses directories, links, PAX/GNU/sparse extensions, base-256/negative numbers, duplicate names, nonzero padding/trailers and truncation. The same byte/source/count budgets apply as ZIP; writer checks total output size before construction. Exports use deterministic order, mode 0644, zero UID/GID/mtime and no owner names. Filesystem metadata is carrier data, not test evidence; this is not a lossless general tar converter. No gzip/compression support is implied.
+
+USTAR fields were implemented from format facts, informed by [Go archive/tar's format documentation](https://github.com/golang/go/blob/master/src/archive/tar/format.go). No Go or existing MoonBit tar implementation/tests were copied; the code/tests are project-authored Apache-2.0. Existing MoonBit tar helpers are recorded in [carrier boundary review](carrier-ecosystem.md).
+
+## ZIP
+
 ZIP carries the existing sealed file pack: `index.json` and exactly its content-addressed XML members. It preserves the full expected plan and recovery policy. Absent expected reports remain incomplete; missing accepted XML, extra members and changed content are invalid. No general filesystem extraction or archive-conversion API is exported.
 
 ```text

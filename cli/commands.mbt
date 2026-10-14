@@ -271,12 +271,18 @@ pub async fn run(arguments : Array[String]) -> Int32 {
       ["zip-pack", path, destination] => zip_pack(path, destination)
       ["restore-zip", path] => restore_zip(path, false)
       ["verify-zip", path] => restore_zip(path, true)
+      ["tar-pack", path, destination] => tar_pack(path, destination)
+      ["restore-tar", path] => restore_tar(path, false)
+      ["verify-tar", path] => restore_tar(path, true)
       ["compare", before, after] => compare(before, after)
       ["merge", _, _, ..] => merge(arguments[1:])
       ["retry", path, requests] => retry(path, requests)
       ["append", path, bundle] => append(path, bundle)
       ["repetitions", _, _, ..] => repetitions(arguments[1:])
       ["--help"] | ["help"] => {
+        @stdio.stdout.write(
+          "USTAR evidence transport:\n  tar-pack EVIDENCE.json NEW-FILE.tar\n  restore-tar FILE.tar\n  verify-tar FILE.tar\nUncompressed regular-file USTAR only; same evidence gates and 16 MiB binary cap as ZIP.\n",
+        )
         @stdio.stdout.write(
           "ZIP evidence transport:\n  zip-pack EVIDENCE.json NEW-FILE.zip\n  restore-zip FILE.zip\n  verify-zip FILE.zip\nCreation/restoration: 0; verification: original 0/1/3 gate; invalid archive: 2. CLI binary cap: 16 MiB.\n",
         )
