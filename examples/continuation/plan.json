@@ -1,0 +1,11 @@
+{
+  "schema": 1, "run_id": "checkout-ci-1042", "revision": "example-revision-a",
+  "reports": [{
+    "id": "payments-1", "environment": "linux-node22", "shard": "payments", "attempt": 1,
+    "cases": [
+      {"classname": "checkout.payment", "name": "charge_once"},
+      {"classname": "checkout.payment", "name": "reject_expired_card"},
+      {"classname": "checkout.payment", "name": "wallet_provider"}
+    ]
+  }]
+}

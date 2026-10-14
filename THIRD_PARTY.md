@@ -23,6 +23,7 @@ The offline HTML renderer, CSS, hostile-text test data and render-demo automatio
 ## Research and format references
 
 - [GitLab unit test reports](https://docs.gitlab.com/ci/testing/unit_test_reports/) documents report workflows and duplicate-name behavior.
+- [pytest flaky-test guidance](https://docs.pytest.org/en/8.2.x/explanation/flaky.html) and [Buildkite test monitors](https://buildkite.com/docs/pipelines/configure/tests/workflows/monitors) motivate selective reruns and same-revision outcome observation. They are workflow references; their implementations and test code are not copied.
 - [Testmo JUnit XML conventions](https://github.com/testmoapp/junitxml) describes practical producer conventions. It is a format reference, not an official universal JUnit XML specification.
 - [dorny/test-reporter](https://github.com/dorny/test-reporter), MIT, and [EnricoMi/publish-unit-test-result-action](https://github.com/EnricoMi/publish-unit-test-result-action), Apache-2.0, establish common report-publication workflows.
 - MoonBit packages and public API sources used in differentiation review are linked in [docs/ecosystem-review.md](docs/ecosystem-review.md). Referenced project implementations were not copied.

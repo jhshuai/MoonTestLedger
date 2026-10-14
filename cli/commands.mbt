@@ -77,6 +77,58 @@ async fn compare(before_path : String, after_path : String) -> Int32 {
 }
 
 ///|
+async fn retry(path : String, requests_path : String) -> Int32 {
+  let limits = @ledger.Limits::default()
+  let evidence = @ledger.decode_evidence(read_text(path, limits), limits~)
+  let reports = @ledger.decode_retry_reports(
+    read_text(requests_path, limits),
+    limits~,
+  )
+  let next = @ledger.prepare_retry(evidence, reports[:], limits~)
+  @stdio.stdout.write(next.encode(limits~) + "\n")
+  0
+}
+
+///|
+async fn append(path : String, bundle_path : String) -> Int32 {
+  let limits = @ledger.Limits::default()
+  let evidence = @ledger.decode_evidence(read_text(path, limits), limits~)
+  let bundle = @ledger.decode_bundle(read_text(bundle_path, limits), limits~)
+  let documents : Array[@ledger.Document] = []
+  let mut units = 0L
+  let mut cases = 0
+  let mut problems = 0
+  for file in bundle.documents {
+    let source = read_text(report_path(bundle_path, file.path), limits)
+    units += source.length().to_int64()
+    if units > limits.max_total_source_units.to_int64() {
+      raise refusal(
+        "SourceLimit", bundle_path, "Incoming XML batch exceeds the total source budget",
+      )
+    }
+    let report = @ledger.parse_junit(source, report_id=file.binding.id, limits~)
+    cases += report.cases.length()
+    if cases > limits.max_cases {
+      raise refusal(
+        "CaseLimit", bundle_path, "Incoming XML batch exceeds the observation budget",
+      )
+    }
+    for testcase in report.cases {
+      problems += testcase.problems.length()
+      if problems > limits.max_problems {
+        raise refusal(
+          "ProblemLimit", bundle_path, "Incoming XML batch exceeds the problem budget",
+        )
+      }
+    }
+    documents.push({ binding: file.binding, report, })
+  }
+  let next = evidence.ingest_reports(documents[:], limits~)
+  @stdio.stdout.write(next.encode(limits~) + "\n")
+  0
+}
+
+///|
 async fn merge(paths : ArrayView[String]) -> Int32 {
   let limits = @ledger.Limits::default()
   if paths.length() > limits.max_reports {
@@ -161,15 +213,17 @@ pub async fn run(arguments : Array[String]) -> Int32 {
       ["html", path] => html(path)
       ["compare", before, after] => compare(before, after)
       ["merge", _, _, ..] => merge(arguments[1:])
+      ["retry", path, requests] => retry(path, requests)
+      ["append", path, bundle] => append(path, bundle)
       ["--help"] | ["help"] => {
         @stdio.stdout.write(
-          "MoonTestLedger\n  audit PLAN.json BUNDLE.json [--deny-recovered]\n  capture BUNDLE.json\n  archive PLAN.json BUNDLE.json [--deny-recovered]\n  verify EVIDENCE.json\n  compare BEFORE.json AFTER.json\n  merge FIRST.json SECOND.json [MORE.json ...]\n  html EVIDENCE.json\nArchive/capture/merge/html: 0 on creation. Audit/verify: 0 passing, 1 failing, 2 invalid input, 3 incomplete. Compare: 0 no new adverse result, 1 regression, 2 invalid input, 3 inconclusive.\n",
+          "MoonTestLedger\n  audit PLAN.json BUNDLE.json [--deny-recovered]\n  capture BUNDLE.json\n  archive PLAN.json BUNDLE.json [--deny-recovered]\n  verify EVIDENCE.json\n  compare BEFORE.json AFTER.json\n  merge FIRST.json SECOND.json [MORE.json ...]\n  html EVIDENCE.json\n  retry EVIDENCE.json RETRY-REPORTS.json\n  append EVIDENCE.json BUNDLE.json\nArchive/capture/merge/html/retry/append: 0 on creation. Audit/verify: 0 passing, 1 failing, 2 invalid input, 3 incomplete. Compare: 0 no new adverse result, 1 regression, 2 invalid input, 3 inconclusive.\n",
         )
         0
       }
       _ =>
         raise refusal(
-          "Usage", "/arguments", "Use audit, capture, archive, verify, compare, merge or html; --help shows arguments",
+          "Usage", "/arguments", "Use audit, capture, archive, verify, compare, merge, html, retry or append; --help shows arguments",
         )
     }
   } catch {

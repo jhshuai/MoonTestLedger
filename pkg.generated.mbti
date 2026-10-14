@@ -16,6 +16,8 @@ pub fn decode_evidence(String, limits? : @ledger.Limits) -> @wire.Evidence raise
 
 pub fn decode_plan(String, limits? : @ledger.Limits) -> @ledger.RunPlan raise @ledger.InputError
 
+pub fn decode_retry_reports(String, limits? : @ledger.Limits) -> Array[@wire.RetryReport] raise @ledger.InputError
+
 pub fn encode_bundle(@wire.Bundle) -> String
 
 pub fn encode_diagnostic(@ledger.Diagnostic) -> String
@@ -24,11 +26,15 @@ pub fn encode_evidence(@ledger.Ledger, deny_recovered? : Bool, limits? : @ledger
 
 pub fn encode_plan(@ledger.RunPlan) -> String
 
+pub fn encode_retry_reports(ArrayView[@wire.RetryReport]) -> String
+
 pub fn encode_summary(@ledger.Summary, deny_recovered? : Bool) -> String
 
 pub fn merge_evidence(ArrayView[@wire.Evidence], limits? : @ledger.Limits) -> @wire.Evidence raise @ledger.InputError
 
 pub fn parse_junit(String, report_id? : String, limits? : @ledger.Limits) -> @ledger.ParsedReport raise @ledger.InputError
+
+pub fn prepare_retry(@wire.Evidence, ArrayView[@wire.RetryReport], limits? : @ledger.Limits) -> @wire.Evidence raise @ledger.InputError
 
 pub fn render_evidence(@wire.Evidence, max_output_units? : Int) -> String raise @ledger.InputError
 
@@ -80,6 +86,8 @@ pub using @ledger {type ProblemKind}
 pub using @ledger {type ReportBinding}
 
 pub using @wire {type ReportFile}
+
+pub using @wire {type RetryReport}
 
 pub using @ledger {type RunPlan}
 

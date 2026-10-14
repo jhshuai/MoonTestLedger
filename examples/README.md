@@ -43,6 +43,8 @@ The newly authored Apache-2.0 `retry-only-bundle.json` contains just attempt 2. 
 
 ## Automated evaluator
 
+`continuation/` contains project-authored Apache-2.0 initial inventory, bundle and retry identities. It reuses the existing synthetic first/second payment XML to demonstrate a complete failed run -> newly declared selective retry -> pending archive -> appended retry evidence. The original failure is retained and only the final adverse testcase is scheduled. The README commands run without a test runner or private service; in production the caller's runner executes the generated inventory.
+
 The newly authored `history/` fixtures are Apache-2.0 synthetic runs at two revisions, with a payment regression and a refund improvement. Run the three archive/compare commands in the main README. Neither fixture is altered upstream output. The evaluator also compares an unmodified upstream Jest archive to itself and checks that an incomplete archive cannot pass a comparison.
 
 ~~~sh

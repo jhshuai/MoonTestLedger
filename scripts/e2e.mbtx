@@ -234,7 +234,44 @@ async fn main {
   guard invalid_html is { "error": { "code": String(_), .. }, .. } else {
     fail("Invalid evidence must produce a diagnostic instead of HTML")
   }
+  let initial_run = cli(
+    target,
+    [
+      "archive", "examples/continuation/plan.json", "examples/continuation/bundle.json",
+    ],
+    0,
+  )
+  @fs.write_file(path, initial_run.stringify())
+  let scheduled = cli(
+    target,
+    ["retry", path, "examples/continuation/reports.json"],
+    0,
+  )
+  @fs.write_file(path, scheduled.stringify())
+  let pending = cli(target, ["verify", path], 3)
+  guard pending is { "missing_reports": [String("payments-2")], .. } else {
+    fail("Scheduled retry must remain missing")
+  }
+  let continued = cli(
+    target,
+    ["append", path, "examples/retry/retry-only-bundle.json"],
+    0,
+  )
+  @fs.write_file(path, continued.stringify())
+  assert_eq(cli(target, ["verify", path], 0), recovered)
+  assert_eq(
+    cli(target, ["append", path, "examples/retry/retry-only-bundle.json"], 0),
+    continued,
+  )
+  let no_retry = cli(
+    target,
+    ["retry", path, "examples/continuation/reports.json"],
+    2,
+  )
+  guard no_retry is { "error": { "code": String("NoRetryCases"), .. }, .. } else {
+    fail("Recovered tests must not be rescheduled")
+  }
   println(
-    "End-to-end checks passed on \{target}: real Jest, inventory/retries, archive replay, same-run merging, offline HTML, policy, historical comparison and malformed counters.",
+    "End-to-end checks passed on \{target}: real Jest, retry continuation, archive replay, merging, offline HTML, policy, comparison and malformed counters.",
   )
 }

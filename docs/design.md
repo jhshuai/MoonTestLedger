@@ -47,7 +47,8 @@ Acceptance requires actual report files from documented producers or clearly sou
 2. Additional named producer profiles with captured output and conformance tests, then an adapter for a versioned MoonBit test-result export if available. Internal runner protocols are not assumed stable.
 3. Replayable evidence archives and historical comparisons are implemented: full plan, bindings, original XML and gate policy survive validation and round trips. Exact environment/test identity comparisons retain both runs' attempts, distinguish severity changes, and make missing/removed inventory or policy changes inconclusive.
 4. Same-run archive merging and offline HTML rendering are implemented. Full plans/policies must agree before evidence can be combined. The read-only renderer retains attempts, diagnostics, missing inventory and original XML as escaped text, with a refusal rather than truncation when its output budget is exceeded.
-5. Integration with CI artifact manifests and additional producer profiles after local semantics remain stable. No dashboard or hosted backend is necessary for adoption.
+5. Selective retry continuation is implemented: extend a complete run with exact final adverse identities and fresh group report IDs, then atomically collect new original XML into an independent archive. The test runner remains caller-owned; missing evidence cannot be bypassed by another retry.
+6. Integration with CI artifact manifests and additional producer profiles after local semantics remain stable. No dashboard or hosted backend is necessary for adoption.
 
 ## Validation
 

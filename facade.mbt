@@ -36,6 +36,10 @@ pub using @wire {
   encode_evidence,
   decode_evidence,
   merge_evidence,
+  type RetryReport,
+  prepare_retry,
+  decode_retry_reports,
+  encode_retry_reports,
 }
 
 ///|

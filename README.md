@@ -19,8 +19,25 @@ Source repository: [jhshuai/MoonTestLedger](https://github.com/jhshuai/MoonTestL
 - Historical comparison detects regressions and improvements while retaining added, removed and unknown test evidence.
 - Merge partial archives of one run against an identical full inventory and recovery policy.
 - Offline HTML reports show verdicts, missing evidence, every attempt/problem and escaped original XML.
+- Selective retry continuation schedules only final adverse tests and appends their new reports atomically.
 
 Additional producer profiles, TAP/SARIF adapters, report rewriting, interactive dashboards and hosted integrations are roadmap items. No performance or universal JUnit compatibility claim is made.
+
+## Schedule and collect a selective retry
+
+~~~sh
+moon run --target wasm cmd/moontestledger -- archive examples/continuation/plan.json examples/continuation/bundle.json > failed.json
+moon run --target wasm cmd/moontestledger -- retry failed.json examples/continuation/reports.json > pending.json
+moon run --target wasm cmd/moontestledger -- verify pending.json
+moon run --target wasm cmd/moontestledger -- append pending.json examples/retry/retry-only-bundle.json > recovered.json
+moon run --target wasm cmd/moontestledger -- verify recovered.json
+~~~
+
+The synthetic payment run begins with one failure. `retry` extends its **full** plan by one attempt for the failed case; pending verify exits 3. After the caller's test runner executes that exact selection, `append` adds its XML while retaining all old evidence; recovered verify exits 0. The example supplies an already-authored retry report. MoonTestLedger does not execute your tests or generate framework selectors.
+
+The retry identity manifest is `{"schema":1,"reports":[{"id":"payments-2","environment":"linux-node22","shard":"payments"}]}`. Supply exactly one fresh report ID per environment/shard with final failed/error/unresolved tests. Attempt numbers are computed from the last declared attempt. Passed, skipped and recovered tests are excluded. Missing existing evidence, omitted/extra/duplicate groups, reused IDs and resource-limit violations are refused. A recovered test stays recovered even after additional passing attempts, so a deny-recovered policy cannot be cleared by repeatedly retrying it.
+
+Library flow: `prepare_retry(evidence, reports[:])` returns an independent pending `Evidence`; `pending.snapshot().plan` gives the next inventory; `pending.ingest_reports(documents[:])` returns a new archive. Both preserve run/revision, all old reports and recovery policy, and leave inputs unchanged. Append validates exact bindings and reparses original XML to refuse custom projections; its whole batch is atomic. Identical reports are idempotent; conflicting content is refused. CLI retry/append exit 0 on archive creation, 2 on refusal; `verify` remains the 0/1/3 test gate. Write the new archive to a **different path**: shell redirection to the input file can truncate it before the CLI reads it.
 
 ## Read evidence offline
 

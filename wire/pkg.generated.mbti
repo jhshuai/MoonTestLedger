@@ -13,6 +13,8 @@ pub fn decode_evidence(String, limits? : @ledger.Limits) -> Evidence raise @ledg
 
 pub fn decode_plan(String, limits? : @ledger.Limits) -> @ledger.RunPlan raise @ledger.InputError
 
+pub fn decode_retry_reports(String, limits? : @ledger.Limits) -> Array[RetryReport] raise @ledger.InputError
+
 pub fn encode_bundle(Bundle) -> String
 
 pub fn encode_diagnostic(@ledger.Diagnostic) -> String
@@ -21,9 +23,13 @@ pub fn encode_evidence(@ledger.Ledger, deny_recovered? : Bool, limits? : @ledger
 
 pub fn encode_plan(@ledger.RunPlan) -> String
 
+pub fn encode_retry_reports(ArrayView[RetryReport]) -> String
+
 pub fn encode_summary(@ledger.Summary, deny_recovered? : Bool) -> String
 
 pub fn merge_evidence(ArrayView[Evidence], limits? : @ledger.Limits) -> Evidence raise @ledger.InputError
+
+pub fn prepare_retry(Evidence, ArrayView[RetryReport], limits? : @ledger.Limits) -> Evidence raise @ledger.InputError
 
 // Errors
 
@@ -39,6 +45,7 @@ type Evidence
 pub fn Evidence::deny_recovered(Self) -> Bool
 pub fn Evidence::encode(Self, limits? : @ledger.Limits) -> String raise @ledger.InputError
 pub fn Evidence::exit_code(Self) -> Int
+pub fn Evidence::ingest_reports(Self, ArrayView[@ledger.Document], limits? : @ledger.Limits) -> Self raise @ledger.InputError
 pub fn Evidence::snapshot(Self) -> @ledger.Snapshot
 pub fn Evidence::source(Self, String) -> String?
 pub fn Evidence::summary(Self) -> @ledger.Summary
@@ -50,6 +57,15 @@ pub(all) struct ReportFile {
 pub fn ReportFile::equal(Self, Self) -> Bool
 pub fn ReportFile::not_equal(Self, Self) -> Bool
 pub fn ReportFile::to_repr(Self) -> @debug.Repr
+
+pub(all) struct RetryReport {
+  id : String
+  environment : String
+  shard : String
+} derive(Eq, @debug.Debug)
+pub fn RetryReport::equal(Self, Self) -> Bool
+pub fn RetryReport::not_equal(Self, Self) -> Bool
+pub fn RetryReport::to_repr(Self) -> @debug.Repr
 
 // Type aliases
 
