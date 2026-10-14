@@ -18,8 +18,25 @@ Source repository: [jhshuai/MoonTestLedger](https://github.com/jhshuai/MoonTestL
 - Replayable evidence archives retain the plan, original XML, bindings and recovery policy; **verify** rechecks a saved run without its original files.
 - Historical comparison detects regressions and improvements while retaining added, removed and unknown test evidence.
 - Merge partial archives of one run against an identical full inventory and recovery policy.
+- Offline HTML reports show verdicts, missing evidence, every attempt/problem and escaped original XML.
 
-Additional producer profiles, TAP/SARIF adapters, report rewriting, dashboards and hosted integrations are roadmap items. No performance or universal JUnit compatibility claim is made.
+Additional producer profiles, TAP/SARIF adapters, report rewriting, interactive dashboards and hosted integrations are roadmap items. No performance or universal JUnit compatibility claim is made.
+
+## Read evidence offline
+
+~~~sh
+moon run scripts/render-demo.mbtx wasm
+~~~
+
+Open `output/jest-report.html` in a browser. The script writes UTF-8 files directly and creates a replayable archive alongside the report. It uses the unmodified public Jest fixture: six tests, four failures. The page shows the gate, verdict counts, missing reports/cases, per-case attempts with all failure/error messages, types, text and XML locations, plus the full declared inventory and original XML (including empty reports and inert output). Expand the report sections to inspect source. It uses no JavaScript, fonts, images or network assets; its content security policy blocks active/network content. Test-controlled names, metadata and payloads are rendered only as escaped text.
+
+For your own saved evidence:
+
+~~~sh
+moon run --target wasm cmd/moontestledger -- html evidence.json > report.html
+~~~
+
+Creation exits 0 even when the recorded gate fails or is incomplete; keep `verify evidence.json` as the CI gate. Invalid evidence exits 2 with a JSON diagnostic on stderr and no HTML on stdout. `render_evidence(evidence, max_output_units~)` is the portable library API. Its default budget is 33,554,432 UTF-16 output units, including markup/escaping; allowed budgets are 1–268,435,456 units. Oversized output is refused with `HtmlOutputLimit`, never truncated. `Evidence::snapshot()` returns independent inventory/document copies. The HTML is a read-only derived view; preserve the JSON archive for exact replay. It does not render historical comparisons or accept arbitrary HTML themes.
 
 ## Combine distributed evidence
 
@@ -212,7 +229,7 @@ Use MoonBit v0.10.15 for this version. The validated toolchain is moonc v0.10.15
 
 ~~~sh
 moon fmt
-moon fmt scripts/e2e.mbtx scripts/verify.mbtx scripts/check-encapsulation.mbtx
+moon fmt scripts/e2e.mbtx scripts/verify.mbtx scripts/check-encapsulation.mbtx scripts/render-demo.mbtx
 moon info --target wasm
 moon check --target all --deny-warn
 moon test --target all --deny-warn
@@ -220,7 +237,7 @@ moon run scripts/e2e.mbtx wasm
 moon run scripts/e2e.mbtx native
 ~~~
 
-Moon run scripts/verify.mbtx TARGET also snapshots the seven generated interfaces, regenerates them and checks drift, without requiring Git. Automation is written in MoonBit .mbtx. CI declares Linux, macOS and Windows jobs for the four library backends, plus applicable file CLI workflows. CI configuration is distinct from a successful remote run; [validation evidence](docs/validation.md) records what actually executed.
+Moon run scripts/verify.mbtx TARGET also snapshots the eight generated interfaces, regenerates them and checks drift, without requiring Git. Automation is written in MoonBit .mbtx. CI declares Linux, macOS and Windows jobs for the four library backends, plus applicable file CLI workflows. CI configuration is distinct from a successful remote run; [validation evidence](docs/validation.md) records what actually executed.
 
 Core tests cover malformed input, exact identities, limits, inventory completeness, retry ordering, deterministic output, JSON round trips, exact numeric lexemes, atomic rejection and recovery, source preservation and caller-array isolation. A compile-negative probe verifies that downstream code cannot mutate the ledger's internal inventory.
 

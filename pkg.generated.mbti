@@ -30,6 +30,8 @@ pub fn merge_evidence(ArrayView[@wire.Evidence], limits? : @ledger.Limits) -> @w
 
 pub fn parse_junit(String, report_id? : String, limits? : @ledger.Limits) -> @ledger.ParsedReport raise @ledger.InputError
 
+pub fn render_evidence(@wire.Evidence, max_output_units? : Int) -> String raise @ledger.InputError
+
 // Errors
 
 // Types and methods

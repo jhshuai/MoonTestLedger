@@ -39,6 +39,7 @@ type Evidence
 pub fn Evidence::deny_recovered(Self) -> Bool
 pub fn Evidence::encode(Self, limits? : @ledger.Limits) -> String raise @ledger.InputError
 pub fn Evidence::exit_code(Self) -> Int
+pub fn Evidence::snapshot(Self) -> @ledger.Snapshot
 pub fn Evidence::source(Self, String) -> String?
 pub fn Evidence::summary(Self) -> @ledger.Summary
 

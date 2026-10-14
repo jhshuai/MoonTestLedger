@@ -57,6 +57,16 @@ async fn verify(path : String) -> Int32 {
 }
 
 ///|
+async fn html(path : String) -> Int32 {
+  let evidence = @ledger.decode_evidence(
+    read_text(path, @ledger.Limits::default()),
+  )
+  let rendered = @ledger.render_evidence(evidence)
+  @stdio.stdout.write(rendered)
+  0
+}
+
+///|
 async fn compare(before_path : String, after_path : String) -> Int32 {
   let limits = @ledger.Limits::default()
   let before = @ledger.decode_evidence(read_text(before_path, limits), limits~)
@@ -148,17 +158,18 @@ pub async fn run(arguments : Array[String]) -> Int32 {
       ["archive", plan, bundle, "--deny-recovered"] =>
         archive(plan, bundle, true)
       ["verify", path] => verify(path)
+      ["html", path] => html(path)
       ["compare", before, after] => compare(before, after)
       ["merge", _, _, ..] => merge(arguments[1:])
       ["--help"] | ["help"] => {
         @stdio.stdout.write(
-          "MoonTestLedger\n  audit PLAN.json BUNDLE.json [--deny-recovered]\n  capture BUNDLE.json\n  archive PLAN.json BUNDLE.json [--deny-recovered]\n  verify EVIDENCE.json\n  compare BEFORE.json AFTER.json\n  merge FIRST.json SECOND.json [MORE.json ...]\nArchive/capture/merge: 0 on creation. Audit/verify: 0 passing, 1 failing, 2 invalid input, 3 incomplete. Compare: 0 no new adverse result, 1 regression, 2 invalid input, 3 inconclusive.\n",
+          "MoonTestLedger\n  audit PLAN.json BUNDLE.json [--deny-recovered]\n  capture BUNDLE.json\n  archive PLAN.json BUNDLE.json [--deny-recovered]\n  verify EVIDENCE.json\n  compare BEFORE.json AFTER.json\n  merge FIRST.json SECOND.json [MORE.json ...]\n  html EVIDENCE.json\nArchive/capture/merge/html: 0 on creation. Audit/verify: 0 passing, 1 failing, 2 invalid input, 3 incomplete. Compare: 0 no new adverse result, 1 regression, 2 invalid input, 3 inconclusive.\n",
         )
         0
       }
       _ =>
         raise refusal(
-          "Usage", "/arguments", "Use audit, capture, archive, verify, compare or merge; --help shows arguments",
+          "Usage", "/arguments", "Use audit, capture, archive, verify, compare, merge or html; --help shows arguments",
         )
     }
   } catch {

@@ -16,6 +16,12 @@ pub fn Evidence::source(self : Evidence, report_id : String) -> String? {
 }
 
 ///|
+/// Independent inventory/document copies, including accepted empty reports.
+pub fn Evidence::snapshot(self : Evidence) -> @ledger.Snapshot {
+  self.ledger.snapshot()
+}
+
+///|
 pub fn Evidence::exit_code(self : Evidence) -> Int32 {
   self.summary().exit_code(deny_recovered=self.deny_recovered)
 }

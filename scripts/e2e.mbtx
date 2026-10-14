@@ -8,6 +8,20 @@ import {
 }
 
 ///|
+async fn html_cli(target : String, path : String) -> String {
+  let command = @env.get_env_var("MOON_TEST_LEDGER_MOON").unwrap_or("moon")
+  let output = @shell.Cmd(command, [
+    "run", "--target", target, "cmd/moontestledger", "--", "html", path,
+  ]).output(max_output_bytes=4194304)
+  assert_eq(output.exit_code(), 0)
+  let page = output.stdout()
+  assert_true(page.has_prefix("<!doctype html>"))
+  assert_true(!page.contains("<script"))
+  assert_true(page.contains("Declared reports and original XML"))
+  page
+}
+
+///|
 async fn cli(target : String, args : Array[String], expected : Int32) -> Json {
   let command = @env.get_env_var("MOON_TEST_LEDGER_MOON").unwrap_or("moon")
   let output = @shell.Cmd(
@@ -115,6 +129,10 @@ async fn main {
     0,
   )
   @fs.write_file(path, archive.stringify(indent=2))
+  let real_page = html_cli(target, path)
+  assert_true(real_page.contains("Gate: <strong>failing</strong>"))
+  assert_true(real_page.contains("&lt;testsuites"))
+  assert_eq(html_cli(target, path), real_page)
   let replayed = cli(target, ["verify", path], 1)
   assert_eq(replayed, original)
   let unchanged = cli(target, ["compare", path, path], 0)
@@ -132,6 +150,7 @@ async fn main {
     0,
   )
   @fs.write_file(path, incomplete_archive.stringify())
+  assert_true(html_cli(target, path).contains("Missing report:"))
   assert_eq(cli(target, ["verify", path], 3), missing)
   @fs.write_file(other_path, archive.stringify())
   let unknown = cli(target, ["compare", other_path, path], 3)
@@ -205,7 +224,17 @@ async fn main {
   assert_eq(merged, cli(target, ["merge", other_path, path], 0))
   @fs.write_file(path, merged.stringify())
   assert_eq(cli(target, ["verify", path], 0), recovered)
+  let recovered_page = html_cli(target, path)
+  assert_true(recovered_page.contains("recovered_on_retry"))
+  assert_true(recovered_page.contains("Attempt 1 · failed"))
+  assert_true(recovered_page.contains("Attempt 2 · passed"))
+  assert_eq(cli(target, ["html"], 2), cli(target, ["merge"], 2))
+  @fs.write_file(path, "{\"schema\":2}")
+  let invalid_html = cli(target, ["html", path], 2)
+  guard invalid_html is { "error": { "code": String(_), .. }, .. } else {
+    fail("Invalid evidence must produce a diagnostic instead of HTML")
+  }
   println(
-    "End-to-end checks passed on \{target}: real Jest, inventory/retries, archive replay, same-run merging, policy, historical comparison and malformed counters.",
+    "End-to-end checks passed on \{target}: real Jest, inventory/retries, archive replay, same-run merging, offline HTML, policy, historical comparison and malformed counters.",
   )
 }

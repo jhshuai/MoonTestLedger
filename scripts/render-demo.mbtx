@@ -1,0 +1,38 @@
+///|
+import {
+  "moonbitlang/async",
+  "moonbitlang/async/fs",
+  "moonbitlang/async/shell",
+  "moonbitlang/core/env",
+}
+
+///|
+async fn command(target : String, arguments : Array[String]) -> String {
+  let moon = @env.get_env_var("MOON_TEST_LEDGER_MOON").unwrap_or("moon")
+  let output = @shell.Cmd(
+    moon,
+    ["run", "--target", target, "cmd/moontestledger", "--", ..arguments],
+  ).output(max_output_bytes=134217728)
+  if output.exit_code() != 0 {
+    fail("Demo command failed: " + output.stderr())
+  }
+  output.stdout()
+}
+
+///|
+async fn main {
+  let target = @env.args().get(1).unwrap_or("wasm")
+  guard target == "wasm" || target == "native" else {
+    fail("Expected wasm or native")
+  }
+  @fs.mkdir("output", recursive=true, allow_exist=true)
+  let archive = command(target, [
+    "archive", "examples/upstream/plan.json", "examples/upstream/bundle.json",
+  ])
+  @fs.write_file("output/jest-evidence.json", archive)
+  let page = command(target, ["html", "output/jest-evidence.json"])
+  @fs.write_file("output/jest-report.html", page)
+  println(
+    "Created output/jest-report.html and replayable output/jest-evidence.json from the unmodified upstream Jest fixture (six cases, four failures). Creation succeeds; verify still exits 1.",
+  )
+}

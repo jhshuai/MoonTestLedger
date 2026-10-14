@@ -55,3 +55,6 @@ pub using @history {
   type ChangeKind,
   compare_evidence,
 }
+
+///|
+pub using @report {render_evidence}

@@ -51,3 +51,5 @@ moon run scripts/e2e.mbtx native
 ~~~
 
 The MoonBit script invokes the actual file CLI and verifies exit codes, parsed summary JSON, the six-case upstream report, missing-artifact behavior, capture, retained retry attempts, recovery policy and malformed-counter diagnostics. No server, CI account, token or private infrastructure is required. Native execution requires a working native toolchain.
+
+`moon run scripts/render-demo.mbtx wasm` creates `output/jest-report.html` and `output/jest-evidence.json` directly as UTF-8. The report uses the same unmodified MIT fixture. The renderer and demonstration workflow are project-authored Apache-2.0 code; no external UI assets are used. Open the HTML locally and expand attempt/source sections; the original four failures remain visible. The automated evaluator checks HTML for real failing evidence, missing reports, recovered retries, deterministic rendering and invalid-input diagnostics on Wasm/native.

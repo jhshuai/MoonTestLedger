@@ -52,7 +52,7 @@ moon run scripts/verify.mbtx js
 moon run scripts/verify.mbtx native
 ~~~
 
-The current verifier snapshots all seven tracked generated interfaces, regenerates with the Wasm target and compares their contents. It works from a source archive and does not need a Git repository. MOON_TEST_LEDGER_MOON may point to the executable used by child commands when multiple installations are present. Native requires the target platform's compiler/SDK. The evaluator's local report fixtures have documented public provenance.
+The current verifier snapshots all eight tracked generated interfaces, regenerates with the Wasm target and compares their contents. It works from a source archive and does not need a Git repository. MOON_TEST_LEDGER_MOON may point to the executable used by child commands when multiple installations are present. Native requires the target platform's compiler/SDK. The evaluator's local report fixtures have documented public provenance.
 
 ## Evidence archive capability — 2026-10-14
 
@@ -71,3 +71,11 @@ Its [remote CI run](https://github.com/jhshuai/MoonTestLedger/actions/runs/38516
 ## Same-run archive merge — 2026-10-14
 
 Formatting, seven-interface drift verification and strict checks passed. Tests: Wasm 56/56, Wasm-GC 53/53, JavaScript 53/53, actual Linux native 56/56. Wasm/native end-to-end execution archives independent initial/retry bundles against one full plan, merges duplicate/reordered inputs, verifies retained recovery, and rejects merging different runs. Unit tests cover commutativity, associativity and idempotence for accepted inputs, inventory-order normalization, exact source retention and codec round trips, incomplete evidence, plan/revision/run/policy mismatch, conflicting replacement, inclusive combined source budgets, input-count and case limits, unchanged inputs and recovery after refusal. Remote results for this new commit are recorded by GitHub Actions after publication.
+
+Its [remote CI run](https://github.com/jhshuai/MoonTestLedger/actions/runs/38521598926) passed all 12 matrix jobs for 4bb1b38d78adb04df62190c403fea6e1ccec8f51; the pushed main hash matched the local commit.
+
+## Offline HTML capability — 2026-10-14
+
+Package/four-script formatting, eight-interface drift verification and strict compilation passed. Tests: Wasm 59/59, Wasm-GC 56/56, JavaScript 56/56, actual Linux native 59/59. Wasm and Linux native end-to-end execution renders the real failing Jest archive, missing evidence and a merged recovered retry, checks deterministic output, and verifies malformed-input diagnostics. `scripts/render-demo.mbtx wasm` executed and wrote UTF-8 HTML plus replayable JSON from the documented unmodified upstream report.
+
+Renderer tests exercise hostile names, revision, report IDs, message/type text, CDATA script/iframe markup, Unicode, all problem payloads, original metadata/output, accepted empty reports, both retry attempts, missing-report/case precedence, denied recovery, independent snapshot mutation, exact output-budget boundary, invalid budgets and successful reuse after refusal. The browser automation tool rejected local `file:` navigation, so no browser visual preview success is claimed; content/escaping/CLI checks are executed evidence. Remote coverage for this commit is reported by its GitHub Actions run after publication.

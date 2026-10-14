@@ -18,6 +18,8 @@ Two report fixtures from dorny/test-reporter at commit cc52f364a405169afe07bb00d
 
 No upstream test code was copied into the library or unit tests. Synthetic boundary reports and plan/bundle JSON are authored for this project. The sample suite's framework output is an interoperability fixture, not production usage evidence.
 
+The offline HTML renderer, CSS, hostile-text test data and render-demo automation are project-authored Apache-2.0 code. No third-party UI template, font, icon, browser script or remote asset is bundled. Its demo continues to use the MIT-licensed unmodified Jest fixture described above.
+
 ## Research and format references
 
 - [GitLab unit test reports](https://docs.gitlab.com/ci/testing/unit_test_reports/) documents report workflows and duplicate-name behavior.

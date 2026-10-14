@@ -1,0 +1,18 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "jhshuai/moontestledger/report"
+
+import {
+  "jhshuai/moontestledger/ledger",
+  "jhshuai/moontestledger/wire",
+}
+
+// Values
+pub fn render_evidence(@wire.Evidence, max_output_units? : Int) -> String raise @ledger.InputError
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits
