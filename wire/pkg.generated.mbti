@@ -23,6 +23,8 @@ pub fn encode_plan(@ledger.RunPlan) -> String
 
 pub fn encode_summary(@ledger.Summary, deny_recovered? : Bool) -> String
 
+pub fn merge_evidence(ArrayView[Evidence], limits? : @ledger.Limits) -> Evidence raise @ledger.InputError
+
 // Errors
 
 // Types and methods

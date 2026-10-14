@@ -17,8 +17,24 @@ Source repository: [jhshuai/MoonTestLedger](https://github.com/jhshuai/MoonTestL
 - **capture** to obtain an inventory from supplied reports, and **audit** for arbitrary report files.
 - Replayable evidence archives retain the plan, original XML, bindings and recovery policy; **verify** rechecks a saved run without its original files.
 - Historical comparison detects regressions and improvements while retaining added, removed and unknown test evidence.
+- Merge partial archives of one run against an identical full inventory and recovery policy.
 
 Additional producer profiles, TAP/SARIF adapters, report rewriting, dashboards and hosted integrations are roadmap items. No performance or universal JUnit compatibility claim is made.
+
+## Combine distributed evidence
+
+Every producer must receive the same **full run plan**, even when it uploads only one shard or retry. Archive those partial bundles separately:
+
+~~~sh
+moon run --target wasm cmd/moontestledger -- archive examples/retry/plan.json examples/retry/missing-bundle.json > initial.json
+moon run --target wasm cmd/moontestledger -- archive examples/retry/plan.json examples/retry/retry-only-bundle.json > retry.json
+moon run --target wasm cmd/moontestledger -- merge initial.json retry.json > combined.json
+moon run --target wasm cmd/moontestledger -- verify combined.json
+~~~
+
+The two synthetic partial archives each remain incomplete; their combination completes the declared retry workflow and exits verify 0 with the original failure retained. Merge emits an archive and exits 0 on creation, or 2 on invalid input. Missing artifacts still produce verify 3. It refuses different run IDs, revisions, report bindings, testcase inventories or recovery policies; it never unions plans. Identical duplicate documents are idempotent, while different XML for the same report ID is a conflict, including whitespace changes.
+
+`merge_evidence(inputs[:], limits~)` provides the library workflow. It accepts 1 to `max_reports` archives, leaves inputs untouched and reapplies budgets to the combined unique documents. Report/case inventory order is canonicalized, so input ordering cannot change output. Each report's original XML and observation order remain intact. Encoding also enforces the archive size budget; no partial archive is emitted on rejection. Use comparison for separate runs.
 
 ## Compare two runs
 

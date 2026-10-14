@@ -26,6 +26,8 @@ pub fn encode_plan(@ledger.RunPlan) -> String
 
 pub fn encode_summary(@ledger.Summary, deny_recovered? : Bool) -> String
 
+pub fn merge_evidence(ArrayView[@wire.Evidence], limits? : @ledger.Limits) -> @wire.Evidence raise @ledger.InputError
+
 pub fn parse_junit(String, report_id? : String, limits? : @ledger.Limits) -> @ledger.ParsedReport raise @ledger.InputError
 
 // Errors

@@ -35,6 +35,7 @@ pub using @wire {
   type Evidence,
   encode_evidence,
   decode_evidence,
+  merge_evidence,
 }
 
 ///|

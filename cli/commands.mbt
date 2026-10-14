@@ -67,6 +67,22 @@ async fn compare(before_path : String, after_path : String) -> Int32 {
 }
 
 ///|
+async fn merge(paths : ArrayView[String]) -> Int32 {
+  let limits = @ledger.Limits::default()
+  if paths.length() > limits.max_reports {
+    raise refusal("MergeLimit", "/arguments", "Too many input archives")
+  }
+  let inputs : Array[@ledger.Evidence] = []
+  for path in paths {
+    inputs.push(@ledger.decode_evidence(read_text(path, limits), limits~))
+  }
+  let evidence = @ledger.merge_evidence(inputs[:], limits~)
+  let encoded = evidence.encode(limits~)
+  @stdio.stdout.write(encoded + "\n")
+  0
+}
+
+///|
 // Capture is an explicit inventory bootstrap from a known complete run. It
 // cannot establish that the input producer actually executed every test.
 async fn capture(bundle_path : String) -> Int32 {
@@ -133,15 +149,16 @@ pub async fn run(arguments : Array[String]) -> Int32 {
         archive(plan, bundle, true)
       ["verify", path] => verify(path)
       ["compare", before, after] => compare(before, after)
+      ["merge", _, _, ..] => merge(arguments[1:])
       ["--help"] | ["help"] => {
         @stdio.stdout.write(
-          "MoonTestLedger\n  audit PLAN.json BUNDLE.json [--deny-recovered]\n  capture BUNDLE.json\n  archive PLAN.json BUNDLE.json [--deny-recovered]\n  verify EVIDENCE.json\n  compare BEFORE.json AFTER.json\nArchive/capture: 0 on creation. Audit/verify: 0 passing, 1 failing, 2 invalid input, 3 incomplete. Compare: 0 no new adverse result, 1 regression, 2 invalid input, 3 inconclusive.\n",
+          "MoonTestLedger\n  audit PLAN.json BUNDLE.json [--deny-recovered]\n  capture BUNDLE.json\n  archive PLAN.json BUNDLE.json [--deny-recovered]\n  verify EVIDENCE.json\n  compare BEFORE.json AFTER.json\n  merge FIRST.json SECOND.json [MORE.json ...]\nArchive/capture/merge: 0 on creation. Audit/verify: 0 passing, 1 failing, 2 invalid input, 3 incomplete. Compare: 0 no new adverse result, 1 regression, 2 invalid input, 3 inconclusive.\n",
         )
         0
       }
       _ =>
         raise refusal(
-          "Usage", "/arguments", "Use audit, capture, archive, verify or compare; --help shows arguments",
+          "Usage", "/arguments", "Use audit, capture, archive, verify, compare or merge; --help shows arguments",
         )
     }
   } catch {

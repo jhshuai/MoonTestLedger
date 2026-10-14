@@ -65,3 +65,9 @@ Its [remote CI run](https://github.com/jhshuai/MoonTestLedger/actions/runs/38514
 The comparison addition passed strict checks, package/script formatting and seven-interface drift verification. Tests: Wasm 53/53, Wasm-GC 50/50, JavaScript 50/50, Linux native 53/53. Wasm and actual Linux native end-to-end evaluators compare the real upstream archive to itself, reject a missing-evidence comparison as inconclusive, and report one regression and one improvement between the documented synthetic payment runs.
 
 Tests cover severity transitions including retry recovery, added adverse cases, removed inventory, unknown observations, policy differences, shard moves, distinct environments, inconclusive-result precedence, deterministic output, retained unresolved attempts and deep-copy isolation. A comparison success means no new adverse result; it does not replace the current archive's verify gate.
+
+Its [remote CI run](https://github.com/jhshuai/MoonTestLedger/actions/runs/38516257549) passed all 12 matrix jobs for c74931933430bc6d413fd9ee53738b806dcd6f7b.
+
+## Same-run archive merge — 2026-10-14
+
+Formatting, seven-interface drift verification and strict checks passed. Tests: Wasm 56/56, Wasm-GC 53/53, JavaScript 53/53, actual Linux native 56/56. Wasm/native end-to-end execution archives independent initial/retry bundles against one full plan, merges duplicate/reordered inputs, verifies retained recovery, and rejects merging different runs. Unit tests cover commutativity, associativity and idempotence for accepted inputs, inventory-order normalization, exact source retention and codec round trips, incomplete evidence, plan/revision/run/policy mismatch, conflicting replacement, inclusive combined source budgets, input-count and case limits, unchanged inputs and recovery after refusal. Remote results for this new commit are recorded by GitHub Actions after publication.

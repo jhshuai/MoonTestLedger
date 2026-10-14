@@ -39,6 +39,8 @@ Expected outcomes: complete with one recovered testcase and both attempts retain
 
 Bundle.json presents attempt 2 before attempt 1, verifying declared retry order rather than collection order.
 
+The newly authored Apache-2.0 `retry-only-bundle.json` contains just attempt 2. Archive it and `missing-bundle.json` separately against the same full plan, then merge and verify as shown in the root README. This checks collection from independent producers without shrinking the expected inventory.
+
 ## Automated evaluator
 
 The newly authored `history/` fixtures are Apache-2.0 synthetic runs at two revisions, with a payment regression and a refund improvement. Run the three archive/compare commands in the main README. Neither fixture is altered upstream output. The evaluator also compares an unmodified upstream Jest archive to itself and checks that an incomplete archive cannot pass a comparison.
