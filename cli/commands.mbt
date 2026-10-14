@@ -268,12 +268,18 @@ pub async fn run(arguments : Array[String]) -> Int32 {
       ["restore-pack", directory] => restore_pack(directory)
       ["verify-pack", directory] => verify_pack(directory)
       ["collect", spec, root] => collect(spec, root)
+      ["zip-pack", path, destination] => zip_pack(path, destination)
+      ["restore-zip", path] => restore_zip(path, false)
+      ["verify-zip", path] => restore_zip(path, true)
       ["compare", before, after] => compare(before, after)
       ["merge", _, _, ..] => merge(arguments[1:])
       ["retry", path, requests] => retry(path, requests)
       ["append", path, bundle] => append(path, bundle)
       ["repetitions", _, _, ..] => repetitions(arguments[1:])
       ["--help"] | ["help"] => {
+        @stdio.stdout.write(
+          "ZIP evidence transport:\n  zip-pack EVIDENCE.json NEW-FILE.zip\n  restore-zip FILE.zip\n  verify-zip FILE.zip\nCreation/restoration: 0; verification: original 0/1/3 gate; invalid archive: 2. CLI binary cap: 16 MiB.\n",
+        )
         @stdio.stdout.write(
           "Declared collection:\n  collect COLLECTION.json ARTIFACT-ROOT\nCreation returns 0 with a full replayable archive; missing artifacts remain incomplete. Use verify on the output as the 0/1/3 gate. Invalid paths/files/reports return 2.\n",
         )

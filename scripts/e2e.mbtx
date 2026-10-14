@@ -42,6 +42,33 @@ async fn cli(target : String, args : Array[String], expected : Int32) -> Json {
 }
 
 ///|
+async fn zip_workflow(
+  target : String,
+  archive : Json,
+  summary : Json,
+  gate : Int32,
+) -> Unit {
+  let directory = @fs.tmpdir(prefix="moontestledger-zip")
+  defer @fs.rmdir(directory)
+  let source = directory + "/source.json"
+  let packed = directory + "/evidence.zip"
+  defer @fs.remove(source)
+  defer @fs.remove(packed)
+  @fs.write_file(source, archive.stringify())
+  ignore(cli(target, ["zip-pack", source, packed], 0))
+  let original = @fs.read_file(packed).binary()
+  assert_eq(cli(target, ["restore-zip", packed], 0), archive)
+  assert_eq(cli(target, ["verify-zip", packed], gate), summary)
+  ignore(cli(target, ["zip-pack", source, packed], 2))
+  let unchanged = @fs.read_file(packed).binary()
+  assert_eq(unchanged, original)
+  @fs.write_file(packed, original[:21])
+  ignore(cli(target, ["restore-zip", packed], 2))
+  @fs.write_file(packed, original)
+  assert_eq(cli(target, ["verify-zip", packed], gate), summary)
+}
+
+///|
 async fn pack_workflow(
   target : String,
   archive : Json,
@@ -523,6 +550,10 @@ async fn main {
   pack_workflow(target, archive, original, 1)
   pack_workflow(target, incomplete_archive, missing, 3)
   collection_workflow(target, archive, original)
+  zip_workflow(target, archive, original, 1)
+  zip_workflow(target, incomplete_archive, missing, 3)
+  zip_workflow(target, strict_archive, denied, 1)
+  zip_workflow(target, merged, recovered, 0)
   println(
     "End-to-end checks passed on \{target}: real Jest, retry continuation, repetitions, archives, integrity/tampering, file packs, declared collection, merging, offline HTML, policy, comparison and malformed counters.",
   )

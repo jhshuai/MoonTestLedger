@@ -1,4 +1,5 @@
 import {
+  "hustcer/fzip",
   "jhshuai/moontestledger/junit",
   "jhshuai/moontestledger/ledger",
   "moonbitlang/core/debug",

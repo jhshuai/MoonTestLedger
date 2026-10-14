@@ -1,5 +1,7 @@
 # MoonTestLedger
 
+ZIP file-pack transport: `Evidence.zip_pack()`, `decode_zip_pack()` and `zip-pack` / `restore-zip` / `verify-zip` preserve the full plan, exact XML and gate. See [supported profiles and runnable example](docs/transports.md).
+
 **Know whether a CI test run is complete, and retain what happened before a retry passed.**
 
 MoonTestLedger is a MoonBit library and local command-line tool for teams collecting JUnit XML from sharded, retried or multi-environment CI jobs. A declared inventory records expected report IDs, exact testcase identities, revision, environment, shard and attempt order. The ledger reconciles received evidence against that inventory.

@@ -1,0 +1,9 @@
+# Transport validation — 2026-10-15
+
+ZIP capability: pinned stable `moonc v0.10.15+943464bfa`, package/four-script formatting, eight generated-interface drift checks, strict compilation and encapsulation probe passed. Tests: Wasm 99/99, Wasm-GC 94/94, JS 94/94, actual Linux native 100/100. The frozen Linux-filesystem copy was compared with workspace sources before execution (excluding Git/build/cache/output); no differences. The native verifier ran real CLI processes and checked their exit codes. Previously documented third-party async host import/C warnings remain; product MoonBit checks pass with `--deny-warn`.
+
+Wasm/native E2E pack/restore/verify the unmodified public Jest fixture and synthetic missing/recovered/denied-recovery evidence. They verify identical archives, gates 0/1/3, no overwrite, malformed archive refusal and recovery. Unit tests include deterministic bytes, STORED and DEFLATE, both classic data descriptor forms, CRC/header/size mismatches, duplicate/extra/empty members, malformed UTF-8, unsupported metadata/types, truncation, inclusive and invalid binary limits. The original Jest audit stdout is byte-for-byte unchanged.
+
+An independent Windows `Compress-Archive` output made from `output/zip-interop-pack/index.json` and the unmodified content-addressed Jest XML was accepted by `verify-zip`, yielding complete=true and gate 1. This validates that specific producer/profile, not arbitrary ZIP compatibility. Reproduce by detaching the documented demo, then using `Compress-Archive -LiteralPath` with those two explicit files and a new destination. The generated binary is not bundled. No upstream tests were copied.
+
+Remote CI results are tracked by GitHub Actions for the corresponding pushed commit; local validation alone does not establish all OS combinations.

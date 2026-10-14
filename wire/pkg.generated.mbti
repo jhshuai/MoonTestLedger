@@ -21,6 +21,8 @@ pub fn decode_plan(String, limits? : @ledger.Limits) -> @ledger.RunPlan raise @l
 
 pub fn decode_retry_reports(String, limits? : @ledger.Limits) -> Array[RetryReport] raise @ledger.InputError
 
+pub fn decode_zip_pack(Bytes, limits? : @ledger.Limits, max_bytes? : Int) -> Evidence raise @ledger.InputError
+
 pub fn encode_bundle(Bundle) -> String
 
 pub fn encode_diagnostic(@ledger.Diagnostic) -> String
@@ -80,6 +82,7 @@ pub fn Evidence::integrity(Self, limits? : @ledger.Limits) -> IntegrityManifest 
 pub fn Evidence::snapshot(Self) -> @ledger.Snapshot
 pub fn Evidence::source(Self, String) -> String?
 pub fn Evidence::summary(Self) -> @ledger.Summary
+pub fn Evidence::zip_pack(Self, limits? : @ledger.Limits, max_bytes? : Int) -> Bytes raise @ledger.InputError
 
 pub(all) struct IntegrityDocument {
   binding : @ledger.ReportBinding

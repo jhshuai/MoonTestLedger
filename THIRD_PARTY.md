@@ -27,6 +27,8 @@ The declared directory collection API, portable path validation, specification J
 
 ## Research and format references
 
+ZIP transport depends on [hustcer/fzip 0.8.8](https://mooncakes.io/docs/hustcer/fzip) ([source](https://github.com/hustcer/fzip)), Apache-2.0, for ZIP generation, bounded DEFLATE and CRC-32. It describes lineage from [101arrowz/fflate](https://github.com/101arrowz/fflate) (MIT); compression is not claimed as project-original. Moon fetches the dependency; it is not vendored. Container guards, adapters, CLI and tests are project-authored Apache-2.0. The [PKWARE APPNOTE](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT) is linked only; no specification text is copied.
+
 - [GitLab unit test reports](https://docs.gitlab.com/ci/testing/unit_test_reports/) documents report workflows and duplicate-name behavior.
 - [pytest flaky-test guidance](https://docs.pytest.org/en/8.2.x/explanation/flaky.html) and [Buildkite test monitors](https://buildkite.com/docs/pipelines/configure/tests/workflows/monitors) motivate selective reruns and same-revision outcome observation. They are workflow references; their implementations and test code are not copied.
 - [Testmo JUnit XML conventions](https://github.com/testmoapp/junitxml) describes practical producer conventions. It is a format reference, not an official universal JUnit XML specification.
