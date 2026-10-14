@@ -108,3 +108,9 @@ pub extend Summary with @debug.Debug::{to_repr}
 
 ///|
 pub extend Summary with Eq::{equal, not_equal}
+
+///|
+pub extend Snapshot with @debug.Debug::{to_repr}
+
+///|
+pub extend Snapshot with Eq::{equal, not_equal}

@@ -83,6 +83,7 @@ pub fn ExpectedReport::to_repr(Self) -> @debug.Repr
 type Ledger
 pub fn Ledger::ingest(Self, Document) -> Unit raise InputError
 pub fn Ledger::new(RunPlan, limits? : Limits) -> Self raise InputError
+pub fn Ledger::snapshot(Self) -> Snapshot
 pub fn Ledger::source(Self, String) -> String?
 pub fn Ledger::summary(Self) -> Summary
 
@@ -183,6 +184,14 @@ pub fn RunPlan::equal(Self, Self) -> Bool
 pub fn RunPlan::new(String, String, Array[ExpectedReport], limits? : Limits) -> Self raise InputError
 pub fn RunPlan::not_equal(Self, Self) -> Bool
 pub fn RunPlan::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Snapshot {
+  plan : RunPlan
+  documents : Array[Document]
+} derive(Eq, @debug.Debug)
+pub fn Snapshot::equal(Self, Self) -> Bool
+pub fn Snapshot::not_equal(Self, Self) -> Bool
+pub fn Snapshot::to_repr(Self) -> @debug.Repr
 
 pub(all) struct Summary {
   run_id : String

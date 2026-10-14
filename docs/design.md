@@ -45,7 +45,7 @@ Acceptance requires actual report files from documented producers or clearly sou
 
 1. Explicit report and test inventory with ordered retry reconciliation (the complete first slice).
 2. Additional named producer profiles with captured output and conformance tests, then an adapter for a versioned MoonBit test-result export if available. Internal runner protocols are not assumed stable.
-3. Revision-bound historical comparisons that retain missing/unknown evidence, without overwriting raw attempts.
+3. Replayable evidence archives are implemented: full plan, bindings, original XML and gate policy survive validation and round trips. Next: revision-bound historical comparisons that retain missing/unknown evidence, without overwriting raw attempts.
 4. Integration with CI artifact manifests and optional report renderers, after local semantics remain stable. No dashboard or hosted backend is necessary for adoption.
 
 ## Validation

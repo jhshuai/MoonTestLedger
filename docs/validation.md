@@ -53,3 +53,7 @@ moon run scripts/verify.mbtx native
 ~~~
 
 The verifier snapshots all six tracked generated interfaces, regenerates with the Wasm target and compares their contents. It works from a source archive and does not need a Git repository. MOON_TEST_LEDGER_MOON may point to the executable used by child commands when multiple installations are present. Native requires the target platform's compiler/SDK. The evaluator's local report fixtures have documented public provenance.
+
+## Evidence archive capability — 2026-10-14
+
+The archive addition passed strict checks, formatting and six-interface drift verification. Tests: Wasm 45/45, Wasm-GC 42/42, JavaScript 42/42, Linux native 45/45. Wasm and actual Linux native file workflows now also create and verify archives of the unmodified upstream Jest report, preserve an incomplete run, and retain denied-recovery policy. Unit tests cover exact source/payload round trips, isolated snapshots, decoded schema/unknown-field/duplicate rejection, binding mismatch, custom-projection refusal, source limits and recovery after errors.

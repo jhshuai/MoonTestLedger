@@ -165,3 +165,10 @@ pub(all) struct Summary {
   missing_reports : Array[String]
   missing_cases : Array[MissingCase]
 } derive(Debug, Eq)
+
+///|
+/// Independent copies of the expected inventory and accepted evidence.
+pub(all) struct Snapshot {
+  plan : RunPlan
+  documents : Array[Document]
+} derive(Debug, Eq)

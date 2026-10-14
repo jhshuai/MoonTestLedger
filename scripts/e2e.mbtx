@@ -2,6 +2,7 @@
 import {
   "moonbitlang/async",
   "moonbitlang/async/shell",
+  "moonbitlang/async/fs",
   "moonbitlang/core/env",
   "moonbitlang/core/json",
 }
@@ -104,6 +105,36 @@ async fn main {
     } else {
     fail("invalid upstream counter needs a structured diagnostic")
   }
+  let directory = @fs.tmpdir(prefix="moontestledger-evidence")
+  defer @fs.rmdir(directory)
+  let path = directory + "/evidence.json"
+  defer @fs.remove(path)
+  let archive = cli(
+    target,
+    ["archive", "examples/upstream/plan.json", "examples/upstream/bundle.json"],
+    0,
+  )
+  @fs.write_file(path, archive.stringify(indent=2))
+  let replayed = cli(target, ["verify", path], 1)
+  assert_eq(replayed, original)
+  let incomplete_archive = cli(
+    target,
+    [
+      "archive", "examples/upstream/plan.json", "examples/upstream/missing-bundle.json",
+    ],
+    0,
+  )
+  @fs.write_file(path, incomplete_archive.stringify())
+  assert_eq(cli(target, ["verify", path], 3), missing)
+  let strict_archive = cli(
+    target,
+    [
+      "archive", "examples/retry/plan.json", "examples/retry/bundle.json", "--deny-recovered",
+    ],
+    0,
+  )
+  @fs.write_file(path, strict_archive.stringify())
+  assert_eq(cli(target, ["verify", path], 1), denied)
   println(
     "End-to-end checks passed on \{target}: real Jest, missing artifact, capture, ordered retry, policy and invalid upstream counters.",
   )

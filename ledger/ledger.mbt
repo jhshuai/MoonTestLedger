@@ -175,3 +175,19 @@ pub fn Ledger::ingest(
 pub fn Ledger::source(self : Ledger, report_id : String) -> String? {
   self.documents.get(report_id).map(document => document.report.source)
 }
+
+///|
+/// Export a fresh snapshot, ordered by the plan. Mutating its arrays cannot
+/// alter the ledger; absent expected reports remain absent in the document list.
+pub fn Ledger::snapshot(self : Ledger) -> Snapshot {
+  let documents : Array[Document] = []
+  for report in self.plan.reports {
+    if self.documents.get(report.id) is Some(document) {
+      documents.push(copy_document(document))
+    }
+  }
+  {
+    plan: { ..self.plan, reports: self.plan.reports.map(copy_expected), },
+    documents,
+  }
+}

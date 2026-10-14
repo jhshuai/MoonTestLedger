@@ -50,3 +50,9 @@ Ledger is an opaque type. Its mutable plan and document storage cannot be read o
 The CLI emits one schema-1 diagnostic object to standard error on invalid input or I/O and returns 2. Audit summaries go to standard output. Users can correct an input and retry: failed ingestion does not mutate already accepted documents.
 
 Summary JSON contains canonical environment/shard/case ordering, ordered attempts, all failure/error payloads and missing inventories. It does not provide a rewritten XML document or a parser for round-tripping summaries. Plan/bundle encoders and decoders cover the supported interchange round trip.
+
+## Replayable evidence archives
+
+The schema-1 envelope has exactly `schema`, `kind` (`moontestledger/evidence`), `deny_recovered` (boolean), `plan` (the complete schema-1 plan) and `documents`. Each document has exactly `id`, `run_id`, `revision`, `environment`, `shard`, `attempt`, and `xml` (original decoded XML). Duplicate report IDs are rejected. No report paths or projected summary replace the authored source.
+
+Decoding reparses each XML and ingests it against the plan. Encoding checks that each accepted projection exactly matches its reparsed source, then checks the encoded JSON input budget. Unknown fields, duplicate JSON keys, unsupported versions, binding conflicts, malformed XML and resource violations are refused. Missing documents are allowed and remain incomplete. Canonical encoding orders documents by the validated plan. The supplied recovery policy survives round trips.

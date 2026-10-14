@@ -9,11 +9,15 @@ import {
 // Values
 pub fn decode_bundle(String, limits? : @ledger.Limits) -> @wire.Bundle raise @ledger.InputError
 
+pub fn decode_evidence(String, limits? : @ledger.Limits) -> @wire.Evidence raise @ledger.InputError
+
 pub fn decode_plan(String, limits? : @ledger.Limits) -> @ledger.RunPlan raise @ledger.InputError
 
 pub fn encode_bundle(@wire.Bundle) -> String
 
 pub fn encode_diagnostic(@ledger.Diagnostic) -> String
+
+pub fn encode_evidence(@ledger.Ledger, deny_recovered? : Bool, limits? : @ledger.Limits) -> String raise @ledger.InputError
 
 pub fn encode_plan(@ledger.RunPlan) -> String
 
@@ -37,6 +41,8 @@ pub using @ledger {type CaseSummary}
 pub using @ledger {type Diagnostic}
 
 pub using @ledger {type Document}
+
+pub using @wire {type Evidence}
 
 pub using @ledger {type ExpectedReport}
 
@@ -63,6 +69,8 @@ pub using @ledger {type ReportBinding}
 pub using @wire {type ReportFile}
 
 pub using @ledger {type RunPlan}
+
+pub using @ledger {type Snapshot}
 
 pub using @ledger {type Summary}
 

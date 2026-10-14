@@ -9,11 +9,15 @@ import {
 // Values
 pub fn decode_bundle(String, limits? : @ledger.Limits) -> Bundle raise @ledger.InputError
 
+pub fn decode_evidence(String, limits? : @ledger.Limits) -> Evidence raise @ledger.InputError
+
 pub fn decode_plan(String, limits? : @ledger.Limits) -> @ledger.RunPlan raise @ledger.InputError
 
 pub fn encode_bundle(Bundle) -> String
 
 pub fn encode_diagnostic(@ledger.Diagnostic) -> String
+
+pub fn encode_evidence(@ledger.Ledger, deny_recovered? : Bool, limits? : @ledger.Limits) -> String raise @ledger.InputError
 
 pub fn encode_plan(@ledger.RunPlan) -> String
 
@@ -28,6 +32,13 @@ pub(all) struct Bundle {
 pub fn Bundle::equal(Self, Self) -> Bool
 pub fn Bundle::not_equal(Self, Self) -> Bool
 pub fn Bundle::to_repr(Self) -> @debug.Repr
+
+type Evidence
+pub fn Evidence::deny_recovered(Self) -> Bool
+pub fn Evidence::encode(Self, limits? : @ledger.Limits) -> String raise @ledger.InputError
+pub fn Evidence::exit_code(Self) -> Int
+pub fn Evidence::source(Self, String) -> String?
+pub fn Evidence::summary(Self) -> @ledger.Summary
 
 pub(all) struct ReportFile {
   binding : @ledger.ReportBinding

@@ -7,7 +7,7 @@ fn key_json(key : @ledger.CaseKey) -> Json {
 }
 
 ///|
-pub fn encode_plan(plan : @ledger.RunPlan) -> String {
+fn plan_json(plan : @ledger.RunPlan) -> Json {
   let reports = plan.reports.map(report => {
     Json::object({
       "id": Json::string(report.id),
@@ -22,7 +22,24 @@ pub fn encode_plan(plan : @ledger.RunPlan) -> String {
     "run_id": Json::string(plan.run_id),
     "revision": Json::string(plan.revision),
     "reports": Json::array(reports),
-  }).stringify(indent=2)
+  })
+}
+
+///|
+pub fn encode_plan(plan : @ledger.RunPlan) -> String {
+  plan_json(plan).stringify(indent=2)
+}
+
+///|
+fn binding_fields(binding : @ledger.ReportBinding) -> Map[String, Json] {
+  {
+    "id": Json::string(binding.id),
+    "run_id": Json::string(binding.run_id),
+    "revision": Json::string(binding.revision),
+    "environment": Json::string(binding.environment),
+    "shard": Json::string(binding.shard),
+    "attempt": Json::number(binding.attempt.to_double()),
+  }
 }
 
 ///|
@@ -31,15 +48,9 @@ pub fn encode_bundle(bundle : Bundle) -> String {
     "schema": Json::number(1),
     "documents": Json::array(
       bundle.documents.map(file => {
-        Json::object({
-          "id": Json::string(file.binding.id),
-          "run_id": Json::string(file.binding.run_id),
-          "revision": Json::string(file.binding.revision),
-          "environment": Json::string(file.binding.environment),
-          "shard": Json::string(file.binding.shard),
-          "attempt": Json::number(file.binding.attempt.to_double()),
-          "path": Json::string(file.path),
-        })
+        let fields = binding_fields(file.binding)
+        fields["path"] = Json::string(file.path)
+        Json::object(fields)
       }),
     ),
   }).stringify(indent=2)

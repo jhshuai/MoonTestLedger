@@ -15,8 +15,22 @@ Source repository: [jhshuai/MoonTestLedger](https://github.com/jhshuai/MoonTestL
 - Atomic ingestion, idempotent identical imports and refusal of conflicting replacements.
 - Deterministic JSON evidence, strict versioned plan/bundle JSON and CI exit codes.
 - **capture** to obtain an inventory from supplied reports, and **audit** for arbitrary report files.
+- Replayable evidence archives retain the plan, original XML, bindings and recovery policy; **verify** rechecks a saved run without its original files.
 
 Historical comparisons, additional producer profiles, TAP/SARIF adapters, report rewriting, dashboards and hosted integrations are roadmap items. No performance or universal JUnit compatibility claim is made.
+
+## Save and recheck evidence
+
+~~~sh
+moon run --target wasm cmd/moontestledger -- archive examples/upstream/plan.json examples/upstream/bundle.json > evidence.json
+moon run --target wasm cmd/moontestledger -- verify evidence.json
+~~~
+
+Archive creation returns 0 when the file is successfully emitted, even for a failing or incomplete run. Verify returns the recorded policy's test gate code (0/1/3), or 2 for invalid input. The archive has a schema-1 `moontestledger/evidence` envelope, the full plan and inline original XML. It is independent of report paths. Missing reports remain missing. `--deny-recovered` on archive creation is retained when replayed.
+
+Use `encode_evidence(ledger)` and `decode_evidence(text)` from the library. Evidence is opaque; `summary()`, `source(id)`, `exit_code()` and `encode()` expose independent results and canonical round trips. `Ledger::snapshot()` returns copied inventory and document arrays. Custom adapters whose observations do not match the supported JUnit parser cannot be archived with this codec: encoding rejects them instead of dropping their semantics. Archives are not signed provenance proofs.
+
+The JSON source budget applies to the entire encoded archive (4,194,304 UTF-16 units by default); encoding refuses oversized output so the same limits can read it. Original XML, including metadata, output, whitespace and entities, is retained exactly as decoded Unicode. Keep archived files as UTF-8; older Windows PowerShell redirection may otherwise choose a different encoding.
 
 ## Run the examples
 

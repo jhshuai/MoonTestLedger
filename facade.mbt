@@ -19,6 +19,7 @@ pub using @ledger {
   type MissingCase,
   type Summary,
   type Ledger,
+  type Snapshot,
 }
 
 ///|
@@ -31,6 +32,9 @@ pub using @wire {
   encode_bundle,
   encode_summary,
   encode_diagnostic,
+  type Evidence,
+  encode_evidence,
+  decode_evidence,
 }
 
 ///|

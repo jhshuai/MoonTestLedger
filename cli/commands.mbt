@@ -1,9 +1,8 @@
 ///|
-async fn audit(
+async fn load_ledger(
   plan_path : String,
   bundle_path : String,
-  deny_recovered : Bool,
-) -> Int32 {
+) -> @ledger.Ledger {
   let limits = @ledger.Limits::default()
   let plan = @ledger.decode_plan(read_text(plan_path, limits), limits~)
   let bundle = @ledger.decode_bundle(read_text(bundle_path, limits), limits~)
@@ -17,9 +16,44 @@ async fn audit(
     )
     ledger.ingest({ binding: file.binding, report, })
   }
-  let summary = ledger.summary()
+  ledger
+}
+
+///|
+async fn audit(
+  plan_path : String,
+  bundle_path : String,
+  deny_recovered : Bool,
+) -> Int32 {
+  let summary = load_ledger(plan_path, bundle_path).summary()
   @stdio.stdout.write(@ledger.encode_summary(summary, deny_recovered~) + "\n")
   summary.exit_code(deny_recovered~)
+}
+
+///|
+async fn archive(
+  plan_path : String,
+  bundle_path : String,
+  deny_recovered : Bool,
+) -> Int32 {
+  let ledger = load_ledger(plan_path, bundle_path)
+  @stdio.stdout.write(@ledger.encode_evidence(ledger, deny_recovered~) + "\n")
+  0
+}
+
+///|
+async fn verify(path : String) -> Int32 {
+  let evidence = @ledger.decode_evidence(
+    read_text(path, @ledger.Limits::default()),
+  )
+  @stdio.stdout.write(
+    @ledger.encode_summary(
+      evidence.summary(),
+      deny_recovered=evidence.deny_recovered(),
+    ) +
+    "\n",
+  )
+  evidence.exit_code()
 }
 
 ///|
@@ -84,15 +118,19 @@ pub async fn run(arguments : Array[String]) -> Int32 {
       ["audit", plan, bundle] => audit(plan, bundle, false)
       ["audit", plan, bundle, "--deny-recovered"] => audit(plan, bundle, true)
       ["capture", bundle] => capture(bundle)
+      ["archive", plan, bundle] => archive(plan, bundle, false)
+      ["archive", plan, bundle, "--deny-recovered"] =>
+        archive(plan, bundle, true)
+      ["verify", path] => verify(path)
       ["--help"] | ["help"] => {
         @stdio.stdout.write(
-          "MoonTestLedger 0.1.0\n  audit PLAN.json BUNDLE.json [--deny-recovered]\n  capture BUNDLE.json\nExit: 0 passing, 1 failing, 2 invalid input, 3 incomplete\n",
+          "MoonTestLedger\n  audit PLAN.json BUNDLE.json [--deny-recovered]\n  capture BUNDLE.json\n  archive PLAN.json BUNDLE.json [--deny-recovered]\n  verify EVIDENCE.json\nArchive/capture: 0 on successful creation. Audit/verify: 0 passing, 1 failing, 2 invalid input, 3 incomplete\n",
         )
         0
       }
       _ =>
         raise refusal(
-          "Usage", "/arguments", "Use audit PLAN.json BUNDLE.json [--deny-recovered], or capture BUNDLE.json; --help shows usage",
+          "Usage", "/arguments", "Use audit, capture, archive or verify; --help shows arguments",
         )
     }
   } catch {
