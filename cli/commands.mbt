@@ -90,6 +90,29 @@ async fn retry(path : String, requests_path : String) -> Int32 {
 }
 
 ///|
+async fn repetitions(paths : ArrayView[String]) -> Int32 {
+  let limits = @ledger.Limits::default()
+  if paths.length() > limits.max_reports {
+    raise refusal("ReportLimit", "/arguments", "Too many run archives")
+  }
+  let inputs : Array[@ledger.Evidence] = []
+  let mut units = 0L
+  for path in paths {
+    let source = read_text(path, limits)
+    units += source.length().to_int64()
+    if units > limits.max_total_source_units.to_int64() {
+      raise refusal(
+        "SourceLimit", path, "Combined input archives exceed the total source budget",
+      )
+    }
+    inputs.push(@ledger.decode_evidence(source, limits~))
+  }
+  let result = @ledger.analyze_repetitions(inputs[:], limits~)
+  @stdio.stdout.write(result.encode(limits~) + "\n")
+  result.exit_code()
+}
+
+///|
 async fn append(path : String, bundle_path : String) -> Int32 {
   let limits = @ledger.Limits::default()
   let evidence = @ledger.decode_evidence(read_text(path, limits), limits~)
@@ -215,15 +238,16 @@ pub async fn run(arguments : Array[String]) -> Int32 {
       ["merge", _, _, ..] => merge(arguments[1:])
       ["retry", path, requests] => retry(path, requests)
       ["append", path, bundle] => append(path, bundle)
+      ["repetitions", _, _, ..] => repetitions(arguments[1:])
       ["--help"] | ["help"] => {
         @stdio.stdout.write(
-          "MoonTestLedger\n  audit PLAN.json BUNDLE.json [--deny-recovered]\n  capture BUNDLE.json\n  archive PLAN.json BUNDLE.json [--deny-recovered]\n  verify EVIDENCE.json\n  compare BEFORE.json AFTER.json\n  merge FIRST.json SECOND.json [MORE.json ...]\n  html EVIDENCE.json\n  retry EVIDENCE.json RETRY-REPORTS.json\n  append EVIDENCE.json BUNDLE.json\nArchive/capture/merge/html/retry/append: 0 on creation. Audit/verify: 0 passing, 1 failing, 2 invalid input, 3 incomplete. Compare: 0 no new adverse result, 1 regression, 2 invalid input, 3 inconclusive.\n",
+          "MoonTestLedger\n  audit PLAN.json BUNDLE.json [--deny-recovered]\n  capture BUNDLE.json\n  archive PLAN.json BUNDLE.json [--deny-recovered]\n  verify EVIDENCE.json\n  compare BEFORE.json AFTER.json\n  merge FIRST.json SECOND.json [MORE.json ...]\n  html EVIDENCE.json\n  retry EVIDENCE.json RETRY-REPORTS.json\n  append EVIDENCE.json BUNDLE.json\n  repetitions FIRST.json SECOND.json [MORE.json ...]\nArchive/capture/merge/html/retry/append: 0 on creation. Audit/verify: 0 passing, 1 failing, 2 invalid input, 3 incomplete. Compare: 0 no new adverse result, 1 regression, 2 invalid input, 3 inconclusive. Repetitions: 0 no observed mixture, 1 pass plus failure/error observed, 2 invalid input, 3 incomplete.\n",
         )
         0
       }
       _ =>
         raise refusal(
-          "Usage", "/arguments", "Use audit, capture, archive, verify, compare, merge, html, retry or append; --help shows arguments",
+          "Usage", "/arguments", "Use audit, capture, archive, verify, compare, merge, html, retry, append or repetitions; --help shows arguments",
         )
     }
   } catch {

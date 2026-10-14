@@ -1,0 +1,6 @@
+{
+  "schema": 1, "documents": [{
+    "id": "payments-a", "run_id": "payment-repeat-a", "revision": "example-revision-a",
+    "environment": "linux-node22", "shard": "payments", "attempt": 1, "path": "../retry/first.xml"
+  }]
+}

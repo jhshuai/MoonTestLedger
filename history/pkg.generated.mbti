@@ -8,6 +8,8 @@ import {
 }
 
 // Values
+pub fn analyze_repetitions(ArrayView[@wire.Evidence], limits? : @ledger.Limits) -> Repetitions raise @ledger.InputError
+
 pub fn compare_evidence(@wire.Evidence, @wire.Evidence) -> Comparison
 
 // Errors
@@ -45,6 +47,51 @@ pub fn Comparison::comparable(Self) -> Bool
 pub fn Comparison::encode(Self) -> String
 pub fn Comparison::exit_code(Self) -> Int
 pub fn Comparison::policy_changed(Self) -> Bool
+
+pub(all) struct RepetitionCase {
+  environment : String
+  key : @ledger.CaseKey
+  kind : RepetitionKind
+  pass_attempts : Int
+  failed_attempts : Int
+  error_attempts : Int
+  skipped_attempts : Int
+  runs_with_pass : Int
+  runs_with_failure : Int
+  recovered_runs : Int
+  incomplete_runs : Int
+  samples : Array[RepetitionSample]
+} derive(Eq, @debug.Debug)
+pub fn RepetitionCase::equal(Self, Self) -> Bool
+pub fn RepetitionCase::not_equal(Self, Self) -> Bool
+pub fn RepetitionCase::to_repr(Self) -> @debug.Repr
+
+pub(all) enum RepetitionKind {
+  MixedOutcomes
+  FailureObserved
+  PassObserved
+  SkipsOnly
+  NoObservations
+} derive(Eq, @debug.Debug)
+pub fn RepetitionKind::equal(Self, Self) -> Bool
+pub fn RepetitionKind::not_equal(Self, Self) -> Bool
+pub fn RepetitionKind::to_repr(Self) -> @debug.Repr
+
+pub(all) struct RepetitionSample {
+  run_id : String
+  case_summary : @ledger.CaseSummary
+} derive(Eq, @debug.Debug)
+pub fn RepetitionSample::equal(Self, Self) -> Bool
+pub fn RepetitionSample::not_equal(Self, Self) -> Bool
+pub fn RepetitionSample::to_repr(Self) -> @debug.Repr
+
+type Repetitions
+pub fn Repetitions::complete(Self) -> Bool
+pub fn Repetitions::encode(Self, limits? : @ledger.Limits) -> String raise @ledger.InputError
+pub fn Repetitions::exit_code(Self) -> Int
+pub fn Repetitions::rows(Self) -> Array[RepetitionCase]
+pub fn Repetitions::source(Self, String, String) -> String?
+pub fn Repetitions::summaries(Self) -> Array[@ledger.Summary]
 
 // Type aliases
 

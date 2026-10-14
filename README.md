@@ -20,8 +20,25 @@ Source repository: [jhshuai/MoonTestLedger](https://github.com/jhshuai/MoonTestL
 - Merge partial archives of one run against an identical full inventory and recovery policy.
 - Offline HTML reports show verdicts, missing evidence, every attempt/problem and escaped original XML.
 - Selective retry continuation schedules only final adverse tests and appends their new reports atomically.
+- Same-revision repeated-run analysis distinguishes observed outcome mixtures, run counts, retry counts and missing evidence.
 
 Additional producer profiles, TAP/SARIF adapters, report rewriting, interactive dashboards and hosted integrations are roadmap items. No performance or universal JUnit compatibility claim is made.
+
+## Inspect repeated runs at one revision
+
+~~~sh
+moon run --target wasm cmd/moontestledger -- archive examples/repetitions/plan-a.json examples/repetitions/bundle-a.json > repeat-a.json
+moon run --target wasm cmd/moontestledger -- archive examples/repetitions/plan-b.json examples/repetitions/bundle-b.json > repeat-b.json
+moon run --target wasm cmd/moontestledger -- repetitions repeat-a.json repeat-b.json
+~~~
+
+This project-authored synthetic example observes the payment test fail and pass in two independent runs of the same revision/environment. One row is `mixed_outcomes`; the command exits 1. Exact environment/classname/name inventory must agree. Shard placement, report IDs and selective retry counts can differ; run IDs must be distinct. Different revisions, inventories or recovery policies are refused with exit 2. Use `compare` for revisions and `merge` for shards of one run. Run/environment labels are caller-supplied contracts, not proof of identical machines, isolation or random test selection.
+
+`analyze_repetitions(inputs[:], limits~)` returns opaque `Repetitions`. `rows()` returns independent samples with every attempt/problem; `summaries()` retains per-run missing evidence; `source(run_id, report_id)` retains original XML. JSON is a deterministic **derived count view**, with missing evidence, per-run references and final verdicts. Preserve input archives for replay; it has no decoder. Each row counts passed/failed/error/skipped attempts separately, distinct runs containing pass or failure/error, recovered runs and incomplete case observations. A run can contribute to both pass and failure counts. Retries can therefore increase attempt counts without increasing the independent run count.
+
+Kinds are `mixed_outcomes` (both pass and failure/error observed), `failure_observed`, `pass_observed`, `skips_only` and `no_observations`. Skips never count as passes. Any missing report/case, including an empty report, makes the gate inconclusive (3), even when a mixture was observed. Complete evidence with a mixture exits 1; otherwise 0. A consistently failing test can yield repetitions 0 while verify yields 1. This is an observation gate, **not a statistical flakiness estimate, causal diagnosis or all-tests-pass gate**. Use verify for each run where passing is required. Small or selected samples cannot establish reliability.
+
+Limits apply across the whole analysis: at least two archives; run count and combined planned reports bounded by `max_reports`; combined expected observations by `max_cases`; problem payloads by `max_problems`; total canonical archive JSON units by `max_total_source_units`. Each input is revalidated against individual limits. CLI also bounds combined incoming JSON text. Derived output is bounded by `max_source_units` and refused with `RepetitionOutputLimit`, never truncated. Output and sample order are deterministic under input reordering.
 
 ## Schedule and collect a selective retry
 

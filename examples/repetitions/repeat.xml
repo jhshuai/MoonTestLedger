@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="checkout-repeat" tests="3" failures="0" errors="0" skipped="1">
+  <testcase classname="checkout.payment" name="charge_once" time="0.08"/>
+  <testcase classname="checkout.payment" name="reject_expired_card" time="0.04"/>
+  <testcase classname="checkout.payment" name="wallet_provider" time="0">
+    <skipped message="Wallet provider disabled in this test environment"/>
+  </testcase>
+</testsuite>

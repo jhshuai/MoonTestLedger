@@ -8,6 +8,8 @@ import {
 }
 
 // Values
+pub fn analyze_repetitions(ArrayView[@wire.Evidence], limits? : @ledger.Limits) -> @history.Repetitions raise @ledger.InputError
+
 pub fn compare_evidence(@wire.Evidence, @wire.Evidence) -> @history.Comparison
 
 pub fn decode_bundle(String, limits? : @ledger.Limits) -> @wire.Bundle raise @ledger.InputError
@@ -82,6 +84,14 @@ pub using @ledger {type ParsedReport}
 pub using @ledger {type Problem}
 
 pub using @ledger {type ProblemKind}
+
+pub using @history {type RepetitionCase}
+
+pub using @history {type RepetitionKind}
+
+pub using @history {type RepetitionSample}
+
+pub using @history {type Repetitions}
 
 pub using @ledger {type ReportBinding}
 

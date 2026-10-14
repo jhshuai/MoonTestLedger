@@ -271,7 +271,51 @@ async fn main {
   guard no_retry is { "error": { "code": String("NoRetryCases"), .. }, .. } else {
     fail("Recovered tests must not be rescheduled")
   }
+  let repeat_a = cli(
+    target,
+    [
+      "archive", "examples/repetitions/plan-a.json", "examples/repetitions/bundle-a.json",
+    ],
+    0,
+  )
+  let repeat_b = cli(
+    target,
+    [
+      "archive", "examples/repetitions/plan-b.json", "examples/repetitions/bundle-b.json",
+    ],
+    0,
+  )
+  @fs.write_file(path, repeat_a.stringify())
+  @fs.write_file(other_path, repeat_b.stringify())
+  let observations = cli(target, ["repetitions", path, other_path], 1)
+  guard observations is { "complete": True, "cases": Array(rows), .. } else {
+    fail("Expected complete repeated-run observations")
+  }
+  assert_eq(
+    rows
+    .iter()
+    .filter(row => row is { "kind": String("mixed_outcomes"), .. })
+    .count(),
+    1,
+  )
+  assert_eq(cli(target, ["repetitions", other_path, path], 1), observations)
+  let duplicate = cli(target, ["repetitions", path, path], 2)
+  guard duplicate is { "error": { "code": String("DuplicateRun"), .. }, .. } else {
+    fail("Duplicate runs must not inflate observations")
+  }
+  let repeat_missing = cli(
+    target,
+    [
+      "archive", "examples/repetitions/plan-b.json", "examples/repetitions/missing-bundle.json",
+    ],
+    0,
+  )
+  @fs.write_file(other_path, repeat_missing.stringify())
+  let inconclusive = cli(target, ["repetitions", path, other_path], 3)
+  guard inconclusive is { "complete": False, .. } else {
+    fail("Missing repeated-run evidence must be inconclusive")
+  }
   println(
-    "End-to-end checks passed on \{target}: real Jest, retry continuation, archive replay, merging, offline HTML, policy, comparison and malformed counters.",
+    "End-to-end checks passed on \{target}: real Jest, retry continuation, repetitions, archives, merging, offline HTML, policy, comparison and malformed counters.",
   )
 }

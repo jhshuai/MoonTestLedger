@@ -1,0 +1,11 @@
+{
+  "schema": 1, "run_id": "payment-repeat-a", "revision": "example-revision-a",
+  "reports": [{
+    "id": "payments-a", "environment": "linux-node22", "shard": "payments", "attempt": 1,
+    "cases": [
+      {"classname": "checkout.payment", "name": "charge_once"},
+      {"classname": "checkout.payment", "name": "reject_expired_card"},
+      {"classname": "checkout.payment", "name": "wallet_provider"}
+    ]
+  }]
+}

@@ -58,6 +58,11 @@ pub using @history {
   type Change,
   type ChangeKind,
   compare_evidence,
+  type RepetitionKind,
+  type RepetitionSample,
+  type RepetitionCase,
+  type Repetitions,
+  analyze_repetitions,
 }
 
 ///|

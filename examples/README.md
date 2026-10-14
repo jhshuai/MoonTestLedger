@@ -45,6 +45,8 @@ The newly authored Apache-2.0 `retry-only-bundle.json` contains just attempt 2. 
 
 `continuation/` contains project-authored Apache-2.0 initial inventory, bundle and retry identities. It reuses the existing synthetic first/second payment XML to demonstrate a complete failed run -> newly declared selective retry -> pending archive -> appended retry evidence. The original failure is retained and only the final adverse testcase is scheduled. The README commands run without a test runner or private service; in production the caller's runner executes the generated inventory.
 
+`repetitions/` contains newly authored Apache-2.0 synthetic manifests and a passing-repeat XML. Run A references the existing synthetic failed payment report; run B has a distinct run ID at the same revision/environment and moved shard. The three identities are unchanged, with opposite payment outcomes, a passed case and a skipped case. The README archive/repetitions workflow exits 1 for exactly one observed mixture. `missing-bundle.json` demonstrates absent evidence yielding 3, not a reliability estimate. These examples are not production measurements or upstream test code.
+
 The newly authored `history/` fixtures are Apache-2.0 synthetic runs at two revisions, with a payment regression and a refund improvement. Run the three archive/compare commands in the main README. Neither fixture is altered upstream output. The evaluator also compares an unmodified upstream Jest archive to itself and checks that an incomplete archive cannot pass a comparison.
 
 ~~~sh
