@@ -1,0 +1,40 @@
+///|
+import {
+  "moonbitlang/async",
+  "moonbitlang/async/fs",
+  "moonbitlang/async/shell",
+  "moonbitlang/core/env",
+}
+
+///|
+async fn main {
+  let path = "encapsulation_probe_test.mbt"
+  if @fs.exists(path) {
+    fail("Refusing to overwrite an existing encapsulation probe")
+  }
+  let source =
+    #|test "external code cannot modify the ledger's inventory" {
+    #|  let key : @moontestledger.CaseKey = { classname: "", name: "a" }
+    #|  let plan = @moontestledger.RunPlan::new("run", "rev", [{
+    #|    id: "r", environment: "linux", shard: "all", attempt: 1, cases: [key],
+    #|  }])
+    #|  let ledger = @moontestledger.Ledger::new(plan)
+    #|  ledger.plan.reports.clear()
+    #|}
+  @fs.write_file(path, source, create_mode=CreateNew)
+  defer @fs.remove(path)
+  let command = @env.get_env_var("MOON_TEST_LEDGER_MOON").unwrap_or("moon")
+  let output = @shell.Cmd(command, [
+    "check", "--target", "wasm-gc", "--deny-warn",
+  ]).output()
+  if output.exit_code() == 0 {
+    fail("Ledger internals are exposed: external inventory mutation compiled")
+  }
+  let diagnostics = output.stdout() + output.stderr()
+  if !diagnostics.contains("plan") || !diagnostics.contains("Ledger") {
+    fail("Compilation failed for an unrelated reason: " + diagnostics)
+  }
+  println(
+    "Encapsulation check passed: external inventory mutation is rejected by the compiler.",
+  )
+}

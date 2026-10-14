@@ -1,0 +1,215 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "jhshuai/moontestledger/ledger"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+
+// Errors
+pub(all) suberror InputError {
+  Invalid(Diagnostic)
+} derive(@debug.Debug)
+pub fn InputError::to_repr(Self) -> @debug.Repr
+
+// Types and methods
+pub(all) struct AttemptRecord {
+  report_id : String
+  attempt : Int
+  observation : ObservedCase
+} derive(Eq, @debug.Debug)
+pub fn AttemptRecord::equal(Self, Self) -> Bool
+pub fn AttemptRecord::not_equal(Self, Self) -> Bool
+pub fn AttemptRecord::to_repr(Self) -> @debug.Repr
+
+pub(all) struct CaseKey {
+  classname : String
+  name : String
+} derive(Compare, Eq, Hash, @debug.Debug)
+pub fn CaseKey::compare(Self, Self) -> Int
+pub fn CaseKey::equal(Self, Self) -> Bool
+pub fn CaseKey::hash(Self) -> Int
+pub fn CaseKey::hash_combine(Self, Hasher) -> Unit
+pub fn CaseKey::not_equal(Self, Self) -> Bool
+pub fn CaseKey::op_ge(Self, Self) -> Bool
+pub fn CaseKey::op_gt(Self, Self) -> Bool
+pub fn CaseKey::op_le(Self, Self) -> Bool
+pub fn CaseKey::op_lt(Self, Self) -> Bool
+pub fn CaseKey::to_repr(Self) -> @debug.Repr
+
+pub(all) struct CaseSummary {
+  environment : String
+  shard : String
+  key : CaseKey
+  verdict : Verdict
+  attempts : Array[AttemptRecord]
+} derive(Eq, @debug.Debug)
+pub fn CaseSummary::equal(Self, Self) -> Bool
+pub fn CaseSummary::not_equal(Self, Self) -> Bool
+pub fn CaseSummary::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Diagnostic {
+  code : String
+  report_id : String
+  path : String
+  message : String
+  line : Int
+  column : Int
+} derive(Eq, @debug.Debug)
+pub fn Diagnostic::equal(Self, Self) -> Bool
+pub fn Diagnostic::not_equal(Self, Self) -> Bool
+pub fn Diagnostic::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Document {
+  binding : ReportBinding
+  report : ParsedReport
+} derive(Eq, @debug.Debug)
+pub fn Document::equal(Self, Self) -> Bool
+pub fn Document::not_equal(Self, Self) -> Bool
+pub fn Document::to_repr(Self) -> @debug.Repr
+
+pub(all) struct ExpectedReport {
+  id : String
+  environment : String
+  shard : String
+  attempt : Int
+  cases : Array[CaseKey]
+} derive(Eq, @debug.Debug)
+pub fn ExpectedReport::equal(Self, Self) -> Bool
+pub fn ExpectedReport::not_equal(Self, Self) -> Bool
+pub fn ExpectedReport::to_repr(Self) -> @debug.Repr
+
+type Ledger
+pub fn Ledger::ingest(Self, Document) -> Unit raise InputError
+pub fn Ledger::new(RunPlan, limits? : Limits) -> Self raise InputError
+pub fn Ledger::source(Self, String) -> String?
+pub fn Ledger::summary(Self) -> Summary
+
+pub(all) struct Limits {
+  max_reports : Int
+  max_cases : Int
+  max_source_units : Int
+  max_total_source_units : Int
+  max_events : Int
+  max_depth : Int
+  max_attributes : Int
+  max_problems : Int
+} derive(Eq, @debug.Debug)
+pub fn Limits::default() -> Self
+pub fn Limits::equal(Self, Self) -> Bool
+pub fn Limits::not_equal(Self, Self) -> Bool
+pub fn Limits::to_repr(Self) -> @debug.Repr
+pub fn Limits::validate(Self) -> Unit raise InputError
+
+pub(all) struct MissingCase {
+  report_id : String
+  key : CaseKey
+} derive(Eq, @debug.Debug)
+pub fn MissingCase::equal(Self, Self) -> Bool
+pub fn MissingCase::not_equal(Self, Self) -> Bool
+pub fn MissingCase::to_repr(Self) -> @debug.Repr
+
+pub(all) struct ObservedCase {
+  key : CaseKey
+  outcome : Outcome
+  problems : Array[Problem]
+  skipped_reason : String?
+  path : String
+  line : Int
+  column : Int
+} derive(Eq, @debug.Debug)
+pub fn ObservedCase::equal(Self, Self) -> Bool
+pub fn ObservedCase::not_equal(Self, Self) -> Bool
+pub fn ObservedCase::to_repr(Self) -> @debug.Repr
+
+pub(all) enum Outcome {
+  Pass
+  Failure
+  Error
+  Skip
+} derive(Eq, @debug.Debug)
+pub fn Outcome::equal(Self, Self) -> Bool
+pub fn Outcome::not_equal(Self, Self) -> Bool
+pub fn Outcome::to_repr(Self) -> @debug.Repr
+
+pub(all) struct ParsedReport {
+  source : String
+  cases : Array[ObservedCase]
+} derive(Eq, @debug.Debug)
+pub fn ParsedReport::equal(Self, Self) -> Bool
+pub fn ParsedReport::not_equal(Self, Self) -> Bool
+pub fn ParsedReport::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Problem {
+  kind : ProblemKind
+  message : String?
+  type_name : String?
+  text : String
+  path : String
+  line : Int
+  column : Int
+} derive(Eq, @debug.Debug)
+pub fn Problem::equal(Self, Self) -> Bool
+pub fn Problem::not_equal(Self, Self) -> Bool
+pub fn Problem::to_repr(Self) -> @debug.Repr
+
+pub(all) enum ProblemKind {
+  Failure
+  Error
+} derive(Eq, @debug.Debug)
+pub fn ProblemKind::equal(Self, Self) -> Bool
+pub fn ProblemKind::not_equal(Self, Self) -> Bool
+pub fn ProblemKind::to_repr(Self) -> @debug.Repr
+
+pub(all) struct ReportBinding {
+  id : String
+  run_id : String
+  revision : String
+  environment : String
+  shard : String
+  attempt : Int
+} derive(Eq, @debug.Debug)
+pub fn ReportBinding::equal(Self, Self) -> Bool
+pub fn ReportBinding::not_equal(Self, Self) -> Bool
+pub fn ReportBinding::to_repr(Self) -> @debug.Repr
+
+pub(all) struct RunPlan {
+  run_id : String
+  revision : String
+  reports : Array[ExpectedReport]
+} derive(Eq, @debug.Debug)
+pub fn RunPlan::equal(Self, Self) -> Bool
+pub fn RunPlan::new(String, String, Array[ExpectedReport], limits? : Limits) -> Self raise InputError
+pub fn RunPlan::not_equal(Self, Self) -> Bool
+pub fn RunPlan::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Summary {
+  run_id : String
+  revision : String
+  complete : Bool
+  cases : Array[CaseSummary]
+  missing_reports : Array[String]
+  missing_cases : Array[MissingCase]
+} derive(Eq, @debug.Debug)
+pub fn Summary::equal(Self, Self) -> Bool
+pub fn Summary::exit_code(Self, deny_recovered? : Bool) -> Int
+pub fn Summary::not_equal(Self, Self) -> Bool
+pub fn Summary::to_repr(Self) -> @debug.Repr
+
+pub(all) enum Verdict {
+  Passed
+  Failed
+  Error
+  Skipped
+  RecoveredOnRetry
+  Unresolved
+  Incomplete
+} derive(Eq, @debug.Debug)
+pub fn Verdict::equal(Self, Self) -> Bool
+pub fn Verdict::not_equal(Self, Self) -> Bool
+pub fn Verdict::to_repr(Self) -> @debug.Repr
+
+// Type aliases
+
+// Traits

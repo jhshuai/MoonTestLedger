@@ -1,0 +1,110 @@
+///|
+import {
+  "moonbitlang/async",
+  "moonbitlang/async/shell",
+  "moonbitlang/core/env",
+  "moonbitlang/core/json",
+}
+
+///|
+async fn cli(target : String, args : Array[String], expected : Int32) -> Json {
+  let command = @env.get_env_var("MOON_TEST_LEDGER_MOON").unwrap_or("moon")
+  let output = @shell.Cmd(
+    command,
+    ["run", "--target", target, "cmd/moontestledger", "--", ..args],
+  ).output(max_output_bytes=4194304)
+  if output.exit_code() != expected {
+    fail(
+      "CLI exit \{output.exit_code()} expected \{expected}: \{output.stderr()}",
+    )
+  }
+  assert_eq(output.exit_code(), expected)
+  if expected == 2 {
+    @json.parse(output.stderr())
+  } else {
+    @json.parse(output.stdout())
+  }
+}
+
+///|
+async fn main {
+  let target = @env.args().get(1).unwrap_or("wasm")
+  assert_true(target == "wasm" || target == "native")
+  let original = cli(
+    target,
+    ["audit", "examples/upstream/plan.json", "examples/upstream/bundle.json"],
+    1,
+  )
+  guard original is { "complete": True, "cases": Array(cases), .. } else {
+    fail("upstream Jest report should be complete")
+  }
+  assert_eq(cases.length(), 6)
+  assert_eq(
+    cases
+    .iter()
+    .filter(value => value is { "verdict": String("failed"), .. })
+    .count(),
+    4,
+  )
+  let missing = cli(
+    target,
+    [
+      "audit", "examples/upstream/plan.json", "examples/upstream/missing-bundle.json",
+    ],
+    3,
+  )
+  guard missing is { "complete": False, "missing_reports": Array(reports), .. } else {
+    fail("missing artifact must remain incomplete")
+  }
+  assert_eq(reports.length(), 1)
+  let captured = cli(target, ["capture", "examples/upstream/bundle.json"], 0)
+  guard captured is { "reports": Array(reports), .. } else {
+    fail("capture should return a versioned run plan")
+  }
+  assert_eq(reports.length(), 1)
+  let recovered = cli(
+    target,
+    ["audit", "examples/retry/plan.json", "examples/retry/bundle.json"],
+    0,
+  )
+  guard recovered is { "complete": True, "cases": Array(cases), .. } else {
+    fail("selective retry should complete the plan")
+  }
+  guard cases
+    .iter()
+    .find_first(value => {
+      value is { "verdict": String("recovered_on_retry"), .. }
+    })
+    is Some(value) else {
+    fail("retry must retain a recovered verdict")
+  }
+  guard value is { "attempts": Array(attempts), .. } else {
+    fail("recovered evidence needs original and retry observations")
+  }
+  assert_eq(attempts.length(), 2)
+  let denied = cli(
+    target,
+    [
+      "audit", "examples/retry/plan.json", "examples/retry/bundle.json", "--deny-recovered",
+    ],
+    1,
+  )
+  guard denied is { "exit_code": Number(1, ..), .. } else {
+    fail("recovery gate should return exit code 1")
+  }
+  let invalid = cli(
+    target,
+    ["capture", "examples/upstream/invalid-bundle.json"],
+    2,
+  )
+  guard invalid
+    is {
+      "error": { "code": String(_), "report_id": String("pytest-mismatch"), .. },
+      ..
+    } else {
+    fail("invalid upstream counter needs a structured diagnostic")
+  }
+  println(
+    "End-to-end checks passed on \{target}: real Jest, missing artifact, capture, ordered retry, policy and invalid upstream counters.",
+  )
+}

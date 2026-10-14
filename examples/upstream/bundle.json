@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "documents": [
+    {
+      "id": "jest-main",
+      "run_id": "upstream-jest-demo",
+      "revision": "cc52f364a405169afe07bb00dab3d375b451229d",
+      "environment": "upstream-macos-jest",
+      "shard": "all",
+      "attempt": 1,
+      "path": "jest-junit.xml"
+    }
+  ]
+}

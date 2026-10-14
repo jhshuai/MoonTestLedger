@@ -1,0 +1,35 @@
+name: MoonTestLedger
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        target: [wasm, wasm-gc, js, native]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Configure the Windows native compiler
+        if: runner.os == 'Windows' && matrix.target == 'native'
+        uses: ilammy/msvc-dev-cmd@v1
+      - name: Install the validated stable MoonBit release
+        uses: hustcer/setup-moonbit@9199da0ab63ea0c0bab1dc15f03d76e17ed4f75f # v1.22
+        with:
+          version: 0.10.15+943464bfa
+          core-version: 0.10.15+943464bfa
+      - name: Resolve pinned module dependencies
+        run: moon update
+      - name: Check formatting, interfaces, strict compilation, tests and applicable CLI workflows
+        run: moon run scripts/verify.mbtx ${{ matrix.target }}

@@ -1,0 +1,71 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "jhshuai/moontestledger"
+
+import {
+  "jhshuai/moontestledger/ledger",
+  "jhshuai/moontestledger/wire",
+}
+
+// Values
+pub fn decode_bundle(String, limits? : @ledger.Limits) -> @wire.Bundle raise @ledger.InputError
+
+pub fn decode_plan(String, limits? : @ledger.Limits) -> @ledger.RunPlan raise @ledger.InputError
+
+pub fn encode_bundle(@wire.Bundle) -> String
+
+pub fn encode_diagnostic(@ledger.Diagnostic) -> String
+
+pub fn encode_plan(@ledger.RunPlan) -> String
+
+pub fn encode_summary(@ledger.Summary, deny_recovered? : Bool) -> String
+
+pub fn parse_junit(String, report_id? : String, limits? : @ledger.Limits) -> @ledger.ParsedReport raise @ledger.InputError
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+pub using @ledger {type AttemptRecord}
+
+pub using @wire {type Bundle}
+
+pub using @ledger {type CaseKey}
+
+pub using @ledger {type CaseSummary}
+
+pub using @ledger {type Diagnostic}
+
+pub using @ledger {type Document}
+
+pub using @ledger {type ExpectedReport}
+
+pub using @ledger {type InputError}
+
+pub using @ledger {type Ledger}
+
+pub using @ledger {type Limits}
+
+pub using @ledger {type MissingCase}
+
+pub using @ledger {type ObservedCase}
+
+pub using @ledger {type Outcome}
+
+pub using @ledger {type ParsedReport}
+
+pub using @ledger {type Problem}
+
+pub using @ledger {type ProblemKind}
+
+pub using @ledger {type ReportBinding}
+
+pub using @wire {type ReportFile}
+
+pub using @ledger {type RunPlan}
+
+pub using @ledger {type Summary}
+
+pub using @ledger {type Verdict}
+
+// Traits

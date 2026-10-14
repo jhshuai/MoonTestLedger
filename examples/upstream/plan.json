@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "run_id": "upstream-jest-demo",
+  "revision": "cc52f364a405169afe07bb00dab3d375b451229d",
+  "reports": [
+    {
+      "id": "jest-main",
+      "environment": "upstream-macos-jest",
+      "shard": "all",
+      "attempt": 1,
+      "cases": [
+        {"classname": "Test 1", "name": "Passing test"},
+        {"classname": "Test 1 › Test 1.1", "name": "Failing test"},
+        {"classname": "Test 1 › Test 1.1", "name": "Exception in target unit"},
+        {"classname": "Test 2", "name": "Exception in test"},
+        {"classname": "", "name": "Timeout test"},
+        {"classname": "", "name": "Skipped test"}
+      ]
+    }
+  ]
+}

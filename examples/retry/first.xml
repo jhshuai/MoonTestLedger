@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="checkout" tests="3" failures="1" errors="0" skipped="1">
+  <testcase classname="checkout.payment" name="charge_once" time="0.08"/>
+  <testcase classname="checkout.payment" name="reject_expired_card" time="0.04">
+    <failure message="Expected 402, received 503" type="AssertionError">Gateway sandbox timed out; request_id=demo-47.</failure>
+  </testcase>
+  <testcase classname="checkout.payment" name="wallet_provider" time="0">
+    <skipped message="Wallet provider disabled in this test environment"/>
+  </testcase>
+</testsuite>

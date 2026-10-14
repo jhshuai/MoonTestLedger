@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "documents": [
+    {
+      "id": "pytest-mismatch",
+      "run_id": "pytest-counter-check",
+      "revision": "cc52f364a405169afe07bb00dab3d375b451229d",
+      "environment": "upstream-pytest",
+      "shard": "all",
+      "attempt": 1,
+      "path": "pytest-counter-mismatch.xml"
+    }
+  ]
+}

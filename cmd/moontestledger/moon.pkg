@@ -1,0 +1,9 @@
+import {
+  "jhshuai/moontestledger/cli",
+  "moonbitlang/async",
+  "moonbitlang/core/env",
+}
+
+pkgtype(kind: "executable")
+
+supported_targets = "+wasm+native"

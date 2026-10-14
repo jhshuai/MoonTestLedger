@@ -1,0 +1,47 @@
+///|
+import {
+  "moonbitlang/async",
+  "moonbitlang/async/fs",
+  "moonbitlang/async/shell",
+  "moonbitlang/core/env",
+}
+
+///|
+async fn moon(args : Array[String]) -> Unit {
+  let command = @env.get_env_var("MOON_TEST_LEDGER_MOON").unwrap_or("moon")
+  @shell.Cmd(command, args, stdout=Inherit, stderr=Inherit).run()
+}
+
+///|
+async fn main {
+  let target = @env.args().get(1).unwrap_or("wasm-gc")
+  guard target == "wasm" ||
+    target == "wasm-gc" ||
+    target == "js" ||
+    target == "native" else {
+    fail("expected one of wasm, wasm-gc, js or native")
+  }
+  moon(["version", "--all"])
+  moon(["fmt", "--check"])
+  moon([
+    "fmt", "--check", "scripts/verify.mbtx", "scripts/e2e.mbtx", "scripts/check-encapsulation.mbtx",
+  ])
+  let paths = [
+    "pkg.generated.mbti", "ledger/pkg.generated.mbti", "junit/pkg.generated.mbti",
+    "wire/pkg.generated.mbti", "cli/pkg.generated.mbti", "cmd/moontestledger/pkg.generated.mbti",
+  ]
+  let before : Array[String] = []
+  for path in paths {
+    before.push(@fs.read_file(path).text())
+  }
+  moon(["info", "--target", "wasm"])
+  for index, path in paths {
+    assert_eq(before[index], @fs.read_file(path).text())
+  }
+  moon(["check", "--target", target, "--deny-warn"])
+  moon(["test", "--target", target, "--deny-warn"])
+  moon(["run", "--deny-warn", "scripts/check-encapsulation.mbtx"])
+  if target == "wasm" || target == "native" {
+    moon(["run", "scripts/e2e.mbtx", target])
+  }
+}

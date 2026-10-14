@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "documents": [
+    {
+      "id": "payments-1",
+      "run_id": "checkout-ci-1042",
+      "revision": "example-revision-a",
+      "environment": "linux-node22",
+      "shard": "payments",
+      "attempt": 1,
+      "path": "first.xml"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "jhshuai/moontestledger/wire"
+
+import {
+  "jhshuai/moontestledger/ledger",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn decode_bundle(String, limits? : @ledger.Limits) -> Bundle raise @ledger.InputError
+
+pub fn decode_plan(String, limits? : @ledger.Limits) -> @ledger.RunPlan raise @ledger.InputError
+
+pub fn encode_bundle(Bundle) -> String
+
+pub fn encode_diagnostic(@ledger.Diagnostic) -> String
+
+pub fn encode_plan(@ledger.RunPlan) -> String
+
+pub fn encode_summary(@ledger.Summary, deny_recovered? : Bool) -> String
+
+// Errors
+
+// Types and methods
+pub(all) struct Bundle {
+  documents : Array[ReportFile]
+} derive(Eq, @debug.Debug)
+pub fn Bundle::equal(Self, Self) -> Bool
+pub fn Bundle::not_equal(Self, Self) -> Bool
+pub fn Bundle::to_repr(Self) -> @debug.Repr
+
+pub(all) struct ReportFile {
+  binding : @ledger.ReportBinding
+  path : String
+} derive(Eq, @debug.Debug)
+pub fn ReportFile::equal(Self, Self) -> Bool
+pub fn ReportFile::not_equal(Self, Self) -> Bool
+pub fn ReportFile::to_repr(Self) -> @debug.Repr
+
+// Type aliases
+
+// Traits
