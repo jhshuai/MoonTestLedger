@@ -2,11 +2,14 @@
 package "jhshuai/moontestledger"
 
 import {
+  "jhshuai/moontestledger/history",
   "jhshuai/moontestledger/ledger",
   "jhshuai/moontestledger/wire",
 }
 
 // Values
+pub fn compare_evidence(@wire.Evidence, @wire.Evidence) -> @history.Comparison
+
 pub fn decode_bundle(String, limits? : @ledger.Limits) -> @wire.Bundle raise @ledger.InputError
 
 pub fn decode_evidence(String, limits? : @ledger.Limits) -> @wire.Evidence raise @ledger.InputError
@@ -37,6 +40,12 @@ pub using @wire {type Bundle}
 pub using @ledger {type CaseKey}
 
 pub using @ledger {type CaseSummary}
+
+pub using @history {type Change}
+
+pub using @history {type ChangeKind}
+
+pub using @history {type Comparison}
 
 pub using @ledger {type Diagnostic}
 

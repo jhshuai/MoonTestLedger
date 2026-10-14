@@ -57,6 +57,16 @@ async fn verify(path : String) -> Int32 {
 }
 
 ///|
+async fn compare(before_path : String, after_path : String) -> Int32 {
+  let limits = @ledger.Limits::default()
+  let before = @ledger.decode_evidence(read_text(before_path, limits), limits~)
+  let after = @ledger.decode_evidence(read_text(after_path, limits), limits~)
+  let comparison = @ledger.compare_evidence(before, after)
+  @stdio.stdout.write(comparison.encode() + "\n")
+  comparison.exit_code()
+}
+
+///|
 // Capture is an explicit inventory bootstrap from a known complete run. It
 // cannot establish that the input producer actually executed every test.
 async fn capture(bundle_path : String) -> Int32 {
@@ -122,15 +132,16 @@ pub async fn run(arguments : Array[String]) -> Int32 {
       ["archive", plan, bundle, "--deny-recovered"] =>
         archive(plan, bundle, true)
       ["verify", path] => verify(path)
+      ["compare", before, after] => compare(before, after)
       ["--help"] | ["help"] => {
         @stdio.stdout.write(
-          "MoonTestLedger\n  audit PLAN.json BUNDLE.json [--deny-recovered]\n  capture BUNDLE.json\n  archive PLAN.json BUNDLE.json [--deny-recovered]\n  verify EVIDENCE.json\nArchive/capture: 0 on successful creation. Audit/verify: 0 passing, 1 failing, 2 invalid input, 3 incomplete\n",
+          "MoonTestLedger\n  audit PLAN.json BUNDLE.json [--deny-recovered]\n  capture BUNDLE.json\n  archive PLAN.json BUNDLE.json [--deny-recovered]\n  verify EVIDENCE.json\n  compare BEFORE.json AFTER.json\nArchive/capture: 0 on creation. Audit/verify: 0 passing, 1 failing, 2 invalid input, 3 incomplete. Compare: 0 no new adverse result, 1 regression, 2 invalid input, 3 inconclusive.\n",
         )
         0
       }
       _ =>
         raise refusal(
-          "Usage", "/arguments", "Use audit, capture, archive or verify; --help shows arguments",
+          "Usage", "/arguments", "Use audit, capture, archive, verify or compare; --help shows arguments",
         )
     }
   } catch {

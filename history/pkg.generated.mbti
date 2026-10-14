@@ -1,0 +1,51 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "jhshuai/moontestledger/history"
+
+import {
+  "jhshuai/moontestledger/ledger",
+  "jhshuai/moontestledger/wire",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn compare_evidence(@wire.Evidence, @wire.Evidence) -> Comparison
+
+// Errors
+
+// Types and methods
+pub(all) struct Change {
+  environment : String
+  key : @ledger.CaseKey
+  kind : ChangeKind
+  before : @ledger.CaseSummary?
+  after : @ledger.CaseSummary?
+} derive(Eq, @debug.Debug)
+pub fn Change::equal(Self, Self) -> Bool
+pub fn Change::not_equal(Self, Self) -> Bool
+pub fn Change::to_repr(Self) -> @debug.Repr
+
+pub(all) enum ChangeKind {
+  Added
+  Removed
+  Regressed
+  Improved
+  Changed
+  Unchanged
+  Unknown
+} derive(Eq, @debug.Debug)
+pub fn ChangeKind::equal(Self, Self) -> Bool
+pub fn ChangeKind::not_equal(Self, Self) -> Bool
+pub fn ChangeKind::to_repr(Self) -> @debug.Repr
+
+type Comparison
+pub fn Comparison::after(Self) -> @ledger.Summary
+pub fn Comparison::before(Self) -> @ledger.Summary
+pub fn Comparison::changes(Self) -> Array[Change]
+pub fn Comparison::comparable(Self) -> Bool
+pub fn Comparison::encode(Self) -> String
+pub fn Comparison::exit_code(Self) -> Int
+pub fn Comparison::policy_changed(Self) -> Bool
+
+// Type aliases
+
+// Traits

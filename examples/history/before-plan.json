@@ -1,0 +1,1 @@
+{"schema":1,"run_id":"nightly-before","revision":"revision-1","reports":[{"id":"before","environment":"linux","shard":"payments","attempt":1,"cases":[{"classname":"Payments","name":"charge_once"},{"classname":"Payments","name":"refund"},{"classname":"Payments","name":"offline"}]}]}

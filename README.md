@@ -16,8 +16,23 @@ Source repository: [jhshuai/MoonTestLedger](https://github.com/jhshuai/MoonTestL
 - Deterministic JSON evidence, strict versioned plan/bundle JSON and CI exit codes.
 - **capture** to obtain an inventory from supplied reports, and **audit** for arbitrary report files.
 - Replayable evidence archives retain the plan, original XML, bindings and recovery policy; **verify** rechecks a saved run without its original files.
+- Historical comparison detects regressions and improvements while retaining added, removed and unknown test evidence.
 
-Historical comparisons, additional producer profiles, TAP/SARIF adapters, report rewriting, dashboards and hosted integrations are roadmap items. No performance or universal JUnit compatibility claim is made.
+Additional producer profiles, TAP/SARIF adapters, report rewriting, dashboards and hosted integrations are roadmap items. No performance or universal JUnit compatibility claim is made.
+
+## Compare two runs
+
+~~~sh
+moon run --target wasm cmd/moontestledger -- archive examples/history/before-plan.json examples/history/before-bundle.json > before.json
+moon run --target wasm cmd/moontestledger -- archive examples/history/after-plan.json examples/history/after-bundle.json > after.json
+moon run --target wasm cmd/moontestledger -- compare before.json after.json
+~~~
+
+This synthetic payment example reports one regression, one improvement and one unchanged skipped test, with exit 1. The library operation is `compare_evidence(before, after)`. Comparison is opaque; `changes()`, `before()` and `after()` return independent copies with complete attempt/problem evidence, and `encode()` renders a deterministic status-difference view.
+
+Matching uses exact environment, classname and name; shard moves are changes in placement, not removal plus addition. Separate runs/revisions are compared without combining their attempts. Failure/error/unresolved is more adverse than recovered-on-retry, which is more adverse than pass/skip. Increasing severity is a regression; a final pass or failure-to-recovery is an improvement. Failure-to-skip is a status change, never an improvement. Added adverse tests fail the comparison gate.
+
+Compare exits 3 if either run is incomplete, a baseline test is absent from the current inventory, or recovery policy differs; it cannot approve a test removal or infer success from missing evidence. Otherwise it exits 1 for a new adverse result, or 0 for no new adverse result. This gate checks regressions: unchanged failures can yield compare 0 while verify still yields 1. Use both gates where all current tests must pass. Comparison JSON is a derived view; preserve the input archives for raw XML and use the API to inspect full diagnostics. It does not claim statistical flakiness or causation.
 
 ## Save and recheck evidence
 
@@ -189,7 +204,7 @@ moon run scripts/e2e.mbtx wasm
 moon run scripts/e2e.mbtx native
 ~~~
 
-Moon run scripts/verify.mbtx TARGET also snapshots the six generated interfaces, regenerates them and checks drift, without requiring Git. Automation is written in MoonBit .mbtx. CI declares Linux, macOS and Windows jobs for the four library backends, plus applicable file CLI workflows. CI configuration is distinct from a successful remote run; [validation evidence](docs/validation.md) records what actually executed.
+Moon run scripts/verify.mbtx TARGET also snapshots the seven generated interfaces, regenerates them and checks drift, without requiring Git. Automation is written in MoonBit .mbtx. CI declares Linux, macOS and Windows jobs for the four library backends, plus applicable file CLI workflows. CI configuration is distinct from a successful remote run; [validation evidence](docs/validation.md) records what actually executed.
 
 Core tests cover malformed input, exact identities, limits, inventory completeness, retry ordering, deterministic output, JSON round trips, exact numeric lexemes, atomic rejection and recovery, source preservation and caller-array isolation. A compile-negative probe verifies that downstream code cannot mutate the ledger's internal inventory.
 

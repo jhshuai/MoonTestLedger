@@ -26,7 +26,7 @@ The three extra Wasm/native tests exercise host file path/UTF-8 I/O behavior. A 
 
 The compile-negative encapsulation probe passed: downstream access to the ledger's mutable inventory was rejected. Generated interfaces expose `type Ledger`, without storage fields. An independent consumer module also resolved the unpublished module through a `moon.work` workspace, constructed the facade's public types, ingested a report and executed its passing summary on Wasm-GC.
 
-The local Windows native attempt could not execute because the stable native driver requires MSVC-compatible build tools and a Windows SDK. GCC/MinGW does not satisfy the driver/dependency requirements. No Windows native runtime success is claimed.
+The local Windows native attempt could not execute because the stable native driver requires MSVC-compatible build tools and a Windows SDK. GCC/MinGW does not satisfy the driver/dependency requirements. No Windows native runtime success is claimed for that local attempt; remote CI results are documented separately below.
 
 The complete evaluator passed on both Wasm and actual Linux native: six-case upstream Jest report (exit 1), missing artifact (3), capture (0), synthetic ordered retry (0), denied recovery (1), and upstream pytest counter refusal (2).
 
@@ -52,8 +52,16 @@ moon run scripts/verify.mbtx js
 moon run scripts/verify.mbtx native
 ~~~
 
-The verifier snapshots all six tracked generated interfaces, regenerates with the Wasm target and compares their contents. It works from a source archive and does not need a Git repository. MOON_TEST_LEDGER_MOON may point to the executable used by child commands when multiple installations are present. Native requires the target platform's compiler/SDK. The evaluator's local report fixtures have documented public provenance.
+The current verifier snapshots all seven tracked generated interfaces, regenerates with the Wasm target and compares their contents. It works from a source archive and does not need a Git repository. MOON_TEST_LEDGER_MOON may point to the executable used by child commands when multiple installations are present. Native requires the target platform's compiler/SDK. The evaluator's local report fixtures have documented public provenance.
 
 ## Evidence archive capability — 2026-10-14
 
 The archive addition passed strict checks, formatting and six-interface drift verification. Tests: Wasm 45/45, Wasm-GC 42/42, JavaScript 42/42, Linux native 45/45. Wasm and actual Linux native file workflows now also create and verify archives of the unmodified upstream Jest report, preserve an incomplete run, and retain denied-recovery policy. Unit tests cover exact source/payload round trips, isolated snapshots, decoded schema/unknown-field/duplicate rejection, binding mismatch, custom-projection refusal, source limits and recovery after errors.
+
+Its [remote CI run](https://github.com/jhshuai/MoonTestLedger/actions/runs/38514448535) completed successfully for commit 4847db2124178670c7d25cdfba51df3f909e4ce9, including the configured three-OS/four-target matrix and applicable native CLI execution.
+
+## Historical comparison capability — 2026-10-14
+
+The comparison addition passed strict checks, package/script formatting and seven-interface drift verification. Tests: Wasm 53/53, Wasm-GC 50/50, JavaScript 50/50, Linux native 53/53. Wasm and actual Linux native end-to-end evaluators compare the real upstream archive to itself, reject a missing-evidence comparison as inconclusive, and report one regression and one improvement between the documented synthetic payment runs.
+
+Tests cover severity transitions including retry recovery, added adverse cases, removed inventory, unknown observations, policy differences, shard moves, distinct environments, inconclusive-result precedence, deterministic output, retained unresolved attempts and deep-copy isolation. A comparison success means no new adverse result; it does not replace the current archive's verify gate.

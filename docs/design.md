@@ -19,7 +19,7 @@ Status: the first local capability is implemented after demand and ecosystem rev
 
 ## Public boundary
 
-Concrete domain types belong to a public `ledger` package; `junit` is the format adapter; `wire` is strict versioned plan/report JSON; `cmd/main` is file I/O. A root facade may re-export public packages, not hide their concrete types in internal packages.
+Concrete domain types belong to a public `ledger` package; `junit` is the format adapter; `wire` handles strict versioned JSON and replayable archives; `history` owns comparison semantics; `cli` and `cmd/moontestledger` provide file I/O. A root facade re-exports public packages, without hiding concrete types in internal packages.
 
 Implemented operations: construct and validate a run plan; construct a ledger; ingest a parsed report by declared ID; obtain an independent evidence summary; encode/decode versioned plans and bundles; parse a JUnit document with structured diagnostics. The file CLI captures supplied inventory and audits arbitrary files. Ingestion validates before mutation, allowing correction after errors.
 
@@ -45,7 +45,7 @@ Acceptance requires actual report files from documented producers or clearly sou
 
 1. Explicit report and test inventory with ordered retry reconciliation (the complete first slice).
 2. Additional named producer profiles with captured output and conformance tests, then an adapter for a versioned MoonBit test-result export if available. Internal runner protocols are not assumed stable.
-3. Replayable evidence archives are implemented: full plan, bindings, original XML and gate policy survive validation and round trips. Next: revision-bound historical comparisons that retain missing/unknown evidence, without overwriting raw attempts.
+3. Replayable evidence archives and historical comparisons are implemented: full plan, bindings, original XML and gate policy survive validation and round trips. Exact environment/test identity comparisons retain both runs' attempts, distinguish severity changes, and make missing/removed inventory or policy changes inconclusive.
 4. Integration with CI artifact manifests and optional report renderers, after local semantics remain stable. No dashboard or hosted backend is necessary for adoption.
 
 ## Validation

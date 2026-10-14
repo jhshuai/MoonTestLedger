@@ -46,3 +46,11 @@ pub fn parse_junit(
 ) -> @ledger.ParsedReport raise @ledger.InputError {
   @junit.parse(source, report_id~, limits~)
 }
+
+///|
+pub using @history {
+  type Comparison,
+  type Change,
+  type ChangeKind,
+  compare_evidence,
+}

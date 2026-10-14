@@ -41,6 +41,8 @@ Bundle.json presents attempt 2 before attempt 1, verifying declared retry order 
 
 ## Automated evaluator
 
+The newly authored `history/` fixtures are Apache-2.0 synthetic runs at two revisions, with a payment regression and a refund improvement. Run the three archive/compare commands in the main README. Neither fixture is altered upstream output. The evaluator also compares an unmodified upstream Jest archive to itself and checks that an incomplete archive cannot pass a comparison.
+
 ~~~sh
 moon run scripts/e2e.mbtx wasm
 moon run scripts/e2e.mbtx native

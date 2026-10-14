@@ -117,6 +117,13 @@ async fn main {
   @fs.write_file(path, archive.stringify(indent=2))
   let replayed = cli(target, ["verify", path], 1)
   assert_eq(replayed, original)
+  let unchanged = cli(target, ["compare", path, path], 0)
+  guard unchanged is { "comparable": True, "changes": Array(changes), .. } else {
+    fail("Expected a conclusive self-comparison")
+  }
+  assert_eq(changes.length(), 6)
+  let other_path = directory + "/other.json"
+  defer @fs.remove(other_path)
   let incomplete_archive = cli(
     target,
     [
@@ -126,6 +133,11 @@ async fn main {
   )
   @fs.write_file(path, incomplete_archive.stringify())
   assert_eq(cli(target, ["verify", path], 3), missing)
+  @fs.write_file(other_path, archive.stringify())
+  let unknown = cli(target, ["compare", other_path, path], 3)
+  guard unknown is { "comparable": False, .. } else {
+    fail("Missing evidence cannot pass comparison")
+  }
   let strict_archive = cli(
     target,
     [
@@ -135,7 +147,41 @@ async fn main {
   )
   @fs.write_file(path, strict_archive.stringify())
   assert_eq(cli(target, ["verify", path], 1), denied)
+  let before = cli(
+    target,
+    [
+      "archive", "examples/history/before-plan.json", "examples/history/before-bundle.json",
+    ],
+    0,
+  )
+  let after = cli(
+    target,
+    [
+      "archive", "examples/history/after-plan.json", "examples/history/after-bundle.json",
+    ],
+    0,
+  )
+  @fs.write_file(path, before.stringify())
+  @fs.write_file(other_path, after.stringify())
+  let comparison = cli(target, ["compare", path, other_path], 1)
+  guard comparison is { "comparable": True, "changes": Array(changes), .. } else {
+    fail("Expected complete comparison")
+  }
+  assert_eq(
+    changes
+    .iter()
+    .filter(change => change is { "kind": String("regressed"), .. })
+    .count(),
+    1,
+  )
+  assert_eq(
+    changes
+    .iter()
+    .filter(change => change is { "kind": String("improved"), .. })
+    .count(),
+    1,
+  )
   println(
-    "End-to-end checks passed on \{target}: real Jest, missing artifact, capture, ordered retry, policy and invalid upstream counters.",
+    "End-to-end checks passed on \{target}: real Jest, inventory/retries, archive replay, policy, historical comparison and malformed counters.",
   )
 }

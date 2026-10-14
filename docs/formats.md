@@ -56,3 +56,9 @@ Summary JSON contains canonical environment/shard/case ordering, ordered attempt
 The schema-1 envelope has exactly `schema`, `kind` (`moontestledger/evidence`), `deny_recovered` (boolean), `plan` (the complete schema-1 plan) and `documents`. Each document has exactly `id`, `run_id`, `revision`, `environment`, `shard`, `attempt`, and `xml` (original decoded XML). Duplicate report IDs are rejected. No report paths or projected summary replace the authored source.
 
 Decoding reparses each XML and ingests it against the plan. Encoding checks that each accepted projection exactly matches its reparsed source, then checks the encoded JSON input budget. Unknown fields, duplicate JSON keys, unsupported versions, binding conflicts, malformed XML and resource violations are refused. Missing documents are allowed and remain incomplete. Canonical encoding orders documents by the validated plan. The supplied recovery policy survives round trips.
+
+## Historical comparison
+
+Only validated evidence archives enter the comparison API. Rows match exact `(environment, classname, name)`, independently of shard placement, and are sorted deterministically. Both original runs remain separate. Change kinds are added, removed, regressed, improved, changed, unchanged and unknown. Incomplete matched rows are unknown. Increasing severity from pass/skip to recovery to final failure/error/unresolved is a regression. Failure-to-skip cannot be an improvement.
+
+The gate returns 3 for missing evidence, removed baseline inventory or differing recovery policies, before considering regressions. It returns 1 for a regression or added adverse testcase, otherwise 0. It is a regression gate, not a replacement for the current run's verify gate. Result getters return copied arrays including complete attempt/diagnostic payloads; JSON is a derived status view referencing both run IDs/revisions and listing missing evidence. There is no comparison-JSON decoder or fuzzy identity matching.

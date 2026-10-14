@@ -29,6 +29,7 @@ async fn main {
   let paths = [
     "pkg.generated.mbti", "ledger/pkg.generated.mbti", "junit/pkg.generated.mbti",
     "wire/pkg.generated.mbti", "cli/pkg.generated.mbti", "cmd/moontestledger/pkg.generated.mbti",
+    "history/pkg.generated.mbti",
   ]
   let before : Array[String] = []
   for path in paths {

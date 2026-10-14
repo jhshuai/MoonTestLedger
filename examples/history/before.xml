@@ -1,0 +1,5 @@
+<testsuite name="Payments" tests="3" failures="1" skipped="1">
+  <testcase classname="Payments" name="charge_once"/>
+  <testcase classname="Payments" name="refund"><failure message="refund missing">Original refund diagnostic</failure></testcase>
+  <testcase classname="Payments" name="offline"><skipped message="external dependency"/></testcase>
+</testsuite>

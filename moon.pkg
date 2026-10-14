@@ -1,4 +1,5 @@
 import {
+  "jhshuai/moontestledger/history",
   "jhshuai/moontestledger/ledger",
   "jhshuai/moontestledger/junit",
   "jhshuai/moontestledger/wire",

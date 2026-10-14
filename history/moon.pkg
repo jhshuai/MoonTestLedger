@@ -1,0 +1,9 @@
+import {
+  "jhshuai/moontestledger/ledger",
+  "jhshuai/moontestledger/wire",
+  "moonbitlang/core/debug",
+}
+
+import {
+  "jhshuai/moontestledger/junit",
+} for "test"
