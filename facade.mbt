@@ -46,6 +46,10 @@ pub using @wire {
   type PackIndex,
   type PackFile,
   decode_pack_index,
+  type CollectionSpec,
+  type CollectionFile,
+  type CollectedXml,
+  decode_collection,
 }
 
 ///|

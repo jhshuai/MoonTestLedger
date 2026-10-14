@@ -9,6 +9,8 @@ import {
 // Values
 pub fn decode_bundle(String, limits? : @ledger.Limits) -> Bundle raise @ledger.InputError
 
+pub fn decode_collection(String, limits? : @ledger.Limits) -> CollectionSpec raise @ledger.InputError
+
 pub fn decode_evidence(String, limits? : @ledger.Limits) -> Evidence raise @ledger.InputError
 
 pub fn decode_integrity(String, limits? : @ledger.Limits) -> IntegrityManifest raise @ledger.InputError
@@ -44,6 +46,28 @@ pub(all) struct Bundle {
 pub fn Bundle::equal(Self, Self) -> Bool
 pub fn Bundle::not_equal(Self, Self) -> Bool
 pub fn Bundle::to_repr(Self) -> @debug.Repr
+
+pub(all) struct CollectedXml {
+  id : String
+  xml : String
+} derive(Eq, @debug.Debug)
+pub fn CollectedXml::equal(Self, Self) -> Bool
+pub fn CollectedXml::not_equal(Self, Self) -> Bool
+pub fn CollectedXml::to_repr(Self) -> @debug.Repr
+
+pub(all) struct CollectionFile {
+  id : String
+  path : String
+} derive(Eq, @debug.Debug)
+pub fn CollectionFile::equal(Self, Self) -> Bool
+pub fn CollectionFile::not_equal(Self, Self) -> Bool
+pub fn CollectionFile::to_repr(Self) -> @debug.Repr
+
+type CollectionSpec
+pub fn CollectionSpec::collect(Self, ArrayView[CollectedXml], limits? : @ledger.Limits) -> Evidence raise @ledger.InputError
+pub fn CollectionSpec::encode(Self, limits? : @ledger.Limits) -> String raise @ledger.InputError
+pub fn CollectionSpec::files(Self) -> Array[CollectionFile]
+pub fn CollectionSpec::new(@ledger.RunPlan, ArrayView[CollectionFile], deny_recovered? : Bool, limits? : @ledger.Limits) -> Self raise @ledger.InputError
 
 type Evidence
 pub fn Evidence::check_integrity(Self, IntegrityManifest, limits? : @ledger.Limits) -> Unit raise @ledger.InputError

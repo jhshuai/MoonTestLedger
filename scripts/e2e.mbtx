@@ -116,6 +116,76 @@ async fn pack_workflow(
 }
 
 ///|
+async fn collection_workflow(
+  target : String,
+  archive : Json,
+  summary : Json,
+) -> Unit {
+  let root = @fs.tmpdir(prefix="moontestledger-collect")
+  defer @fs.rmdir(root)
+  let spec_path = root + "/collection.json"
+  defer @fs.remove(spec_path)
+  let output = root + "/evidence.json"
+  defer @fs.remove(output)
+  let spec = @json.parse(
+    @fs.read_file("examples/upstream/collection.json").text(),
+  )
+  guard spec is { "files": [Object(file)], .. } else {
+    fail("Expected one declared XML artifact")
+  }
+  file["path"] = Json::string("job/jest.xml")
+  @fs.write_file(spec_path, spec.stringify())
+  let pending = cli(target, ["collect", spec_path, root], 0)
+  @fs.write_file(output, pending.stringify())
+  let missing = cli(target, ["verify", output], 3)
+  guard missing is { "missing_reports": [String("jest-main")], .. } else {
+    fail("Missing directory artifact must remain declared")
+  }
+  let subdirectory = root + "/job"
+  @fs.mkdir(subdirectory)
+  defer @fs.rmdir(subdirectory)
+  let report = subdirectory + "/jest.xml"
+  defer @fs.remove(report)
+  let original = @fs.read_file("examples/upstream/jest-junit.xml").text()
+  @fs.write_file(report, original)
+  let noise = subdirectory + "/unrelated.txt"
+  @fs.write_file(noise, b"\xff")
+  defer @fs.remove(noise)
+  let collected = cli(target, ["collect", spec_path, root], 0)
+  assert_eq(collected, archive)
+  assert_eq(cli(target, ["collect", spec_path, root], 0), collected)
+  @fs.write_file(output, collected.stringify())
+  assert_eq(cli(target, ["verify", output], 1), summary)
+  @fs.write_file(report, "<testsuite><testcase name='wrong'/></testsuite>")
+  let invalid = cli(target, ["collect", spec_path, root], 2)
+  guard invalid is { "error": { "code": String("UnexpectedCase"), .. }, .. } else {
+    fail("Collection cannot adopt an undeclared testcase")
+  }
+  @fs.write_file(report, b"\xff")
+  let malformed = cli(target, ["collect", spec_path, root], 2)
+  guard malformed is { "error": { "code": String("InvalidUtf8"), .. }, .. } else {
+    fail("Declared malformed bytes must be refused")
+  }
+  @fs.write_file(report, original)
+  assert_eq(cli(target, ["collect", spec_path, root], 0), archive)
+  @fs.write_file(
+    spec_path,
+    spec.stringify().replace(old="job/jest.xml", new="../jest.xml"),
+  )
+  let traversal = cli(target, ["collect", spec_path, root], 2)
+  guard traversal is { "error": { "code": String("CollectionPath"), .. }, .. } else {
+    fail("Traversal must be refused before file access")
+  }
+  @fs.write_file(
+    spec_path,
+    @fs.read_file("examples/retry/collection.json").text(),
+  )
+  let retry = cli(target, ["collect", spec_path, "examples/retry"], 0)
+  @fs.write_file(output, retry.stringify())
+  ignore(cli(target, ["verify", output], 1))
+}
+
+///|
 async fn main {
   let target = @env.args().get(1).unwrap_or("wasm")
   assert_true(target == "wasm" || target == "native")
@@ -452,7 +522,8 @@ async fn main {
   assert_eq(cli(target, ["check-integrity", path, other_path], 0), recovered)
   pack_workflow(target, archive, original, 1)
   pack_workflow(target, incomplete_archive, missing, 3)
+  collection_workflow(target, archive, original)
   println(
-    "End-to-end checks passed on \{target}: real Jest, retry continuation, repetitions, archives, integrity/tampering, merging, offline HTML, policy, comparison and malformed counters.",
+    "End-to-end checks passed on \{target}: real Jest, retry continuation, repetitions, archives, integrity/tampering, file packs, declared collection, merging, offline HTML, policy, comparison and malformed counters.",
   )
 }

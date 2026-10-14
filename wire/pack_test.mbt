@@ -99,6 +99,20 @@ test "file pack refuses missing duplicate undeclared corrupt and wrong length me
 }
 
 ///|
+test "file pack serialization honors lowered expected-case budgets for collected archives" {
+  let evidence = initial_evidence(two_groups=true)
+  let (index, _) = evidence.detach()
+  let error = try {
+    ignore(index.encode(limits={ ..@ledger.Limits::default(), max_cases: 7, }))
+    "accepted"
+  } catch {
+    @ledger.InputError::Invalid(d) => d.code
+  }
+  assert_eq(error, "CaseLimit")
+  assert_eq(@wire.decode_pack_index(index.encode()).encode(), index.encode())
+}
+
+///|
 test "file pack validates full inventory correspondence and strict nested formats before member access" {
   let (index, _) = @wire.decode_evidence(
     @wire.encode_evidence(archive_ledger()),

@@ -30,6 +30,11 @@ async fn main {
     "archive", "examples/upstream/plan.json", "examples/upstream/bundle.json",
   ])
   @fs.write_file("output/jest-evidence.json", archive)
+  let collected = command(target, [
+    "collect", "examples/upstream/collection.json", "examples/upstream",
+  ])
+  assert_eq(collected, archive)
+  @fs.write_file("output/jest-collected.json", collected)
   let manifest = command(target, ["integrity", "output/jest-evidence.json"])
   @fs.write_file("output/jest-integrity.json", manifest)
   let page = command(target, ["html", "output/jest-evidence.json"])

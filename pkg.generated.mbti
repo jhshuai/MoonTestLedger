@@ -14,6 +14,8 @@ pub fn compare_evidence(@wire.Evidence, @wire.Evidence) -> @history.Comparison
 
 pub fn decode_bundle(String, limits? : @ledger.Limits) -> @wire.Bundle raise @ledger.InputError
 
+pub fn decode_collection(String, limits? : @ledger.Limits) -> @wire.CollectionSpec raise @ledger.InputError
+
 pub fn decode_evidence(String, limits? : @ledger.Limits) -> @wire.Evidence raise @ledger.InputError
 
 pub fn decode_integrity(String, limits? : @ledger.Limits) -> @wire.IntegrityManifest raise @ledger.InputError
@@ -60,6 +62,12 @@ pub using @ledger {type CaseSummary}
 pub using @history {type Change}
 
 pub using @history {type ChangeKind}
+
+pub using @wire {type CollectedXml}
+
+pub using @wire {type CollectionFile}
+
+pub using @wire {type CollectionSpec}
 
 pub using @history {type Comparison}
 

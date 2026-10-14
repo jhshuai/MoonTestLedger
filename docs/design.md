@@ -51,7 +51,8 @@ Acceptance requires actual report files from documented producers or clearly sou
 6. Same-revision repeated-run analysis is implemented: distinct runs, exact shared testcase/environment inventory, separate retry/independent-run counts, full sample evidence and conservative incomplete gating. It describes observed mixtures, without claiming a statistical flakiness diagnosis.
 7. Evidence integrity manifests are implemented: full inventory/policy/archive hashes, exact XML receipts and bounded strict offline verification. The existing test gate survives successful integrity validation. Trusted-manifest distribution/signature/attestation remains caller-owned.
 8. Detached XML file packs are implemented: closed content-addressed members, full expected inventory, exact source deduplication, strict restoration and the original test gate. No general archive format or hosted storage is introduced.
-9. Declared artifact-directory collection and additional named producer profiles are next integration boundaries. General flaky classification/quarantine is outside this project's boundary; see the updated ecosystem review.
+9. Declared artifact-directory collection is implemented: strict full path mapping, bounded directory entry inspection and atomic original XML collection, with missing artifacts preserved. It composes with archive merging, integrity and detached file packs.
+10. Additional named producer profiles and CI-specific transport adapters remain planned. General flaky classification/quarantine is outside this project's boundary; see the updated ecosystem review.
 
 ## Validation
 

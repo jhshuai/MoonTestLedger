@@ -285,6 +285,25 @@ Use a **new directory** for detach. It creates `index.json` and flat `sha256-<di
 
 Portable library flow: `let (index, files) = evidence.detach(); let loaded = decode_pack_index(index.encode()); let restored = loaded.restore(files[:])`. `PackFile` has `name` and `xml`; `PackIndex` is opaque and exposes `filenames()`. Every operation validates limits and refuses unsupported content. Strict member validation precedes complete XML replay and archive digest verification. CLI checks the closed member set, regular-file kinds and symlinks, creates new files exclusively and publishes the index last. Failed publication attempts clean up only files successfully created by that operation; no transactional guarantee against concurrent hostile filesystem changes is claimed. The current input/inline replay budget still applies: this feature does not bypass archive size limits. Keep the pack index independently trusted when that trust is required.
 
+## Collect declared CI artifact directories
+
+~~~sh
+moon run --target wasm cmd/moontestledger -- collect examples/upstream/collection.json examples/upstream > collected-jest.json
+moon run --target wasm cmd/moontestledger -- verify collected-jest.json
+moon run --target wasm cmd/moontestledger -- collect examples/retry/collection.json examples/retry > collected-retry.json
+moon run --target wasm cmd/moontestledger -- verify collected-retry.json
+~~~
+
+Both examples create replayable archives (creation 0). The unmodified real Jest evidence verifies at 1 with all six cases/four failures. The synthetic retry example verifies at 1 because its declared policy denies recovery, retaining both attempts. Run against an empty artifact root with the same specification: the generated archive retains **every** expected report/case and verifies at 3. No test runner, CI account, glob discovery or private service is required.
+
+`moon run scripts/render-demo.mbtx wasm` also saves `output/jest-collected.json` directly as UTF-8 and asserts that declared collection reproduces the original archive byte-for-byte. This avoids shell-specific output encodings; verify that saved archive as the gate.
+
+A collection specification contains the full plan, recovery policy and exactly one `id`/relative `path` per expected report. `collect` reads only those declared paths under the supplied root, including explicitly named nested directories. Missing components mean missing evidence; inaccessible, malformed, symlinked or special-kind inputs refuse the whole operation. Unlisted files are outside the collection input set and are never read as XML; this is not directory-wide discovery. No report identities, attempts or revision labels are inferred from filenames. Labels are caller-owned contracts, not proof of artifact origin.
+
+Portable APIs: `CollectionSpec::new(plan, files[:], deny_recovered~)`, `decode_collection(source)`, `spec.encode()`, `spec.files()` and `spec.collect(inputs[:])`. `CollectionFile` has `id`/`path`; `CollectedXml` has `id`/`xml`. The specification is opaque; constructors/codecs validate a full one-to-one mapping, relative path safety and case/file/directory-prefix collisions. Collection returns an independent archive, rejects duplicate/unknown IDs and unsupported XML, and preserves absent reports/cases and exact sources. Use merge for independent collections against the same full plan, and verify as the test gate. Write generated archives to a separate path.
+
+The first path profile accepts ASCII letters/digits, dot, underscore, hyphen and forward slash: at most 4096 characters, 32 components and 255 characters per component. Absolute paths, traversal, empty components, trailing dots, Windows device names and non-ASCII declared filenames are refused. The root directory itself may have Unicode characters. XML names/messages/source remain Unicode. Actual entry casing must match the declaration; case-colliding entries are refused for selected paths. Only declared directory prefixes are visited, with cached entry enumeration bounded by `max_events`. Existing source/report/case/problem/output budgets apply; access errors are never converted to absent reports. The CLI assumes a stable local filesystem and does not claim a sandbox against concurrent filesystem races.
+
 ## Development and validation
 
 Use MoonBit v0.10.15 for this version. The validated toolchain is moonc v0.10.15+943464bfa / moon 0.1.20261012. Dependencies are pinned in moon.mod; the project uses current moon.mod and moon.pkg formats.

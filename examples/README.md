@@ -12,6 +12,10 @@ Keep the expected manifest in a separately trusted location before transferring 
 
 ## Unmodified upstream reports
 
+`upstream/collection.json` is a project-authored Apache-2.0 full expected-plan/path mapping to the unchanged MIT Jest XML in this directory. Run `collect examples/upstream/collection.json examples/upstream`, save the output separately, then verify: expected gate 1. Using an empty root keeps the same plan and yields gate 3. The E2E evaluator copies the exact XML into a nested temporary job directory, collects it deterministically, preserves the existing summary, refuses malformed bytes and undeclared test identities, rejects traversal before directory access, and recovers after correction. It deliberately includes an unlisted malformed text file to verify that only declared XML is input. No altered upstream report is committed.
+
+`retry/collection.json` reuses the existing synthetic payment plan/first/second XML and explicitly sets deny-recovered. It collects both exact declared paths and verify remains 1. Both new collection specifications are newly authored binding metadata, not captured production configurations.
+
 Repository: [dorny/test-reporter](https://github.com/dorny/test-reporter), commit [cc52f364a405169afe07bb00dab3d375b451229d](https://github.com/dorny/test-reporter/commit/cc52f364a405169afe07bb00dab3d375b451229d), MIT license. Files were downloaded on 2026-10-13 without transformation. The complete upstream license is retained at upstream/LICENSE.dorny-test-reporter.
 
 | Local file | Upstream path | SHA-256 |

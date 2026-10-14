@@ -23,6 +23,8 @@ The offline HTML renderer, CSS, hostile-text test data and render-demo automatio
 
 The detached XML file-pack protocol, storage adapter, CLI and boundary tests are newly authored Apache-2.0 code. The unmodified XML members retain their original fixture license. [cmdrvl/pack](https://github.com/cmdrvl/pack) (MIT) was inspected as a non-MoonBit workflow reference; no implementation, schema or tests were copied. Hash primitives continue to use the pinned x/crypto dependency.
 
+The declared directory collection API, portable path validation, specification JSON, CLI, bounded enumeration and tests are project-authored Apache-2.0. The example specifications refer to the unchanged MIT Jest fixture and existing Apache-2.0 synthetic payment reports. Pinned async/fs API documentation informed no-follow file-kind and directory iterator usage; no upstream implementation or test code was copied.
+
 ## Research and format references
 
 - [GitLab unit test reports](https://docs.gitlab.com/ci/testing/unit_test_reports/) documents report workflows and duplicate-name behavior.

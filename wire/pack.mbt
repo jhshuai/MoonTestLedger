@@ -72,11 +72,17 @@ pub fn PackIndex::encode(
   self : PackIndex,
   limits~ : @ledger.Limits = @ledger.Limits::default(),
 ) -> String raise @ledger.InputError {
+  let plan = @ledger.RunPlan::new(
+    self.plan.run_id,
+    self.plan.revision,
+    self.plan.reports,
+    limits~,
+  )
   let integrity = strict_json(self.manifest.encode(limits~), limits)
   let result = Json::object({
     "schema": Json::number(1),
     "kind": Json::string("moontestledger/file-pack"),
-    "plan": plan_json(self.plan),
+    "plan": plan_json(plan),
     "integrity": integrity,
   }).stringify(indent=2)
   if result.length() > limits.max_source_units {
