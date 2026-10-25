@@ -1,5 +1,13 @@
 # Delivery validation — 2026-10-25
 
+## Complete CI delivery and offline verification
+
+Final checks with the documented pinned toolchain passed formatting (including the independent consumer), eight generated-interface drift checks, strict check/build, encapsulation and tests: Wasm 114/114, Wasm-GC 106/106, JS 106/106, Linux native 116/116. The frozen Linux source copy compared equal to workspace code before execution. Original Jest audit stdout remains byte-for-byte unchanged; public library interfaces are unchanged.
+
+Actual Wasm/native E2E runs retain gates 0/1/3 while producing all six members, independently check the integrity manifest and ZIP pack, refuse existing destinations, mutate every member, remove the completion receipt, add hidden extras, substitute an HTML directory and refuse invalid input before output-directory creation. Corrections restore successful verification. Unit checks exercise exact EOF and 0/1/65535/65536/65537-byte boundaries; Unix native tests refuse symlink members/roots.
+
+The initial full native verifier terminated with a segmentation fault during the delivery-script phase. Without source changes, the delivery evaluator then passed directly, direct native CLI creation returned its expected failing gate with all files, and the entire native verifier passed on repetition. The originating process/cause was not established; this observation is retained rather than represented as a diagnosed/fixed product bug. Previously recorded dependency host/C warnings remain. Remote matrix results provide separate evidence after publication. The manual GitHub upload workflow is provided but has not been dispatched; local validation does not claim an actual artifact upload. No Mooncakes upload/publication was performed.
+
 The module remains unpublished to Mooncakes. These milestones prepare GitHub source use and CI delivery; they do not claim registry installation or competition acceptance.
 
 ## Safe evidence file output
@@ -13,6 +21,8 @@ The existing real Jest/retry/collection/pack CLI evaluator and new output evalua
 Remote CI outcomes are recorded by GitHub Actions for each pushed revision; configured coverage is separate from an observed successful run.
 
 ## Independent source consumer
+
+Commit `f5e8e5729f769ea0b154e5f95ad9fb2fafece93c` passed [remote CI](https://github.com/jhshuai/MoonTestLedger/actions/runs/40210659828), all 12 jobs, including strict independent consumer checks/builds/actual runs on each OS/target combination.
 
 `scripts/check-consumer.mbtx` exported committed library revision `79b47d0b96393f00774897d13f356ebdff409afc` into fresh temporary workspaces, without Git/build/dependency-cache directories in the export. A separate consumer module strictly checked, built and actually ran on Wasm, Wasm-GC, JS/Node and Linux native. It imported public facade types/methods, preserved original XML, round-tripped JSON/detached/ZIP/USTAR packs, refused an unknown report atomically and retained missing inventory. Every target agreed on the six-case Jest archive digest, 7,997-byte XML digest, complete failing gate 1 and missing gate 3. Explicit view-element record types and Node's two-element executable prefix are exercised by the consumer fixture.
 

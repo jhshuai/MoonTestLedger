@@ -271,6 +271,8 @@ pub async fn run(arguments : Array[String]) -> Int32 {
       ["archive", plan, bundle, "--deny-recovered"] =>
         archive(plan, bundle, true, output~)
       ["verify", path] => verify(path)
+      ["ci-report", path, directory] => ci_report(path, directory)
+      ["verify-delivery", directory] => verify_delivery(directory)
       ["html", path] => html(path)
       ["integrity", path] => integrity(path)
       ["check-integrity", path, manifest] => check_integrity(path, manifest)
@@ -292,6 +294,9 @@ pub async fn run(arguments : Array[String]) -> Int32 {
       ["append", path, bundle] => append(path, bundle, output~)
       ["repetitions", _, _, ..] => repetitions(arguments[1:])
       ["--help"] | ["help"] => {
+        @stdio.stdout.write(
+          "CI evidence delivery:\n  ci-report EVIDENCE.json NEW-DIRECTORY\n  verify-delivery DIRECTORY\nSave six complete offline evidence/report members, then return the original 0/1/3 gate. Invalid or inconsistent delivery: 2. Existing destinations are refused.\n",
+        )
         @stdio.stdout.write(
           "Safe UTF-8 evidence output:\n  archive / collect / collect-zip / collect-tar / merge / retry / append ... [--output NEW.json]\nThe trailing option creates a new file without BOM; stdout is empty. Existing files are refused; creation remains 0, use verify for the gate.\n",
         )

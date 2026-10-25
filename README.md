@@ -1,11 +1,5 @@
 # MoonTestLedger
 
-Evidence creation commands support a trailing `--output NEW.json` for exclusive UTF-8 output without shell redirection. Existing files are refused. See [safe file output and executable checks](docs/file-output.md).
-
-Direct ZIP/USTAR report collection: `CollectionSpec.collect_zip()` / `collect_tar()` and `collect-zip` / `collect-tar` preserve the declared inventory without filesystem extraction. Missing remains incomplete and unlisted members are refused; see [workflows and profiles](docs/transports.md).
-
-ZIP and USTAR file-pack transport: `Evidence.zip_pack()` / `tar_pack()`, `decode_zip_pack()` / `decode_tar_pack()` and their pack/restore/verify commands preserve the full plan, exact XML and gate. See [supported profiles and runnable examples](docs/transports.md).
-
 **Know whether a CI test run is complete, and retain what happened before a retry passed.**
 
 MoonTestLedger is a MoonBit library and local command-line tool for teams collecting JUnit XML from sharded, retried or multi-environment CI jobs. A declared inventory records expected report IDs, exact testcase identities, revision, environment, shard and attempt order. The ledger reconciles received evidence against that inventory.
@@ -27,6 +21,9 @@ Source repository: [jhshuai/MoonTestLedger](https://github.com/jhshuai/MoonTestL
 - Offline HTML reports show verdicts, missing evidence, every attempt/problem and escaped original XML.
 - Selective retry continuation schedules only final adverse tests and appends their new reports atomically.
 - Same-revision repeated-run analysis distinguishes observed outcome mixtures, run counts, retry counts and missing evidence.
+- Full-plan SHA-256 manifests and closed XML packs, with bounded [ZIP/USTAR transport and direct declared collection](docs/transports.md).
+- [Safe UTF-8 evidence file output](docs/file-output.md) through `--output NEW.json`, refusing existing destinations.
+- [Complete offline CI delivery](docs/ci-delivery.md): `ci-report` saves all evidence/report members before returning the original gate; `verify-delivery` checks their exact consistency.
 
 Additional producer profiles, TAP/SARIF adapters, report rewriting, interactive dashboards and hosted integrations are roadmap items. No performance or universal JUnit compatibility claim is made.
 
@@ -289,7 +286,7 @@ moon run --target wasm cmd/moontestledger -- verify-pack output/jest-pack
 moon run --target wasm cmd/moontestledger -- restore-pack output/jest-pack > restored.json
 ~~~
 
-Use a **new directory** for detach. It creates `index.json` and flat `sha256-<digest>.xml` members, preserving the entire expected plan, source bindings and recovery policy. Exact identical sources share one physical member without merging their report identities. Both detach and restore-pack exit 0 on creation; the real Jest verify-pack exits 1 with the same original six-case/four-failure summary. Missing expected reports still yield 3; missing stored members, changed bytes and undeclared directory entries yield 2. Existing destinations are refused. XML remains ordinary UTF-8, directly readable by other tools. There is no ZIP/TAR container, compression, arbitrary file bundling or new trust/signature mechanism.
+Use a **new directory** for detach. It creates `index.json` and flat `sha256-<digest>.xml` members, preserving the entire expected plan, source bindings and recovery policy. Exact identical sources share one physical member without merging their report identities. Both detach and restore-pack exit 0 on creation; the real Jest verify-pack exits 1 with the same original six-case/four-failure summary. Missing expected reports still yield 3; missing stored members, changed bytes and undeclared directory entries yield 2. Existing destinations are refused. Directory packs contain plain UTF-8 XML; separate [ZIP/USTAR adapters](docs/transports.md) carry the same evidence contract. No arbitrary file bundling or new trust/signature mechanism is introduced.
 
 Portable library flow: `let (index, files) = evidence.detach(); let loaded = decode_pack_index(index.encode()); let restored = loaded.restore(files[:])`. `PackFile` has `name` and `xml`; `PackIndex` is opaque and exposes `filenames()`. Every operation validates limits and refuses unsupported content. Strict member validation precedes complete XML replay and archive digest verification. CLI checks the closed member set, regular-file kinds and symlinks, creates new files exclusively and publishes the index last. Failed publication attempts clean up only files successfully created by that operation; no transactional guarantee against concurrent hostile filesystem changes is claimed. The current input/inline replay budget still applies: this feature does not bypass archive size limits. Keep the pack index independently trusted when that trust is required.
 
@@ -318,7 +315,7 @@ Use MoonBit v0.10.15 for this version. The validated toolchain is moonc v0.10.15
 
 ~~~sh
 moon fmt
-moon fmt scripts/e2e.mbtx scripts/verify.mbtx scripts/check-encapsulation.mbtx scripts/render-demo.mbtx scripts/output-e2e.mbtx scripts/check-consumer.mbtx
+moon fmt scripts/e2e.mbtx scripts/verify.mbtx scripts/check-encapsulation.mbtx scripts/render-demo.mbtx scripts/output-e2e.mbtx scripts/check-consumer.mbtx scripts/delivery-e2e.mbtx
 moon info --target wasm
 moon check --target all --deny-warn
 moon build --target all --deny-warn

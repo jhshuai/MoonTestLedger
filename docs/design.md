@@ -52,7 +52,8 @@ Acceptance requires actual report files from documented producers or clearly sou
 7. Evidence integrity manifests are implemented: full inventory/policy/archive hashes, exact XML receipts and bounded strict offline verification. The existing test gate survives successful integrity validation. Trusted-manifest distribution/signature/attestation remains caller-owned.
 8. Detached XML file packs are implemented: closed content-addressed members, full expected inventory, exact source deduplication, strict restoration and the original test gate. No general archive format or hosted storage is introduced.
 9. Declared artifact-directory collection is implemented: strict full path mapping, bounded directory entry inspection and atomic original XML collection, with missing artifacts preserved. It composes with archive merging, integrity and detached file packs.
-10. Additional named producer profiles and CI-specific transport adapters remain planned. General flaky classification/quarantine is outside this project's boundary; see the updated ecosystem review.
+10. Bounded ZIP/USTAR evidence carriers, direct declared archive collection and exclusive UTF-8 CLI output are implemented. An independent module validates clean Git source consumption on all four targets without registry publication.
+11. Complete CI delivery and offline verification preserve the original test gate, reject inconsistent/extra members and provide an optional GitHub artifact-upload example. Additional named producer profiles and hosted integrations remain planned. General flaky classification/quarantine is outside this project's boundary; see the updated ecosystem review.
 
 ## Validation
 

@@ -1,0 +1,163 @@
+///|
+import {
+  "moonbitlang/async",
+  "moonbitlang/async/fs",
+  "moonbitlang/async/shell",
+  "moonbitlang/core/env",
+  "moonbitlang/core/json",
+}
+
+///|
+async fn command(
+  target : String,
+  args : Array[String],
+  expected : Int32,
+) -> Json {
+  let result = @shell.Cmd(
+    @env.get_env_var("MOON_TEST_LEDGER_MOON").unwrap_or("moon"),
+    ["run", "--target", target, "cmd/moontestledger", "--", ..args],
+  ).output(max_output_bytes=4194304)
+  assert_eq(result.exit_code(), expected, msg=result.stderr())
+  if expected == 2 {
+    assert_eq(result.stdout(), "")
+    @json.parse(result.stderr())
+  } else {
+    assert_eq(result.stderr(), "")
+    @json.parse(result.stdout())
+  }
+}
+
+///|
+async fn delivery(
+  target : String,
+  archive : Json,
+  gate : Int32,
+  mutations : Bool,
+) -> Unit {
+  let root = @fs.tmpdir(prefix="mtl-delivery-e2e")
+  defer (@fs.rmdir(root) catch { _ => () })
+  let source = root + "/source.json"
+  @fs.write_file(source, archive.stringify())
+  defer @fs.remove(source)
+  let directory = root + "/delivery"
+  let names = [
+    "evidence.json", "summary.json", "integrity.json", "report.html", "evidence.zip",
+    "delivery.json",
+  ]
+  defer {
+    for name in names {
+      @fs.remove(directory + "/" + name) catch {
+        _ => ()
+      }
+    }
+    @fs.rmdir(directory) catch {
+      _ => ()
+    }
+  }
+  let receipt = command(target, ["ci-report", source, directory], gate)
+  guard receipt
+    is {
+      "exit_code": Number(actual, ..),
+      "profile": String("mtl-ci-delivery-v1"),
+      "files": Array(files),
+      ..
+    } else {
+    fail("Expected complete delivery receipt")
+  }
+  assert_eq(actual, gate.to_double())
+  assert_eq(files.length(), 6)
+  assert_eq(command(target, ["verify-delivery", directory], gate), receipt)
+  assert_eq(@fs.read_file(directory + "/evidence.json").json(), archive)
+  ignore(
+    command(
+      target,
+      [
+        "check-integrity",
+        directory + "/evidence.json",
+        directory + "/integrity.json",
+      ],
+      gate,
+    ),
+  )
+  ignore(command(target, ["verify-zip", directory + "/evidence.zip"], gate))
+  ignore(command(target, ["ci-report", source, directory], 2))
+  assert_eq(command(target, ["verify-delivery", directory], gate), receipt)
+  if mutations {
+    for name in names {
+      let path = directory + "/" + name
+      let original = @fs.read_file(path).binary()
+      let changed = original.to_array()
+      changed.push(b'X')
+      @fs.write_file(path, Bytes::from_array(changed[:]))
+      ignore(command(target, ["verify-delivery", directory], 2))
+      @fs.write_file(path, original)
+      assert_eq(command(target, ["verify-delivery", directory], gate), receipt)
+    }
+    let completion = directory + "/delivery.json"
+    let original = @fs.read_file(completion).binary()
+    @fs.remove(completion)
+    ignore(command(target, ["verify-delivery", directory], 2))
+    @fs.write_file(completion, original)
+    let extra = directory + "/.hidden"
+    @fs.write_file(extra, "unlisted")
+    let invalid = command(target, ["verify-delivery", directory], 2)
+    guard invalid
+      is { "error": { "code": String("DeliveryInventory"), .. }, .. } else {
+      fail("Hidden extras must be refused")
+    }
+    @fs.remove(extra)
+    let html = directory + "/report.html"
+    let page = @fs.read_file(html).binary()
+    @fs.remove(html)
+    @fs.mkdir(html)
+    ignore(command(target, ["verify-delivery", directory], 2))
+    @fs.rmdir(html)
+    @fs.write_file(html, page)
+    assert_eq(command(target, ["verify-delivery", directory], gate), receipt)
+    let invalid_source = root + "/invalid.json"
+    @fs.write_file(invalid_source, "{}")
+    defer @fs.remove(invalid_source)
+    let refused = root + "/never-created"
+    ignore(command(target, ["ci-report", invalid_source, refused], 2))
+    assert_true(!@fs.exists(refused))
+  }
+}
+
+///|
+async fn main {
+  let target = @env.args().get(1).unwrap_or("wasm")
+  guard target == "wasm" || target == "native" else {
+    fail("expected wasm or native")
+  }
+  let real = command(
+    target,
+    ["archive", "examples/upstream/plan.json", "examples/upstream/bundle.json"],
+    0,
+  )
+  delivery(target, real, 1, true)
+  let missing = command(
+    target,
+    [
+      "archive", "examples/upstream/plan.json", "examples/upstream/missing-bundle.json",
+    ],
+    0,
+  )
+  delivery(target, missing, 3, false)
+  let recovered = command(
+    target,
+    ["archive", "examples/retry/plan.json", "examples/retry/bundle.json"],
+    0,
+  )
+  delivery(target, recovered, 0, false)
+  let denied = command(
+    target,
+    [
+      "archive", "examples/retry/plan.json", "examples/retry/bundle.json", "--deny-recovered",
+    ],
+    0,
+  )
+  delivery(target, denied, 1, false)
+  println(
+    "Complete CI evidence delivery and offline verification passed on " + target,
+  )
+}

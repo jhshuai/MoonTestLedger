@@ -1,0 +1,44 @@
+name: CI evidence delivery example
+
+on:
+  workflow_dispatch:
+    inputs:
+      collection:
+        description: Repository-relative full collection specification
+        required: true
+        default: examples/upstream/collection.json
+        type: string
+      artifact_root:
+        description: Repository-relative XML artifact directory
+        required: true
+        default: examples/upstream
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hustcer/setup-moonbit@9199da0ab63ea0c0bab1dc15f03d76e17ed4f75f
+        with:
+          version: 0.10.15+943464bfa
+          core-version: 0.10.15+943464bfa
+      - run: moon update
+      - name: Collect the complete declared inventory as UTF-8 evidence
+        env:
+          COLLECTION: ${{ inputs.collection }}
+          ARTIFACT_ROOT: ${{ inputs.artifact_root }}
+        run: moon run --target wasm cmd/moontestledger -- collect "$COLLECTION" "$ARTIFACT_ROOT" --output run-evidence.json
+      - name: Preserve the evidence and report before applying its test gate
+        run: moon run --target wasm cmd/moontestledger -- ci-report run-evidence.json ci-evidence
+      - name: Upload the delivery even when its test gate fails
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-evidence
+          path: ci-evidence/
+          if-no-files-found: warn
+          retention-days: 7

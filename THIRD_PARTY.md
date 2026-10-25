@@ -47,6 +47,8 @@ ZIP transport depends on [hustcer/fzip 0.8.8](https://mooncakes.io/docs/hustcer/
 
 ## CI services
 
+The manual evidence-delivery example additionally references [actions/upload-artifact](https://github.com/actions/upload-artifact), MIT, as an external action. Its implementation is not copied. The delivery builder/verifier, exclusive UTF-8 output, independent consumer and added boundary/E2E checks are project-authored Apache-2.0. They reuse the already documented XML, crypto, compression and async dependencies and unchanged MIT report fixtures.
+
 The workflow references [actions/checkout](https://github.com/actions/checkout), [actions/setup-node](https://github.com/actions/setup-node) and [hustcer/setup-moonbit](https://github.com/hustcer/setup-moonbit) (MIT), plus [ilammy/msvc-dev-cmd](https://github.com/ilammy/msvc-dev-cmd) (MIT). They run as external actions; their source is not copied here. Setup-moonbit is pinned to inspected v1.22 commit 9199da0ab63ea0c0bab1dc15f03d76e17ed4f75f.
 
 The versioned official binary/core URLs currently expire under the hosting service's 60-day retention policy. Update the pinned release and rerun the complete verification matrix before that artifact retention window expires; current successful downloads do not guarantee indefinite availability.
