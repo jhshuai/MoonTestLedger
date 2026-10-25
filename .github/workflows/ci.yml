@@ -31,5 +31,5 @@ jobs:
           core-version: 0.10.15+943464bfa
       - name: Resolve pinned module dependencies
         run: moon update
-      - name: Check formatting, interfaces, strict compilation, tests and applicable CLI workflows
+      - name: Check formatting, interfaces, strict check/build, tests and applicable CLI workflows
         run: moon run scripts/verify.mbtx ${{ matrix.target }}

@@ -35,9 +35,10 @@ async fn archive(
   plan_path : String,
   bundle_path : String,
   deny_recovered : Bool,
+  output~ : String? = None,
 ) -> Int32 {
   let ledger = load_ledger(plan_path, bundle_path)
-  @stdio.stdout.write(@ledger.encode_evidence(ledger, deny_recovered~) + "\n")
+  emit_evidence(@ledger.encode_evidence(ledger, deny_recovered~), output)
   0
 }
 
@@ -105,7 +106,11 @@ async fn compare(before_path : String, after_path : String) -> Int32 {
 }
 
 ///|
-async fn retry(path : String, requests_path : String) -> Int32 {
+async fn retry(
+  path : String,
+  requests_path : String,
+  output~ : String? = None,
+) -> Int32 {
   let limits = @ledger.Limits::default()
   let evidence = @ledger.decode_evidence(read_text(path, limits), limits~)
   let reports = @ledger.decode_retry_reports(
@@ -113,7 +118,7 @@ async fn retry(path : String, requests_path : String) -> Int32 {
     limits~,
   )
   let next = @ledger.prepare_retry(evidence, reports[:], limits~)
-  @stdio.stdout.write(next.encode(limits~) + "\n")
+  emit_evidence(next.encode(limits~), output)
   0
 }
 
@@ -141,7 +146,11 @@ async fn repetitions(paths : ArrayView[String]) -> Int32 {
 }
 
 ///|
-async fn append(path : String, bundle_path : String) -> Int32 {
+async fn append(
+  path : String,
+  bundle_path : String,
+  output~ : String? = None,
+) -> Int32 {
   let limits = @ledger.Limits::default()
   let evidence = @ledger.decode_evidence(read_text(path, limits), limits~)
   let bundle = @ledger.decode_bundle(read_text(bundle_path, limits), limits~)
@@ -175,12 +184,12 @@ async fn append(path : String, bundle_path : String) -> Int32 {
     documents.push({ binding: file.binding, report, })
   }
   let next = evidence.ingest_reports(documents[:], limits~)
-  @stdio.stdout.write(next.encode(limits~) + "\n")
+  emit_evidence(next.encode(limits~), output)
   0
 }
 
 ///|
-async fn merge(paths : ArrayView[String]) -> Int32 {
+async fn merge(paths : ArrayView[String], output~ : String? = None) -> Int32 {
   let limits = @ledger.Limits::default()
   if paths.length() > limits.max_reports {
     raise refusal("MergeLimit", "/arguments", "Too many input archives")
@@ -191,7 +200,7 @@ async fn merge(paths : ArrayView[String]) -> Int32 {
   }
   let evidence = @ledger.merge_evidence(inputs[:], limits~)
   let encoded = evidence.encode(limits~)
-  @stdio.stdout.write(encoded + "\n")
+  emit_evidence(encoded, output)
   0
 }
 
@@ -253,13 +262,14 @@ async fn capture(bundle_path : String) -> Int32 {
 /// Returns 0/1/2/3; the executable forwards this as the process exit status.
 pub async fn run(arguments : Array[String]) -> Int32 {
   try {
+    let (arguments, output) = output_arguments(arguments)
     match arguments {
       ["audit", plan, bundle] => audit(plan, bundle, false)
       ["audit", plan, bundle, "--deny-recovered"] => audit(plan, bundle, true)
       ["capture", bundle] => capture(bundle)
-      ["archive", plan, bundle] => archive(plan, bundle, false)
+      ["archive", plan, bundle] => archive(plan, bundle, false, output~)
       ["archive", plan, bundle, "--deny-recovered"] =>
-        archive(plan, bundle, true)
+        archive(plan, bundle, true, output~)
       ["verify", path] => verify(path)
       ["html", path] => html(path)
       ["integrity", path] => integrity(path)
@@ -267,9 +277,9 @@ pub async fn run(arguments : Array[String]) -> Int32 {
       ["detach", path, directory] => detach(path, directory)
       ["restore-pack", directory] => restore_pack(directory)
       ["verify-pack", directory] => verify_pack(directory)
-      ["collect", spec, root] => collect(spec, root)
-      ["collect-zip", spec, path] => collect_zip(spec, path)
-      ["collect-tar", spec, path] => collect_tar(spec, path)
+      ["collect", spec, root] => collect(spec, root, output~)
+      ["collect-zip", spec, path] => collect_zip(spec, path, output~)
+      ["collect-tar", spec, path] => collect_tar(spec, path, output~)
       ["zip-pack", path, destination] => zip_pack(path, destination)
       ["restore-zip", path] => restore_zip(path, false)
       ["verify-zip", path] => restore_zip(path, true)
@@ -277,11 +287,14 @@ pub async fn run(arguments : Array[String]) -> Int32 {
       ["restore-tar", path] => restore_tar(path, false)
       ["verify-tar", path] => restore_tar(path, true)
       ["compare", before, after] => compare(before, after)
-      ["merge", _, _, ..] => merge(arguments[1:])
-      ["retry", path, requests] => retry(path, requests)
-      ["append", path, bundle] => append(path, bundle)
+      ["merge", _, _, ..] => merge(arguments[1:], output~)
+      ["retry", path, requests] => retry(path, requests, output~)
+      ["append", path, bundle] => append(path, bundle, output~)
       ["repetitions", _, _, ..] => repetitions(arguments[1:])
       ["--help"] | ["help"] => {
+        @stdio.stdout.write(
+          "Safe UTF-8 evidence output:\n  archive / collect / collect-zip / collect-tar / merge / retry / append ... [--output NEW.json]\nThe trailing option creates a new file without BOM; stdout is empty. Existing files are refused; creation remains 0, use verify for the gate.\n",
+        )
         @stdio.stdout.write(
           "Declared USTAR collection:\n  collect-tar COLLECTION.json FILE.tar\nOnly exact declared regular XML members; unknown files/extensions return 2. Missing reports remain incomplete; verify the emitted archive for its original gate.\n",
         )

@@ -1,0 +1,174 @@
+///|
+import {
+  "hustcer/fzip",
+  "moonbitlang/async",
+  "moonbitlang/async/fs",
+  "moonbitlang/async/shell",
+  "moonbitlang/core/env",
+  "moonbitlang/core/json",
+}
+
+///|
+async fn command(
+  target : String,
+  args : Array[String],
+  expected : Int32,
+) -> String {
+  let result = @shell.Cmd(
+    @env.get_env_var("MOON_TEST_LEDGER_MOON").unwrap_or("moon"),
+    ["run", "--target", target, "cmd/moontestledger", "--", ..args],
+  ).output(max_output_bytes=4194304)
+  assert_eq(result.exit_code(), expected, msg=result.stderr())
+  if expected == 2 {
+    assert_eq(result.stdout(), "")
+    ignore(@json.parse(result.stderr()))
+  } else {
+    assert_eq(result.stderr(), "")
+  }
+  result.stdout()
+}
+
+///|
+async fn main {
+  let target = @env.args().get(1).unwrap_or("wasm")
+  guard target == "wasm" || target == "native" else {
+    fail("expected wasm or native")
+  }
+  let root = @fs.tmpdir(prefix="mtl-output-e2e")
+  defer (@fs.rmdir(root) catch { _ => () })
+  let owned : Array[String] = []
+  defer (for path in owned {
+    @fs.remove(path)
+  })
+  let destination = root + "/证据.json"
+  defer (@fs.remove(destination) catch { _ => () })
+  let zip_path = root + "/reports.zip"
+  let xml = @fs.read_file("examples/upstream/jest-junit.xml").binary()
+  let zip = @fzip.zip_sync_checked([("jest-junit.xml", xml.to_fixedarray())])
+  @fs.write_file(zip_path, Bytes::from_array(zip[:]))
+  owned.push(zip_path)
+  let expected = command(
+    target,
+    ["archive", "examples/upstream/plan.json", "examples/upstream/bundle.json"],
+    0,
+  )
+  for
+    args in [
+      [
+        "archive", "examples/upstream/plan.json", "examples/upstream/bundle.json",
+      ],
+      ["collect", "examples/upstream/collection.json", "examples/upstream"],
+      ["collect-zip", "examples/upstream/collection.json", zip_path],
+      [
+        "collect-tar", "examples/upstream/collection.json", "examples/transport/jest-reports.tar",
+      ],
+    ] {
+    assert_eq(command(target, [..args, "--output", destination], 0), "")
+    assert_eq(@fs.read_file(destination).text(), expected)
+    ignore(command(target, ["verify", destination], 1))
+    ignore(command(target, [..args, "--output", destination], 2))
+    assert_eq(@fs.read_file(destination).text(), expected)
+    @fs.remove(destination)
+  }
+  // A complete source read and validation precedes exclusive output creation.
+  let source = root + "/source.json"
+  @fs.write_file(source, expected)
+  owned.push(source)
+  ignore(command(target, ["merge", source, source, "--output", source], 2))
+  assert_eq(@fs.read_file(source).text(), expected)
+  assert_eq(
+    command(target, ["merge", source, source, "--output", destination], 0),
+    "",
+  )
+  assert_eq(
+    @fs.read_file(destination).text(),
+    command(target, ["merge", source, source], 0),
+  )
+  @fs.remove(destination)
+  let invalid = root + "/invalid.json"
+  @fs.write_file(invalid, "{}")
+  owned.push(invalid)
+  ignore(
+    command(
+      target,
+      [
+        "archive", invalid, "examples/upstream/bundle.json", "--output", destination,
+      ],
+      2,
+    ),
+  )
+  assert_true(!@fs.readdir(root).contains("证据.json"))
+  ignore(
+    command(
+      target,
+      [
+        "collect", "examples/upstream/collection.json", root, "--output", destination,
+      ],
+      0,
+    ),
+  )
+  ignore(command(target, ["verify", destination], 3))
+  @fs.remove(destination)
+  ignore(
+    command(
+      target,
+      [
+        "archive", "examples/continuation/plan.json", "examples/continuation/bundle.json",
+        "--deny-recovered", "--output", destination,
+      ],
+      0,
+    ),
+  )
+  let pending = root + "/pending.json"
+  ignore(
+    command(
+      target,
+      [
+        "retry", destination, "examples/continuation/reports.json", "--output", pending,
+      ],
+      0,
+    ),
+  )
+  owned.push(pending)
+  ignore(command(target, ["verify", pending], 3))
+  let recovered = root + "/recovered.json"
+  ignore(
+    command(
+      target,
+      [
+        "append", pending, "examples/retry/retry-only-bundle.json", "--output", recovered,
+      ],
+      0,
+    ),
+  )
+  owned.push(recovered)
+  ignore(command(target, ["verify", recovered], 1))
+  @fs.remove(destination)
+  // Failure does not poison later publication to the corrected destination.
+  ignore(
+    command(
+      target,
+      [
+        "archive",
+        "examples/upstream/plan.json",
+        "examples/upstream/bundle.json",
+        "--output",
+        root + "/absent/out.json",
+      ],
+      2,
+    ),
+  )
+  ignore(
+    command(
+      target,
+      [
+        "archive", "examples/upstream/plan.json", "examples/upstream/bundle.json",
+        "--output", destination,
+      ],
+      0,
+    ),
+  )
+  assert_eq(@fs.read_file(destination).text(), expected)
+  @fs.remove(destination)
+  println("Safe evidence file output checks passed on " + target)
+}

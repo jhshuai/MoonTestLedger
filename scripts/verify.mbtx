@@ -25,7 +25,7 @@ async fn main {
   moon(["fmt", "--check"])
   moon([
     "fmt", "--check", "scripts/verify.mbtx", "scripts/e2e.mbtx", "scripts/check-encapsulation.mbtx",
-    "scripts/render-demo.mbtx",
+    "scripts/render-demo.mbtx", "scripts/output-e2e.mbtx",
   ])
   let paths = [
     "pkg.generated.mbti", "ledger/pkg.generated.mbti", "junit/pkg.generated.mbti",
@@ -41,9 +41,11 @@ async fn main {
     assert_eq(before[index], @fs.read_file(path).text())
   }
   moon(["check", "--target", target, "--deny-warn"])
+  moon(["build", "--target", target, "--deny-warn"])
   moon(["test", "--target", target, "--deny-warn"])
   moon(["run", "--deny-warn", "scripts/check-encapsulation.mbtx"])
   if target == "wasm" || target == "native" {
     moon(["run", "scripts/e2e.mbtx", target])
+    moon(["run", "--deny-warn", "scripts/output-e2e.mbtx", target])
   }
 }

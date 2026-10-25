@@ -1,5 +1,7 @@
 # MoonTestLedger
 
+Evidence creation commands support a trailing `--output NEW.json` for exclusive UTF-8 output without shell redirection. Existing files are refused. See [safe file output and executable checks](docs/file-output.md).
+
 Direct ZIP/USTAR report collection: `CollectionSpec.collect_zip()` / `collect_tar()` and `collect-zip` / `collect-tar` preserve the declared inventory without filesystem extraction. Missing remains incomplete and unlisted members are refused; see [workflows and profiles](docs/transports.md).
 
 ZIP and USTAR file-pack transport: `Evidence.zip_pack()` / `tar_pack()`, `decode_zip_pack()` / `decode_tar_pack()` and their pack/restore/verify commands preserve the full plan, exact XML and gate. See [supported profiles and runnable examples](docs/transports.md).
@@ -314,9 +316,10 @@ Use MoonBit v0.10.15 for this version. The validated toolchain is moonc v0.10.15
 
 ~~~sh
 moon fmt
-moon fmt scripts/e2e.mbtx scripts/verify.mbtx scripts/check-encapsulation.mbtx scripts/render-demo.mbtx
+moon fmt scripts/e2e.mbtx scripts/verify.mbtx scripts/check-encapsulation.mbtx scripts/render-demo.mbtx scripts/output-e2e.mbtx
 moon info --target wasm
 moon check --target all --deny-warn
+moon build --target all --deny-warn
 moon test --target all --deny-warn
 moon run scripts/e2e.mbtx wasm
 moon run scripts/e2e.mbtx native

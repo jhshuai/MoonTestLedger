@@ -70,7 +70,11 @@ async fn collection_source(
 }
 
 ///|
-async fn collect(spec_path : String, root : String) -> Int32 {
+async fn collect(
+  spec_path : String,
+  root : String,
+  output~ : String? = None,
+) -> Int32 {
   let limits = @ledger.Limits::default()
   let spec = @ledger.decode_collection(read_text(spec_path, limits), limits~)
   if @fs.kind(root, follow_symlink=false) != @fs.FileKind::Directory {
@@ -96,6 +100,6 @@ async fn collect(spec_path : String, root : String) -> Int32 {
     }
   }
   let evidence = spec.collect(inputs[:], limits~)
-  @stdio.stdout.write(evidence.encode(limits~) + "\n")
+  emit_evidence(evidence.encode(limits~), output)
   0
 }
