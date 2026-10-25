@@ -1,0 +1,121 @@
+///|
+import {
+  "moonbitlang/async",
+  "moonbitlang/async/fs",
+  "moonbitlang/async/shell",
+  "moonbitlang/core/env",
+  "moonbitlang/core/json",
+}
+
+///|
+async fn main {
+  let target = @env.args().get(1).unwrap_or("wasm-gc")
+  guard ["wasm", "wasm-gc", "js", "native"].contains(target) else {
+    fail("expected a supported target")
+  }
+  let moon = @env.get_env_var("MOON_TEST_LEDGER_MOON").unwrap_or("moon")
+  let git_root = @shell.Cmd("git", ["rev-parse", "--show-prefix"]).output()
+  assert_eq(git_root.exit_code(), 0)
+  assert_eq(
+    git_root.stdout().trim().to_owned(),
+    "",
+    msg="run from the repository root",
+  )
+  let revision = @shell.Cmd("git", ["rev-parse", "HEAD"]).output()
+  assert_eq(revision.exit_code(), 0)
+  let root = @fs.tmpdir(prefix="mtl-source-consumer")
+  // Retain the isolated export/build tree for inspection. Never recursively
+  // delete a caller path, and never copy ignored or untracked workspace files.
+  let archive = root + "/source.tar"
+  @shell.Cmd(
+    "git",
+    ["archive", "--format=tar", "--output", archive, "HEAD"],
+    stdout=Inherit,
+    stderr=Inherit,
+  ).run()
+  let library = root + "/library"
+  let consumer = root + "/consumer"
+  @fs.mkdir(library)
+  @fs.mkdir(consumer)
+  @shell.Cmd(
+    "tar",
+    ["-xf", archive, "-C", library],
+    stdout=Inherit,
+    stderr=Inherit,
+  ).run()
+  assert_true(!@fs.exists(library + "/.git"))
+  assert_true(!@fs.exists(library + "/_build"))
+  assert_true(!@fs.exists(library + "/.mooncakes"))
+  @fs.write_file(root + "/moon.work", "members = [\"library\", \"consumer\"]\n")
+  for name in ["moon.mod", "moon.pkg", "main.mbt"] {
+    @fs.write_file(
+      consumer + "/" + name,
+      @fs.read_file("examples/consumer/" + name),
+    )
+  }
+  @shell.Cmd(
+    moon,
+    ["-C", consumer, "check", "--target", target, "--deny-warn"],
+    stdout=Inherit,
+    stderr=Inherit,
+  ).run()
+  @shell.Cmd(
+    moon,
+    ["-C", consumer, "build", "--target", target, "--deny-warn"],
+    stdout=Inherit,
+    stderr=Inherit,
+  ).run()
+  let result = @shell.Cmd(moon, [
+    "-C",
+    consumer,
+    "run",
+    "--target",
+    target,
+    ".",
+    "--",
+    @fs.read_file("examples/upstream/collection.json").text(),
+    "jest-main",
+    @fs.read_file("examples/upstream/jest-junit.xml").text(),
+  ]).output(max_output_bytes=4194304)
+  assert_eq(result.exit_code(), 0, msg=result.stderr())
+  let evidence = @json.parse(result.stdout())
+  guard evidence
+    is {
+      "summary": {
+        "complete": True,
+        "exit_code": Number(1, ..),
+        "cases": Array(cases),
+        ..
+      },
+      "integrity": {
+        "archive_sha256": String(hash),
+        "documents": [
+          { "sha256": String(xml_hash), "utf8_bytes": Number(7997, ..), .. },
+        ],
+        ..
+      },
+      "missing_gate": Number(3, ..),
+      ..
+    } else {
+    fail(
+      "independent consumer must retain the real Jest evidence and missing gate",
+    )
+  }
+  assert_eq(cases.length(), 6)
+  assert_eq(
+    hash, "1fc6df0a332c2648e14246c0670fd8d7f94d19d05d36f93678fb932e16a0411e",
+  )
+  assert_eq(
+    xml_hash, "8e18da3a6e4252c34fe7899fad28f8eceeb43849329989b36f2ff68dc7698e58",
+  )
+  println(
+    Json::object({
+      "target": Json::string(target),
+      "source_revision": Json::string(revision.stdout().trim().to_owned()),
+      "isolated_workspace": Json::string(root),
+      "complete_gate": Json::number(1),
+      "missing_gate": Json::number(3),
+      "archive_sha256": Json::string(hash),
+    }).stringify(),
+  )
+}

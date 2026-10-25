@@ -23,9 +23,10 @@ async fn main {
   }
   moon(["version", "--all"])
   moon(["fmt", "--check"])
+  moon(["-C", "examples/consumer", "fmt", "--check"])
   moon([
     "fmt", "--check", "scripts/verify.mbtx", "scripts/e2e.mbtx", "scripts/check-encapsulation.mbtx",
-    "scripts/render-demo.mbtx", "scripts/output-e2e.mbtx",
+    "scripts/render-demo.mbtx", "scripts/output-e2e.mbtx", "scripts/check-consumer.mbtx",
   ])
   let paths = [
     "pkg.generated.mbti", "ledger/pkg.generated.mbti", "junit/pkg.generated.mbti",

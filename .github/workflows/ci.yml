@@ -33,3 +33,5 @@ jobs:
         run: moon update
       - name: Check formatting, interfaces, strict check/build, tests and applicable CLI workflows
         run: moon run scripts/verify.mbtx ${{ matrix.target }}
+      - name: Check an independent consumer against a clean Git source export
+        run: moon run scripts/check-consumer.mbtx ${{ matrix.target }}

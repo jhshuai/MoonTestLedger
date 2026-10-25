@@ -198,6 +198,8 @@ Relative report paths resolve against the **bundle file's directory**. Absolute 
 
 ## Library API
 
+The [independent consumer](examples/consumer/README.md) checks a clean Git source export in a separate module on each backend: `moon run scripts/check-consumer.mbtx wasm-gc`. It needs no Mooncakes publication and records the exact source revision tested.
+
 Import jhshuai/moontestledger from a local dependency during development. The root facade re-exports public types owned by ledger and wire; concrete types' constructors, fields and methods remain available, while Ledger is opaque. A [tested consumer example](facade_test.mbt) is included.
 
 For sibling folders named MoonTestLedger and consumer, place a workspace file in their parent directory:
@@ -316,7 +318,7 @@ Use MoonBit v0.10.15 for this version. The validated toolchain is moonc v0.10.15
 
 ~~~sh
 moon fmt
-moon fmt scripts/e2e.mbtx scripts/verify.mbtx scripts/check-encapsulation.mbtx scripts/render-demo.mbtx scripts/output-e2e.mbtx
+moon fmt scripts/e2e.mbtx scripts/verify.mbtx scripts/check-encapsulation.mbtx scripts/render-demo.mbtx scripts/output-e2e.mbtx scripts/check-consumer.mbtx
 moon info --target wasm
 moon check --target all --deny-warn
 moon build --target all --deny-warn
