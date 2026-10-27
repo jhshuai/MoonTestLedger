@@ -273,6 +273,9 @@ pub async fn run(arguments : Array[String]) -> Int32 {
       ["verify", path] => verify(path)
       ["ci-report", path, directory] => ci_report(path, directory)
       ["verify-delivery", directory] => verify_delivery(directory)
+      ["review-plan", before, proposed] => review_plan(before, proposed, output)
+      ["apply-plan-review", review, current, "--approve", approval] =>
+        apply_plan_review(review, current, approval, output)
       ["html", path] => html(path)
       ["integrity", path] => integrity(path)
       ["check-integrity", path, manifest] => check_integrity(path, manifest)
@@ -294,6 +297,9 @@ pub async fn run(arguments : Array[String]) -> Int32 {
       ["append", path, bundle] => append(path, bundle, output~)
       ["repetitions", _, _, ..] => repetitions(arguments[1:])
       ["--help"] | ["help"] => {
+        @stdio.stdout.write(
+          "Inventory change review:\n  review-plan BEFORE.json PROPOSED.json [--output NEW-REVIEW.json]\n  apply-plan-review REVIEW.json CURRENT.json --approve REVIEW-SHA256 --output NEW-PLAN.json\nReview full declarations first. Application requires an unchanged baseline, the exact review token and a fresh run ID. Existing plans/evidence are never rewritten.\n",
+        )
         @stdio.stdout.write(
           "CI evidence delivery:\n  ci-report EVIDENCE.json NEW-DIRECTORY\n  verify-delivery DIRECTORY\nSave six complete offline evidence/report members, then return the original 0/1/3 gate. Invalid or inconsistent delivery: 2. Existing destinations are refused.\n",
         )

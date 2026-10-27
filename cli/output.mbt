@@ -17,9 +17,10 @@ fn output_arguments(
   }
   if ![
       "archive", "collect", "collect-zip", "collect-tar", "merge", "retry", "append",
+      "review-plan", "apply-plan-review",
     ].contains(arguments[0]) {
     raise refusal(
-      "Usage", "/arguments", "--output is supported by archive, collect, collect-zip, collect-tar, merge, retry and append",
+      "Usage", "/arguments", "--output is supported by evidence creation and inventory review/apply commands",
     )
   }
   let path = arguments[arguments.length() - 1]
@@ -41,7 +42,7 @@ async fn emit_evidence(text : String, output : String?) -> Unit {
           raise refusal(
             "OutputWrite",
             path,
-            "Cannot create a new UTF-8 evidence file (existing paths are never overwritten): " +
+            "Cannot create a new UTF-8 output file (existing paths are never overwritten): " +
             error.to_string(),
           )
       }

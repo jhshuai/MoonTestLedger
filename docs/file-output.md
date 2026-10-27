@@ -1,5 +1,7 @@
 # Safe evidence files
 
+The exclusive UTF-8 writer also supports inventory `review-plan` and `apply-plan-review`. Review output is optional; application requires a new file and explicit reviewed token. See [inventory review](inventory-review.md). These are plans/reviews, not evidence archives, and cannot silently replace an existing run's contract.
+
 Evidence creation commands accept one trailing `--output NEW.json`: `archive`, `collect`, `collect-zip`, `collect-tar`, `merge`, `retry` and `append`. All input validation and serialization finish before creating the output. The destination is created exclusively, encoded as UTF-8 without BOM and terminated by one newline. Existing files/directories and missing parents are refused; no parent directories are created. On successful file output stdout is empty. Omit the option to preserve the original stdout behavior byte-for-byte.
 
 ```text

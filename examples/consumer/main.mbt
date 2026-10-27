@@ -14,6 +14,22 @@ fn input_arguments() -> Array[String] {
 // An independent module: domain types and methods are imported only through
 // the public facade. Fixture content is supplied by the evaluator as arguments.
 fn main raise {
+  if input_arguments() is ["--review-inventory", before, proposed] {
+    let baseline = @ledger.decode_plan(before)
+    let candidate = @ledger.decode_plan(proposed)
+    let review : @ledger.PlanReview = @ledger.review_plan(baseline, candidate)
+    let changes : Array[@ledger.PlanChange] = review.changes()
+    assert_true(
+      changes.any(change => change.kind == @ledger.PlanChangeKind::CaseRemoved),
+    )
+    let restored = @ledger.decode_plan_review(review.encode())
+    assert_eq(
+      @ledger.encode_plan(restored.approve(baseline, approval=review.token())),
+      @ledger.encode_plan(candidate),
+    )
+    println(review.encode())
+    return
+  }
   if input_arguments() is ["--reject-producer", xml, expected] {
     try @ledger.parse_junit(xml, report_id="rejected-producer") catch {
       @ledger.InputError::Invalid(diagnostic) => {

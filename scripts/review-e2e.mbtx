@@ -1,0 +1,166 @@
+///|
+import {
+  "moonbitlang/async@0.22.4",
+  "moonbitlang/async@0.22.4/fs",
+  "moonbitlang/async@0.22.4/shell",
+  "moonbitlang/core/env",
+  "moonbitlang/core/json",
+}
+
+///|
+async fn command(
+  target : String,
+  args : Array[String],
+  expected : Int32,
+) -> Json {
+  let moon = @env.get_env_var("MOON_TEST_LEDGER_MOON").unwrap_or("moon")
+  let result = @shell.Cmd(
+    moon,
+    ["run", "--target", target, "cmd/moontestledger", "--", ..args],
+  ).output(max_output_bytes=4194304)
+  assert_eq(
+    result.exit_code(),
+    expected,
+    msg=Json::array(args.map(Json::string)).stringify() + result.stderr(),
+  )
+  if expected == 2 {
+    assert_eq(result.stdout(), "")
+    @json.parse(result.stderr())
+  } else if result.stdout().is_empty() {
+    Json::null()
+  } else {
+    assert_eq(result.stderr(), "")
+    @json.parse(result.stdout())
+  }
+}
+
+///|
+async fn main {
+  let target = @env.args().get(1).unwrap_or("wasm")
+  guard target == "wasm" || target == "native" else {
+    fail("expected wasm or native")
+  }
+  let root = @fs.tmpdir(prefix="mtl-plan-review")
+  let before = root + "/current.json"
+  let proposed = root + "/proposed.json"
+  @fs.write_file(before, @fs.read_file("examples/review/before.json").binary())
+  @fs.write_file(
+    proposed,
+    @fs.read_file("examples/review/proposed.json").binary(),
+  )
+  let original = @fs.read_file(before).binary()
+  let path = root + "/review.json"
+  let next = root + "/approved.json"
+  let preview = command(target, ["review-plan", before, proposed], 0)
+  assert_eq(preview, @fs.read_file("examples/review/review.json").json())
+  ignore(
+    command(target, ["review-plan", before, proposed, "--output", path], 0),
+  )
+  assert_eq(@fs.read_file(path).json(), preview)
+  guard preview
+    is { "review_sha256": String(token), "changes": Array(changes), .. } else {
+    fail("expected complete review")
+  }
+  assert_eq(changes.length(), 6)
+  ignore(
+    command(target, ["apply-plan-review", path, before, "--approve", token], 2),
+  )
+  let refused = command(
+    target,
+    ["apply-plan-review", path, before, "--approve", "wrong", "--output", next],
+    2,
+  )
+  guard refused is { "error": { "code": String("ReviewApproval"), .. }, .. } else {
+    fail("expected explicit approval diagnostic")
+  }
+  assert_true(!@fs.exists(next))
+  let stale = @fs.read_file(before)
+    .text()
+    .replace(old="revision-a", new="changed-after-review")
+  @fs.write_file(before, stale)
+  let refused = command(
+    target,
+    ["apply-plan-review", path, before, "--approve", token, "--output", next],
+    2,
+  )
+  guard refused is { "error": { "code": String("ReviewStale"), .. }, .. } else {
+    fail("expected stale baseline refusal")
+  }
+  assert_true(!@fs.exists(next))
+  @fs.write_file(before, original)
+  let review_bytes = @fs.read_file(path).binary()
+  @fs.write_file(
+    path,
+    @fs.read_file(path)
+    .text()
+    .replace(old="\"case_removed\"", new="\"case_added\""),
+  )
+  ignore(
+    command(
+      target,
+      ["apply-plan-review", path, before, "--approve", token, "--output", next],
+      2,
+    ),
+  )
+  assert_true(!@fs.exists(next))
+  @fs.write_file(path, review_bytes)
+  ignore(
+    command(
+      target,
+      ["apply-plan-review", path, before, "--approve", token, "--output", next],
+      0,
+    ),
+  )
+  assert_eq(@fs.read_file(next).json(), @fs.read_file(proposed).json())
+  let approved = @fs.read_file(next).binary()
+  ignore(
+    command(
+      target,
+      ["apply-plan-review", path, before, "--approve", token, "--output", next],
+      2,
+    ),
+  )
+  assert_eq(@fs.read_file(next).binary(), approved)
+  ignore(
+    command(
+      target,
+      [
+        "apply-plan-review", path, before, "--approve", token, "--output", before,
+      ],
+      2,
+    ),
+  )
+  assert_eq(@fs.read_file(before).binary(), original)
+  @fs.write_file(
+    proposed,
+    @fs.read_file(proposed)
+    .text()
+    .replace(old="checkout-ci-1043", new="checkout-ci-1042"),
+  )
+  let reuse_path = root + "/reuse-review.json"
+  let reuse = command(target, ["review-plan", before, proposed], 0)
+  @fs.write_file(reuse_path, reuse.stringify())
+  guard reuse is { "review_sha256": String(reuse_token), .. } else {
+    fail("expected same-run preview")
+  }
+  let never = root + "/never.json"
+  let rejected = command(
+    target,
+    [
+      "apply-plan-review", reuse_path, before, "--approve", reuse_token, "--output",
+      never,
+    ],
+    2,
+  )
+  guard rejected is { "error": { "code": String("ReviewRunReuse"), .. }, .. } else {
+    fail("old-run shrink must be refused")
+  }
+  assert_true(!@fs.exists(never))
+  assert_eq(@fs.read_file(before).binary(), original)
+  println(
+    "Complete inventory review/approval passed on " +
+    target +
+    "; retained review/output: " +
+    root,
+  )
+}

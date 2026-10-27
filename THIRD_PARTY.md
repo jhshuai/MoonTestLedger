@@ -31,6 +31,8 @@ The declared directory collection API, portable path validation, specification J
 
 ## Research and format references
 
+Complete-inventory review/approval, codec, CLI, synthetic plans and tests are project-authored Apache-2.0. They reuse the existing plan model, strict JSON validation and pinned SHA-256 primitive; no third-party review/quarantine implementation or tests are copied. This reviews future full CI contracts while preserving old evidence, without adding a sampling/quarantine engine.
+
 Direct USTAR collection and boundary tests are project-authored Apache-2.0. GNU tar 1.34 generated the three [reference archives](examples/transport/README.md); the GPLv3+ tool/source is not bundled or copied. Archive data retain their original licenses: unchanged dorny/test-reporter Jest XML is MIT with its copied notice, synthetic retry XML is Apache-2.0. Exact generation commands and archive hashes are recorded alongside fixtures. Tests check independent-producer input, not just the project's own writer.
 
 The direct declared ZIP collection adapter/CLI/tests and test-generated archive payloads are project-authored Apache-2.0, using pinned fzip for archive generation and bounded expansion. Public real XML retains the upstream MIT license. No archive extraction filesystem utility or upstream test implementation is copied.

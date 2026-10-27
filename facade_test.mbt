@@ -1,4 +1,32 @@
 ///|
+test "facade exposes an owned review with checked approval for future inventory" {
+  let before = @moontestledger.RunPlan::new("before", "r1", [
+    {
+      id: "main",
+      environment: "linux",
+      shard: "all",
+      attempt: 1,
+      cases: [{ classname: "Api", name: "existing", }],
+    },
+  ])
+  let proposed = { ..before, run_id: "next", revision: "r2", }
+  let review : @moontestledger.PlanReview = @moontestledger.review_plan(
+    before, proposed,
+  )
+  assert_eq(
+    @moontestledger.decode_plan_review(review.encode()).approve(
+      before,
+      approval=review.token(),
+    ),
+    proposed,
+  )
+  assert_eq(
+    review.changes()[0].kind,
+    @moontestledger.PlanChangeKind::RunMetadataChanged,
+  )
+}
+
+///|
 test "downstream facade integrates a declared report and retains original input" {
   let key : @moontestledger.CaseKey = {
     classname: "Checkout",

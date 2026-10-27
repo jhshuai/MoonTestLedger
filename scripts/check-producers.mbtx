@@ -225,6 +225,31 @@ async fn main {
     fail("expected diagnostic")
   }
   assert_eq(actual, code)
+  let reviewed = @shell.Cmd(moon, [
+    "-C",
+    consumer,
+    "run",
+    "--target",
+    target,
+    "--deny-warn",
+    ".",
+    "--",
+    "--review-inventory",
+    @fs.read_file("examples/review/before.json").text(),
+    @fs.read_file("examples/review/proposed.json").text(),
+  ]).output()
+  assert_eq(reviewed.exit_code(), 0, msg=reviewed.stderr())
+  guard @json.parse(reviewed.stdout())
+    is { "review_sha256": String(token), "changes": Array(changes), .. } else {
+    fail("expected public inventory review")
+  }
+  assert_eq(token.length(), 64)
+  assert_eq(changes.length(), 6)
+  assert_eq(
+    @json.parse(reviewed.stdout()),
+    @fs.read_file("examples/review/review.json").json(),
+  )
+  println("Inventory review public facade passed on " + target)
   if target == "wasm" || target == "native" {
     let artifacts = root + "/artifacts"
     @fs.mkdir(artifacts)

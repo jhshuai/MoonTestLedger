@@ -19,6 +19,8 @@ pub fn decode_pack_index(String, limits? : @ledger.Limits) -> PackIndex raise @l
 
 pub fn decode_plan(String, limits? : @ledger.Limits) -> @ledger.RunPlan raise @ledger.InputError
 
+pub fn decode_plan_review(String, limits? : @ledger.Limits) -> PlanReview raise @ledger.InputError
+
 pub fn decode_retry_reports(String, limits? : @ledger.Limits) -> Array[RetryReport] raise @ledger.InputError
 
 pub fn decode_tar_pack(Bytes, limits? : @ledger.Limits, max_bytes? : Int) -> Evidence raise @ledger.InputError
@@ -40,6 +42,8 @@ pub fn encode_summary(@ledger.Summary, deny_recovered? : Bool) -> String
 pub fn merge_evidence(ArrayView[Evidence], limits? : @ledger.Limits) -> Evidence raise @ledger.InputError
 
 pub fn prepare_retry(Evidence, ArrayView[RetryReport], limits? : @ledger.Limits) -> Evidence raise @ledger.InputError
+
+pub fn review_plan(@ledger.RunPlan, @ledger.RunPlan, limits? : @ledger.Limits) -> PlanReview raise @ledger.InputError
 
 // Errors
 
@@ -115,6 +119,36 @@ type PackIndex
 pub fn PackIndex::encode(Self, limits? : @ledger.Limits) -> String raise @ledger.InputError
 pub fn PackIndex::filenames(Self) -> Array[String]
 pub fn PackIndex::restore(Self, ArrayView[PackFile], limits? : @ledger.Limits) -> Evidence raise @ledger.InputError
+
+pub(all) struct PlanChange {
+  kind : PlanChangeKind
+  report_id : String
+  key : @ledger.CaseKey?
+} derive(Eq, @debug.Debug)
+pub fn PlanChange::equal(Self, Self) -> Bool
+pub fn PlanChange::not_equal(Self, Self) -> Bool
+pub fn PlanChange::to_repr(Self) -> @debug.Repr
+
+pub(all) enum PlanChangeKind {
+  RunMetadataChanged
+  ReportAdded
+  ReportRemoved
+  ReportBindingChanged
+  CaseAdded
+  CaseRemoved
+  CaseOrderChanged
+} derive(Eq, @debug.Debug)
+pub fn PlanChangeKind::equal(Self, Self) -> Bool
+pub fn PlanChangeKind::not_equal(Self, Self) -> Bool
+pub fn PlanChangeKind::to_repr(Self) -> @debug.Repr
+
+type PlanReview
+pub fn PlanReview::approve(Self, @ledger.RunPlan, approval~ : String, limits? : @ledger.Limits) -> @ledger.RunPlan raise @ledger.InputError
+pub fn PlanReview::before(Self) -> @ledger.RunPlan
+pub fn PlanReview::changes(Self) -> Array[PlanChange]
+pub fn PlanReview::encode(Self, limits? : @ledger.Limits) -> String raise @ledger.InputError
+pub fn PlanReview::proposed(Self) -> @ledger.RunPlan
+pub fn PlanReview::token(Self) -> String
 
 pub(all) struct ReportFile {
   binding : @ledger.ReportBinding

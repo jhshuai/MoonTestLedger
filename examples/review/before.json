@@ -1,0 +1,15 @@
+{
+  "schema": 1, "run_id": "checkout-ci-1042", "revision": "revision-a",
+  "reports": [
+    {"id": "payments", "environment": "linux", "shard": "payments", "attempt": 1, "cases": [
+      {"classname": "Payments", "name": "authorize [EUR]"},
+      {"classname": "Payments", "name": "refund"}
+    ]},
+    {"id": "health", "environment": "node20", "shard": "smoke", "attempt": 1, "cases": [
+      {"classname": "Api", "name": "health"}
+    ]},
+    {"id": "retired", "environment": "linux", "shard": "legacy", "attempt": 1, "cases": [
+      {"classname": "Legacy", "name": "deprecated endpoint"}
+    ]}
+  ]
+}

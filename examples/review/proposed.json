@@ -1,0 +1,15 @@
+{
+  "schema": 1, "run_id": "checkout-ci-1043", "revision": "revision-b",
+  "reports": [
+    {"id": "payments", "environment": "linux", "shard": "payments", "attempt": 1, "cases": [
+      {"classname": "Payments", "name": "authorize [EUR]"},
+      {"classname": "Payments", "name": "authorize [USD]"}
+    ]},
+    {"id": "health", "environment": "node22", "shard": "smoke", "attempt": 1, "cases": [
+      {"classname": "Api", "name": "health"}
+    ]},
+    {"id": "windows", "environment": "windows", "shard": "payments", "attempt": 1, "cases": [
+      {"classname": "Payments", "name": "authorize [EUR]"}
+    ]}
+  ]
+}

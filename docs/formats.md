@@ -1,5 +1,7 @@
 # Version 1 format contract
 
+Complete future-inventory reviews use a separate schema-1 `moontestledger/plan-review` artifact. Its complete plans, derived changes, digest, strict decode and explicit baseline-bound approval contract are specified in [inventory review](inventory-review.md). Applying it cannot rewrite existing evidence and requires a fresh run ID.
+
 ## Plan and bundle
 
 All JSON fields shown in README and the checked-in examples are mandatory; no additional fields are accepted. Schema is exactly 1. Attempt is an exact positive 32-bit integer. Strings are case-sensitive and not trimmed. Binding identifiers cannot be empty, whitespace-only or contain NUL. Classname can be empty; testcase names cannot be empty or whitespace-only.

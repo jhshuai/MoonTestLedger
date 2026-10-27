@@ -1,5 +1,7 @@
 # Independent public API consumer
 
+`--review-inventory BEFORE-JSON PROPOSED-JSON` exercises facade `PlanReview` types/methods, strict round-trip and checked approval for a future run. The producer evaluator calls it on every target and checks the committed six-change preview. It does not automatically approve actual project inventory.
+
 This is a separate MoonBit module. It imports only the public `jhshuai/moontestledger` facade and core packages. Supply collection JSON, a report ID and original XML as three arguments. It collects the report, verifies exact source retention, round-trips JSON, detached/ZIP/USTAR packs, checks missing inventory and atomic refusal, then prints summary/integrity JSON. Library records passed through array views use explicitly typed `Array[@ledger.CollectedXml]` values.
 
 The output also lists exact parsed classname/name/outcome observations. `scripts/check-producers.mbtx TARGET` reuses this consumer against the **current working library source** for captured pytest/Surefire/Gradle fixtures, and additionally invokes `--reject-producer XML CODE` for the explicitly unsupported embedded-retry profile. That fixture-only mode asserts the diagnostic path and recovery after rejection. See [producer conformance](../producers/README.md) for its independent expected contracts and hashes.

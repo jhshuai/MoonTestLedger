@@ -1,0 +1,139 @@
+{
+  "schema": 1,
+  "kind": "moontestledger/plan-review",
+  "before": {
+    "schema": 1,
+    "run_id": "checkout-ci-1042",
+    "revision": "revision-a",
+    "reports": [
+      {
+        "id": "retired",
+        "environment": "linux",
+        "shard": "legacy",
+        "attempt": 1,
+        "cases": [
+          {
+            "classname": "Legacy",
+            "name": "deprecated endpoint"
+          }
+        ]
+      },
+      {
+        "id": "payments",
+        "environment": "linux",
+        "shard": "payments",
+        "attempt": 1,
+        "cases": [
+          {
+            "classname": "Payments",
+            "name": "authorize [EUR]"
+          },
+          {
+            "classname": "Payments",
+            "name": "refund"
+          }
+        ]
+      },
+      {
+        "id": "health",
+        "environment": "node20",
+        "shard": "smoke",
+        "attempt": 1,
+        "cases": [
+          {
+            "classname": "Api",
+            "name": "health"
+          }
+        ]
+      }
+    ]
+  },
+  "proposed": {
+    "schema": 1,
+    "run_id": "checkout-ci-1043",
+    "revision": "revision-b",
+    "reports": [
+      {
+        "id": "payments",
+        "environment": "linux",
+        "shard": "payments",
+        "attempt": 1,
+        "cases": [
+          {
+            "classname": "Payments",
+            "name": "authorize [EUR]"
+          },
+          {
+            "classname": "Payments",
+            "name": "authorize [USD]"
+          }
+        ]
+      },
+      {
+        "id": "health",
+        "environment": "node22",
+        "shard": "smoke",
+        "attempt": 1,
+        "cases": [
+          {
+            "classname": "Api",
+            "name": "health"
+          }
+        ]
+      },
+      {
+        "id": "windows",
+        "environment": "windows",
+        "shard": "payments",
+        "attempt": 1,
+        "cases": [
+          {
+            "classname": "Payments",
+            "name": "authorize [EUR]"
+          }
+        ]
+      }
+    ]
+  },
+  "before_sha256": "c1eca48d98e9f90e84d61273b28b30a0164fe3d1fb0233c9aed572f82021c3de",
+  "proposed_sha256": "54b962d9c55a04dd8ef7db41ba7d4e78d7b188abd4c83766c02c10ff361dd814",
+  "changes": [
+    {
+      "kind": "run_metadata_changed",
+      "report_id": "",
+      "key": null
+    },
+    {
+      "kind": "report_binding_changed",
+      "report_id": "health",
+      "key": null
+    },
+    {
+      "kind": "case_added",
+      "report_id": "payments",
+      "key": {
+        "classname": "Payments",
+        "name": "authorize [USD]"
+      }
+    },
+    {
+      "kind": "case_removed",
+      "report_id": "payments",
+      "key": {
+        "classname": "Payments",
+        "name": "refund"
+      }
+    },
+    {
+      "kind": "report_removed",
+      "report_id": "retired",
+      "key": null
+    },
+    {
+      "kind": "report_added",
+      "report_id": "windows",
+      "key": null
+    }
+  ],
+  "review_sha256": "e4f01bcfe386e9687cda86f134139528f0a36b07c21751bed9a2a330e415efe5"
+}

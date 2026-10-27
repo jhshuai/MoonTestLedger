@@ -36,7 +36,7 @@ async fn main {
     "fmt", "--check", "scripts/verify.mbtx", "scripts/e2e.mbtx", "scripts/check-encapsulation.mbtx",
     "scripts/render-demo.mbtx", "scripts/output-e2e.mbtx", "scripts/check-consumer.mbtx",
     "scripts/delivery-e2e.mbtx", "scripts/diagnose-native.mbtx", "scripts/check-producers.mbtx",
-    "scripts/check-ci-delivery.mbtx", "scripts/check-golden-delivery.mbtx",
+    "scripts/check-ci-delivery.mbtx", "scripts/check-golden-delivery.mbtx", "scripts/review-e2e.mbtx",
   ])
   let paths = [
     "pkg.generated.mbti", "ledger/pkg.generated.mbti", "junit/pkg.generated.mbti",
@@ -57,6 +57,7 @@ async fn main {
   moon(["run", "--deny-warn", "scripts/check-encapsulation.mbtx"])
   moon(["run", "--deny-warn", "scripts/check-producers.mbtx", target])
   if target == "wasm" || target == "native" {
+    moon(["run", "--deny-warn", "scripts/review-e2e.mbtx", target])
     moon(["run", "--deny-warn", "scripts/check-golden-delivery.mbtx", target])
     moon(["run", "scripts/e2e.mbtx", target])
     moon(["run", "--deny-warn", "scripts/output-e2e.mbtx", target])

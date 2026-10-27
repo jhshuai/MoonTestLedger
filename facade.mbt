@@ -52,6 +52,11 @@ pub using @wire {
   type CollectionFile,
   type CollectedXml,
   decode_collection,
+  type PlanReview,
+  type PlanChange,
+  type PlanChangeKind,
+  review_plan,
+  decode_plan_review,
 }
 
 ///|

@@ -1,5 +1,11 @@
 # Project selection review — 2026-10-13
 
+## Future-inventory review boundary — 2026-10-28
+
+Before extending maintenance workflows, rechecked [mizchi/flaker's current public README/API list](https://github.com/mizchi/flaker). It explicitly includes `classify_report_diff`, execution-plan preview, quarantine suggest/apply and operator review; review/apply as a general pattern is not unique to this project. MoonTestLedger's added `review_plan` / `PlanReview` accepts **two complete externally declared RunPlans**, binds the full declarations and derived changes to an acknowledgment token, refuses a stale current baseline and old-run reuse, and writes a future inventory without altering prior evidence. It does not choose a reduced test set, quarantine outcomes or execute runners. This stays in the project's declared-inventory/evidence boundary, rather than adding flaker's broad workflow.
+
+Queries used: `site:mooncakes.io "test" "inventory" "plan"`, `site:github.com moonbit "approve" "test plan"`; inspected the linked existing competitor rather than treating unrelated/no search hits as absence. Unindexed packages, unpublished APIs and future additions remain uncertain. No competitor implementation/test/schema was copied, and no ecosystem exclusivity is claimed.
+
 This review preceded implementation. The user requires a practical, broadly useful project and no substantial overlap with existing MoonBit public purposes and APIs. This is evidence of a complementary boundary in the checked public ecosystem, not a claim of uniqueness or original algorithms.
 
 ## Demand gate
