@@ -1,0 +1,108 @@
+///|
+import {
+  "moonbitlang/async@0.22.4",
+  "moonbitlang/async@0.22.4/fs",
+  "moonbitlang/async@0.22.4/shell",
+  "moonbitlang/core/env",
+  "moonbitlang/core/json",
+  "moonbitlang/core/string",
+  "moonbitlang/x@0.5.5/crypto",
+}
+
+///|
+async fn digest(directory : String) -> String {
+  let path = directory + "/evidence.json"
+  guard @fs.file_size(path) <= 16777216L else {
+    fail("evidence file exceeds the CI transport budget")
+  }
+  @crypto.bytes_to_hex_string(@crypto.sha256(@fs.read_file(path).binary()))
+}
+
+///|
+async fn main {
+  let arguments = @env.args()[1:]
+  match arguments {
+    ["record", directory] => {
+      let path = directory + "/delivery.json"
+      guard @fs.file_size(path) <= 8192L else {
+        fail("receipt exceeds the CI transport budget")
+      }
+      guard @fs.read_file(path).json()
+        is {
+          "schema": Number(1, ..),
+          "kind": String("moontestledger/ci-delivery"),
+          "profile": String("mtl-ci-delivery-v1"),
+          "exit_code": Number(gate, ..),
+          ..
+        } &&
+        (gate == 0 || gate == 1 || gate == 3) else {
+        fail("expected a completed delivery receipt with gate 0/1/3")
+      }
+      let hash = digest(directory)
+      let gate = gate.to_int().to_string()
+      guard @env.get_env_var("GITHUB_OUTPUT") is Some(output) else {
+        fail("GITHUB_OUTPUT is required for recording creation outputs")
+      }
+      // Values are validated hex/digits, not arbitrary report text. The hash is
+      // a separate job output, outside the artifact that will be downloaded.
+      @fs.write_file(
+        output,
+        "evidence_sha256=" + hash + "\ngate=" + gate + "\n",
+        append=true,
+        create_mode=OpenExisting,
+      )
+      println(
+        Json::object({
+          "evidence_sha256": Json::string(hash),
+          "gate": Json::string(gate),
+        }).stringify(),
+      )
+    }
+    ["check", directory, hash, gate, .. rest] => {
+      guard hash.length() == 64 &&
+        hash.iter().all(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')) &&
+        ["0", "1", "3"].contains(gate) else {
+        fail("expected independently recorded lowercase SHA-256 and gate 0/1/3")
+      }
+      let target = match rest {
+        [] => "wasm"
+        [target] => target
+        _ => fail("expected at most one target")
+      }
+      guard target == "wasm" || target == "native" else {
+        fail("CLI target must be wasm or native")
+      }
+      assert_eq(
+        digest(directory),
+        hash,
+        msg="downloaded evidence differs from creation job output",
+      )
+      let moon = @env.get_env_var("MOON_TEST_LEDGER_MOON").unwrap_or("moon")
+      let result = @shell.Cmd(moon, [
+        "run", "--target", target, "cmd/moontestledger", "--", "verify-delivery",
+        directory,
+      ]).output()
+      assert_eq(
+        result.exit_code(),
+        @string.parse_int(gate),
+        msg=result.stderr(),
+      )
+      assert_eq(result.stderr(), "")
+      guard @json.parse(result.stdout())
+        is { "exit_code": Number(actual, ..), "complete": complete, .. } else {
+        fail("expected original replay receipt")
+      }
+      assert_eq(actual.to_int().to_string(), gate)
+      assert_eq(complete, Json::boolean(gate != "3"))
+      println(
+        "Downloaded delivery matches creation SHA-256 and original gate " +
+        gate +
+        "; complete six-member offline replay passed.",
+      )
+    }
+    _ =>
+      fail(
+        "usage: record DIRECTORY | check DIRECTORY EXPECTED-SHA256 EXPECTED-GATE [wasm|native]",
+      )
+  }
+}

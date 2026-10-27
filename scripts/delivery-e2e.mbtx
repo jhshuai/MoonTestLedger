@@ -62,6 +62,48 @@ async fn delivery(
     }
   }
   let receipt = command(target, ["ci-report", source, directory], gate)
+  let outputs = root + "/ci-outputs"
+  @fs.write_file(outputs, "previous=value\n")
+  defer @fs.remove(outputs)
+  let moon = @env.get_env_var("MOON_TEST_LEDGER_MOON").unwrap_or("moon")
+  let recorded = @shell.Cmd(
+    moon,
+    [
+      "run", "--deny-warn", "scripts/check-ci-delivery.mbtx", "record", directory,
+    ],
+    env=Map([("GITHUB_OUTPUT", outputs)]),
+  ).output()
+  assert_eq(recorded.exit_code(), 0, msg=recorded.stderr())
+  guard @json.parse(recorded.stdout())
+    is { "evidence_sha256": String(hash), "gate": String(original_gate), .. } else {
+    fail("expected CI creation outputs")
+  }
+  assert_eq(original_gate, gate.to_string())
+  assert_eq(
+    @fs.read_file(outputs).text(),
+    "previous=value\nevidence_sha256=" + hash + "\ngate=" + original_gate + "\n",
+  )
+  let checked = @shell.Cmd(moon, [
+    "run", "--deny-warn", "scripts/check-ci-delivery.mbtx", "check", directory, hash,
+    original_gate, target,
+  ]).output()
+  assert_eq(checked.exit_code(), 0, msg=checked.stderr())
+  if mutations {
+    for
+      (bad_hash, bad_gate) in [
+        (
+          "0000000000000000000000000000000000000000000000000000000000000000", original_gate,
+        ),
+        (hash, "3"),
+        (hash, "2"),
+      ] {
+      let rejected = @shell.Cmd(moon, [
+        "run", "--deny-warn", "scripts/check-ci-delivery.mbtx", "check", directory,
+        bad_hash, bad_gate, target,
+      ]).output()
+      assert_true(rejected.exit_code() != 0)
+    }
+  }
   guard receipt
     is {
       "exit_code": Number(actual, ..),

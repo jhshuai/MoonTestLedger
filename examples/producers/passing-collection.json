@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "kind": "moontestledger/collection",
+  "deny_recovered": false,
+  "plan": {
+    "schema": 1,
+    "run_id": "surefire-passing-delivery",
+    "revision": "fixtures-20261028",
+    "reports": [{
+      "id": "surefire-parameterized.xml",
+      "environment": "surefire-windows",
+      "shard": "parameters",
+      "attempt": 1,
+      "cases": [
+        {"classname": "example.ParameterizedTest", "name": "acceptsAmount[amount=0]"},
+        {"classname": "example.ParameterizedTest", "name": "acceptsAmount[amount=100]"}
+      ]
+    }]
+  },
+  "files": [{"id": "surefire-parameterized.xml", "path": "surefire-parameterized.xml"}]
+}

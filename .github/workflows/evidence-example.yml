@@ -1,4 +1,5 @@
 name: CI evidence delivery example
+run-name: Evidence delivery · ${{ inputs.collection }} · ${{ inputs.artifact_root }}
 
 on:
   workflow_dispatch:
@@ -20,6 +21,9 @@ permissions:
 jobs:
   evidence:
     runs-on: ubuntu-latest
+    outputs:
+      evidence_sha256: ${{ steps.receipt.outputs.evidence_sha256 }}
+      gate: ${{ steps.receipt.outputs.gate }}
     steps:
       - uses: actions/checkout@v4
       - uses: hustcer/setup-moonbit@9199da0ab63ea0c0bab1dc15f03d76e17ed4f75f
@@ -34,11 +38,40 @@ jobs:
         run: moon run --target wasm cmd/moontestledger -- collect "$COLLECTION" "$ARTIFACT_ROOT" --output run-evidence.json
       - name: Preserve the evidence and report before applying its test gate
         run: moon run --target wasm cmd/moontestledger -- ci-report run-evidence.json ci-evidence
+      - name: Record the creation receipt outside the uploaded artifact
+        id: receipt
+        if: always()
+        run: moon run scripts/check-ci-delivery.mbtx record ci-evidence
       - name: Upload the delivery even when its test gate fails
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: test-evidence
           path: ci-evidence/
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 7
+
+  verify-download:
+    needs: evidence
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hustcer/setup-moonbit@9199da0ab63ea0c0bab1dc15f03d76e17ed4f75f
+        with:
+          version: 0.10.15+943464bfa
+          core-version: 0.10.15+943464bfa
+      - run: moon update
+      - name: Download the evidence on an independent runner
+        uses: actions/download-artifact@v8
+        with:
+          name: test-evidence
+          path: downloaded-evidence
+      - name: Replay the original test gate offline
+        run: moon run --target wasm cmd/moontestledger -- verify-delivery downloaded-evidence
+      - name: Assert transport integrity and gate preservation
+        if: always()
+        env:
+          EXPECTED_SHA256: ${{ needs.evidence.outputs.evidence_sha256 }}
+          EXPECTED_GATE: ${{ needs.evidence.outputs.gate }}
+        run: moon run scripts/check-ci-delivery.mbtx check downloaded-evidence "$EXPECTED_SHA256" "$EXPECTED_GATE"
