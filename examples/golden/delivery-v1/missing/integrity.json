@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "kind": "moontestledger/integrity",
+  "algorithm": "sha256",
+  "canonicalization": "mtl-evidence-v1",
+  "run_id": "upstream-jest-demo",
+  "revision": "cc52f364a405169afe07bb00dab3d375b451229d",
+  "deny_recovered": false,
+  "plan_sha256": "544790a21bb9d6c444de05a0a4414358bd3b8b2ab7136cad1e5477c3da113794",
+  "archive_sha256": "494965b36d10848775a1f09f68148399f6399a6ea3d5de5a3b651a2350a3d76f",
+  "documents": [],
+  "missing_reports": [
+    "jest-main"
+  ]
+}

@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<title>MoonTestLedger evidence</title><style>
+:root{font-family:system-ui,sans-serif;color:#172b3a;background:#f3f6f8;line-height:1.5}*{box-sizing:border-box}body{margin:0}header{background:#112d3b;color:#fff;padding:36px max(24px,calc((100% - 1120px)/2))}main{max-width:1120px;margin:28px auto;padding:0 24px 48px}h1{margin:4px 0;font-size:2rem}h2{margin-top:32px}h3{margin:12px 0}.eyebrow{letter-spacing:.14em;font-size:.8rem;color:#9adcc7}.meta{overflow-wrap:anywhere}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}.stat,article,.inventory{background:#fff;border:1px solid #d9e2e8;border-radius:8px;padding:16px}.stat strong{font-size:1.65rem;display:block}.stat span{font-size:.83rem;overflow-wrap:anywhere}table{width:100%;border-collapse:collapse;background:#fff}th,td{text-align:left;padding:10px;border-bottom:1px solid #d9e2e8;vertical-align:top;overflow-wrap:anywhere}th{background:#e7eef2}article{margin:12px 0}summary{cursor:pointer;overflow-wrap:anywhere}details{margin:12px 0}.badge{display:inline-block;border-radius:4px;padding:2px 8px;background:#e5edf1;font-size:.85rem}.failed,.error,.unresolved{color:#8d1730;background:#ffe5e9}.incomplete{color:#765009;background:#fff0cd}.passed{color:#116246;background:#dcf5e9}.recovered_on_retry{color:#75420f;background:#ffead5}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f3f6f8;border-left:3px solid #a7bcc7;padding:14px;font-size:.85rem}.problem{border-left-color:#c7425c}.muted{color:#536878;font-size:.9rem}a{color:#14634e}.scroll{overflow-x:auto}ul{padding-left:22px}@media(max-width:600px){header{padding:24px}main{padding:0 14px}th,td{padding:7px;font-size:.85rem}}
+</style></head><body><header><div class="eyebrow">MOONTESTLEDGER / CI EVIDENCE</div><h1>Test run evidence</h1><div class="meta">Run: upstream-jest-demo<br>Revision: cc52f364a405169afe07bb00dab3d375b451229d<br>Gate: <strong>failing</strong> · Exit 1<br>Recovery policy: allow recovered tests</div></header><main><p class="muted">Offline evidence view. All attempts remain visible. Missing evidence takes precedence over test failures. Preserve the JSON archive for replay.</p><section class="stats" aria-label="Verdict counts"><div class="stat"><strong>1</strong><span>passed</span></div><div class="stat"><strong>4</strong><span>failed</span></div><div class="stat"><strong>0</strong><span>error</span></div><div class="stat"><strong>1</strong><span>skipped</span></div><div class="stat"><strong>0</strong><span>recovered_on_retry</span></div><div class="stat"><strong>0</strong><span>unresolved</span></div><div class="stat"><strong>0</strong><span>incomplete</span></div></section><h2>Missing evidence</h2><p>No missing reports or expected testcases.</p><ul></ul><h2>Testcases</h2><div class="scroll"><table><thead><tr><th>Environment / shard</th><th>Testcase</th><th>Verdict</th><th>Attempts</th></tr></thead><tbody><tr><td>upstream-macos-jest<br>all</td><td><a href="#case-0"> / Skipped test</a></td><td><span class="badge skipped">skipped</span></td><td>1</td></tr><tr><td>upstream-macos-jest<br>all</td><td><a href="#case-1"> / Timeout test</a></td><td><span class="badge failed">failed</span></td><td>1</td></tr><tr><td>upstream-macos-jest<br>all</td><td><a href="#case-2">Test 1 / Passing test</a></td><td><span class="badge passed">passed</span></td><td>1</td></tr><tr><td>upstream-macos-jest<br>all</td><td><a href="#case-3">Test 2 / Exception in test</a></td><td><span class="badge failed">failed</span></td><td>1</td></tr><tr><td>upstream-macos-jest<br>all</td><td><a href="#case-4">Test 1 › Test 1.1 / Failing test</a></td><td><span class="badge failed">failed</span></td><td>1</td></tr><tr><td>upstream-macos-jest<br>all</td><td><a href="#case-5">Test 1 › Test 1.1 / Exception in target unit</a></td><td><span class="badge failed">failed</span></td><td>1</td></tr></tbody></table></div><h2>Attempt details</h2><article id="case-0"><h3> / Skipped test</h3><p class="muted">upstream-macos-jest / all</p><span class="badge skipped">skipped</span><details open><summary>Attempt 1 · skipped · Report jest-main</summary><p class="muted">XML location: /testsuites[1]/testsuite[2]/testcase[2] · line 79, column 5</p></details></article><article id="case-1"><h3> / Timeout test</h3><p class="muted">upstream-macos-jest / all</p><span class="badge failed">failed</span><details open><summary>Attempt 1 · failed · Report jest-main</summary><p class="muted">XML location: /testsuites[1]/testsuite[2]/testcase[1] · line 67, column 5</p><p><strong>Failure</strong></p><p class="muted">XML location: /testsuites[1]/testsuite[2]/testcase[1]/failure[1] · line 68, column 7</p><pre class="problem">Error: thrown: &quot;Exceeded timeout of 1 ms for a test.
+Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
+    at Object.test (/Users/izso/Developer/test-reporter/reports/jest/__tests__/second.test.js:1:1)
+    at ModuleExecutor.exec (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runtime/build/index.js:2078:26)
+    at CjsLoader.loadModule (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runtime/build/index.js:323:36)
+    at CjsLoader.requireModule (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runtime/build/index.js:289:12)
+    at Runtime.requireModule (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runtime/build/index.js:3657:27)
+    at jestAdapter (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/runner.js:96:13)
+    at runTestInternal (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runner/build/index.js:276:16)
+    at runTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runner/build/index.js:344:7)</pre></details></article><article id="case-2"><h3>Test 1 / Passing test</h3><p class="muted">upstream-macos-jest / all</p><span class="badge passed">passed</span><details open><summary>Attempt 1 · passed · Report jest-main</summary><p class="muted">XML location: /testsuites[1]/testsuite[1]/testcase[1] · line 4, column 5</p></details></article><article id="case-3"><h3>Test 2 / Exception in test</h3><p class="muted">upstream-macos-jest / all</p><span class="badge failed">failed</span><details open><summary>Attempt 1 · failed · Report jest-main</summary><p class="muted">XML location: /testsuites[1]/testsuite[1]/testcase[4] · line 47, column 5</p><p><strong>Failure</strong></p><p class="muted">XML location: /testsuites[1]/testsuite[1]/testcase[4]/failure[1] · line 48, column 7</p><pre class="problem">Error: Some error
+    at Object.&lt;anonymous&gt; (/Users/izso/Developer/test-reporter/reports/jest/__tests__/main.test.js:21:11)
+    at Promise.finally.completed (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1561:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1501:10)
+    at _callCircusTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1011:40)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at _runTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:951:3)
+    at /Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:853:7
+    at _runTestsForDescribeBlock (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:866:11)
+    at _runTestsForDescribeBlock (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:861:11)
+    at run (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:765:3)
+    at runAndTransformResultsToJestFormat (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1993:21)
+    at jestAdapter (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/runner.js:111:19)
+    at runTestInternal (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runner/build/index.js:276:16)
+    at runTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runner/build/index.js:344:7)</pre></details></article><article id="case-4"><h3>Test 1 › Test 1.1 / Failing test</h3><p class="muted">upstream-macos-jest / all</p><span class="badge failed">failed</span><details open><summary>Attempt 1 · failed · Report jest-main</summary><p class="muted">XML location: /testsuites[1]/testsuite[1]/testcase[2] · line 6, column 5</p><p><strong>Failure</strong></p><p class="muted">XML location: /testsuites[1]/testsuite[1]/testcase[2]/failure[1] · line 7, column 7</p><pre class="problem">Error: expect(received).toBeTruthy()
+
+Received: false
+    at Object.toBeTruthy (/Users/izso/Developer/test-reporter/reports/jest/__tests__/main.test.js:10:21)
+    at Promise.finally.completed (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1561:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1501:10)
+    at _callCircusTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1011:40)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at _runTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:951:3)
+    at /Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:853:7
+    at _runTestsForDescribeBlock (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:866:11)
+    at _runTestsForDescribeBlock (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:861:11)
+    at _runTestsForDescribeBlock (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:861:11)
+    at run (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:765:3)
+    at runAndTransformResultsToJestFormat (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1993:21)
+    at jestAdapter (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/runner.js:111:19)
+    at runTestInternal (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runner/build/index.js:276:16)
+    at runTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runner/build/index.js:344:7)</pre></details></article><article id="case-5"><h3>Test 1 › Test 1.1 / Exception in target unit</h3><p class="muted">upstream-macos-jest / all</p><span class="badge failed">failed</span><details open><summary>Attempt 1 · failed · Report jest-main</summary><p class="muted">XML location: /testsuites[1]/testsuite[1]/testcase[3] · line 27, column 5</p><p><strong>Failure</strong></p><p class="muted">XML location: /testsuites[1]/testsuite[1]/testcase[3]/failure[1] · line 28, column 7</p><pre class="problem">Error: Some error
+    at Object.throwError (/Users/izso/Developer/test-reporter/reports/jest/lib/main.js:2:9)
+    at Object.throwError (/Users/izso/Developer/test-reporter/reports/jest/__tests__/main.test.js:14:11)
+    at Promise.finally.completed (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1561:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1501:10)
+    at _callCircusTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1011:40)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at _runTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:951:3)
+    at /Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:853:7
+    at _runTestsForDescribeBlock (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:866:11)
+    at _runTestsForDescribeBlock (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:861:11)
+    at _runTestsForDescribeBlock (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:861:11)
+    at run (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:765:3)
+    at runAndTransformResultsToJestFormat (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1993:21)
+    at jestAdapter (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/runner.js:111:19)
+    at runTestInternal (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runner/build/index.js:276:16)
+    at runTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runner/build/index.js:344:7)</pre></details></article><h2>Declared reports and original XML</h2><p class="muted">Metadata and output remain in the complete original source, including reports with no observed cases.</p><details class="inventory"><summary>Report jest-main · upstream-macos-jest / all · attempt 1 · 6 expected cases</summary><ul><li>Test 1 / Passing test</li><li>Test 1 › Test 1.1 / Failing test</li><li>Test 1 › Test 1.1 / Exception in target unit</li><li>Test 2 / Exception in test</li><li> / Timeout test</li><li> / Skipped test</li></ul><pre>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;testsuites name=&quot;jest tests&quot; tests=&quot;6&quot; failures=&quot;4&quot; errors=&quot;0&quot; time=&quot;0.191&quot;&gt;
+  &lt;testsuite name=&quot;__tests__/main.test.js&quot; errors=&quot;0&quot; failures=&quot;3&quot; skipped=&quot;0&quot; timestamp=&quot;2026-07-11T12:47:20&quot; time=&quot;0.114&quot; tests=&quot;4&quot;&gt;
+    &lt;testcase classname=&quot;Test 1&quot; name=&quot;Passing test&quot; time=&quot;0.001&quot;&gt;
+    &lt;/testcase&gt;
+    &lt;testcase classname=&quot;Test 1 › Test 1.1&quot; name=&quot;Failing test&quot; time=&quot;0.001&quot;&gt;
+      &lt;failure&gt;Error: expect(received).toBeTruthy()
+
+Received: false
+    at Object.toBeTruthy (/Users/izso/Developer/test-reporter/reports/jest/__tests__/main.test.js:10:21)
+    at Promise.finally.completed (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1561:28)
+    at new Promise (&amp;lt;anonymous&amp;gt;)
+    at callAsyncCircusFn (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1501:10)
+    at _callCircusTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1011:40)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at _runTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:951:3)
+    at /Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:853:7
+    at _runTestsForDescribeBlock (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:866:11)
+    at _runTestsForDescribeBlock (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:861:11)
+    at _runTestsForDescribeBlock (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:861:11)
+    at run (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:765:3)
+    at runAndTransformResultsToJestFormat (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1993:21)
+    at jestAdapter (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/runner.js:111:19)
+    at runTestInternal (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runner/build/index.js:276:16)
+    at runTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runner/build/index.js:344:7)&lt;/failure&gt;
+    &lt;/testcase&gt;
+    &lt;testcase classname=&quot;Test 1 › Test 1.1&quot; name=&quot;Exception in target unit&quot; time=&quot;0&quot;&gt;
+      &lt;failure&gt;Error: Some error
+    at Object.throwError (/Users/izso/Developer/test-reporter/reports/jest/lib/main.js:2:9)
+    at Object.throwError (/Users/izso/Developer/test-reporter/reports/jest/__tests__/main.test.js:14:11)
+    at Promise.finally.completed (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1561:28)
+    at new Promise (&amp;lt;anonymous&amp;gt;)
+    at callAsyncCircusFn (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1501:10)
+    at _callCircusTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1011:40)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at _runTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:951:3)
+    at /Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:853:7
+    at _runTestsForDescribeBlock (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:866:11)
+    at _runTestsForDescribeBlock (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:861:11)
+    at _runTestsForDescribeBlock (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:861:11)
+    at run (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:765:3)
+    at runAndTransformResultsToJestFormat (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1993:21)
+    at jestAdapter (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/runner.js:111:19)
+    at runTestInternal (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runner/build/index.js:276:16)
+    at runTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runner/build/index.js:344:7)&lt;/failure&gt;
+    &lt;/testcase&gt;
+    &lt;testcase classname=&quot;Test 2&quot; name=&quot;Exception in test&quot; time=&quot;0&quot;&gt;
+      &lt;failure&gt;Error: Some error
+    at Object.&amp;lt;anonymous&amp;gt; (/Users/izso/Developer/test-reporter/reports/jest/__tests__/main.test.js:21:11)
+    at Promise.finally.completed (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1561:28)
+    at new Promise (&amp;lt;anonymous&amp;gt;)
+    at callAsyncCircusFn (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1501:10)
+    at _callCircusTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1011:40)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at _runTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:951:3)
+    at /Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:853:7
+    at _runTestsForDescribeBlock (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:866:11)
+    at _runTestsForDescribeBlock (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:861:11)
+    at run (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:765:3)
+    at runAndTransformResultsToJestFormat (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1993:21)
+    at jestAdapter (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/runner.js:111:19)
+    at runTestInternal (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runner/build/index.js:276:16)
+    at runTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runner/build/index.js:344:7)&lt;/failure&gt;
+    &lt;/testcase&gt;
+  &lt;/testsuite&gt;
+  &lt;testsuite name=&quot;__tests__/second.test.js&quot; errors=&quot;0&quot; failures=&quot;1&quot; skipped=&quot;1&quot; timestamp=&quot;2026-07-11T12:47:20&quot; time=&quot;0.041&quot; tests=&quot;2&quot;&gt;
+    &lt;testcase classname=&quot;&quot; name=&quot;Timeout test&quot; time=&quot;0.023&quot;&gt;
+      &lt;failure&gt;Error: thrown: &amp;quot;Exceeded timeout of 1 ms for a test.
+Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&amp;quot;
+    at Object.test (/Users/izso/Developer/test-reporter/reports/jest/__tests__/second.test.js:1:1)
+    at ModuleExecutor.exec (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runtime/build/index.js:2078:26)
+    at CjsLoader.loadModule (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runtime/build/index.js:323:36)
+    at CjsLoader.requireModule (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runtime/build/index.js:289:12)
+    at Runtime.requireModule (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runtime/build/index.js:3657:27)
+    at jestAdapter (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/runner.js:96:13)
+    at runTestInternal (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runner/build/index.js:276:16)
+    at runTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runner/build/index.js:344:7)&lt;/failure&gt;
+    &lt;/testcase&gt;
+    &lt;testcase classname=&quot;&quot; name=&quot;Skipped test&quot; time=&quot;0&quot;&gt;
+      &lt;skipped/&gt;
+    &lt;/testcase&gt;
+  &lt;/testsuite&gt;
+&lt;/testsuites&gt;</pre></details><footer><p class="muted">Generated by MoonTestLedger. This view describes supplied evidence; it does not prove producer provenance or statistical flakiness.</p></footer></main></body></html>

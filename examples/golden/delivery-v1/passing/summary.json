@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "run_id": "surefire-passing-delivery",
+  "revision": "fixtures-20261028",
+  "complete": true,
+  "exit_code": 0,
+  "missing_reports": [],
+  "missing_cases": [],
+  "cases": [
+    {
+      "environment": "surefire-windows",
+      "shard": "parameters",
+      "key": {
+        "classname": "example.ParameterizedTest",
+        "name": "acceptsAmount[amount=0]"
+      },
+      "verdict": "passed",
+      "attempts": [
+        {
+          "report_id": "surefire-parameterized.xml",
+          "attempt": 1,
+          "outcome": "pass",
+          "path": "/testsuite[1]/testcase[1]",
+          "line": 64,
+          "column": 3,
+          "skipped_reason": null,
+          "problems": []
+        }
+      ]
+    },
+    {
+      "environment": "surefire-windows",
+      "shard": "parameters",
+      "key": {
+        "classname": "example.ParameterizedTest",
+        "name": "acceptsAmount[amount=100]"
+      },
+      "verdict": "passed",
+      "attempts": [
+        {
+          "report_id": "surefire-parameterized.xml",
+          "attempt": 1,
+          "outcome": "pass",
+          "path": "/testsuite[1]/testcase[2]",
+          "line": 65,
+          "column": 3,
+          "skipped_reason": null,
+          "problems": []
+        }
+      ]
+    }
+  ]
+}

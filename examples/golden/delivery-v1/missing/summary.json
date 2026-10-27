@@ -1,0 +1,116 @@
+{
+  "schema": 1,
+  "run_id": "upstream-jest-demo",
+  "revision": "cc52f364a405169afe07bb00dab3d375b451229d",
+  "complete": false,
+  "exit_code": 3,
+  "missing_reports": [
+    "jest-main"
+  ],
+  "missing_cases": [
+    {
+      "report_id": "jest-main",
+      "key": {
+        "classname": "",
+        "name": "Skipped test"
+      }
+    },
+    {
+      "report_id": "jest-main",
+      "key": {
+        "classname": "",
+        "name": "Timeout test"
+      }
+    },
+    {
+      "report_id": "jest-main",
+      "key": {
+        "classname": "Test 1",
+        "name": "Passing test"
+      }
+    },
+    {
+      "report_id": "jest-main",
+      "key": {
+        "classname": "Test 2",
+        "name": "Exception in test"
+      }
+    },
+    {
+      "report_id": "jest-main",
+      "key": {
+        "classname": "Test 1 › Test 1.1",
+        "name": "Failing test"
+      }
+    },
+    {
+      "report_id": "jest-main",
+      "key": {
+        "classname": "Test 1 › Test 1.1",
+        "name": "Exception in target unit"
+      }
+    }
+  ],
+  "cases": [
+    {
+      "environment": "upstream-macos-jest",
+      "shard": "all",
+      "key": {
+        "classname": "",
+        "name": "Skipped test"
+      },
+      "verdict": "incomplete",
+      "attempts": []
+    },
+    {
+      "environment": "upstream-macos-jest",
+      "shard": "all",
+      "key": {
+        "classname": "",
+        "name": "Timeout test"
+      },
+      "verdict": "incomplete",
+      "attempts": []
+    },
+    {
+      "environment": "upstream-macos-jest",
+      "shard": "all",
+      "key": {
+        "classname": "Test 1",
+        "name": "Passing test"
+      },
+      "verdict": "incomplete",
+      "attempts": []
+    },
+    {
+      "environment": "upstream-macos-jest",
+      "shard": "all",
+      "key": {
+        "classname": "Test 2",
+        "name": "Exception in test"
+      },
+      "verdict": "incomplete",
+      "attempts": []
+    },
+    {
+      "environment": "upstream-macos-jest",
+      "shard": "all",
+      "key": {
+        "classname": "Test 1 › Test 1.1",
+        "name": "Failing test"
+      },
+      "verdict": "incomplete",
+      "attempts": []
+    },
+    {
+      "environment": "upstream-macos-jest",
+      "shard": "all",
+      "key": {
+        "classname": "Test 1 › Test 1.1",
+        "name": "Exception in target unit"
+      },
+      "verdict": "incomplete",
+      "attempts": []
+    }
+  ]
+}

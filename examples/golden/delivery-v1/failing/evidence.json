@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "kind": "moontestledger/evidence",
+  "deny_recovered": false,
+  "plan": {
+    "schema": 1,
+    "run_id": "upstream-jest-demo",
+    "revision": "cc52f364a405169afe07bb00dab3d375b451229d",
+    "reports": [
+      {
+        "id": "jest-main",
+        "environment": "upstream-macos-jest",
+        "shard": "all",
+        "attempt": 1,
+        "cases": [
+          {
+            "classname": "Test 1",
+            "name": "Passing test"
+          },
+          {
+            "classname": "Test 1 › Test 1.1",
+            "name": "Failing test"
+          },
+          {
+            "classname": "Test 1 › Test 1.1",
+            "name": "Exception in target unit"
+          },
+          {
+            "classname": "Test 2",
+            "name": "Exception in test"
+          },
+          {
+            "classname": "",
+            "name": "Timeout test"
+          },
+          {
+            "classname": "",
+            "name": "Skipped test"
+          }
+        ]
+      }
+    ]
+  },
+  "documents": [
+    {
+      "id": "jest-main",
+      "run_id": "upstream-jest-demo",
+      "revision": "cc52f364a405169afe07bb00dab3d375b451229d",
+      "environment": "upstream-macos-jest",
+      "shard": "all",
+      "attempt": 1,
+      "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<testsuites name=\"jest tests\" tests=\"6\" failures=\"4\" errors=\"0\" time=\"0.191\">\n  <testsuite name=\"__tests__/main.test.js\" errors=\"0\" failures=\"3\" skipped=\"0\" timestamp=\"2026-07-11T12:47:20\" time=\"0.114\" tests=\"4\">\n    <testcase classname=\"Test 1\" name=\"Passing test\" time=\"0.001\">\n    </testcase>\n    <testcase classname=\"Test 1 › Test 1.1\" name=\"Failing test\" time=\"0.001\">\n      <failure>Error: expect(received).toBeTruthy()\n\nReceived: false\n    at Object.toBeTruthy (/Users/izso/Developer/test-reporter/reports/jest/__tests__/main.test.js:10:21)\n    at Promise.finally.completed (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1561:28)\n    at new Promise (&lt;anonymous&gt;)\n    at callAsyncCircusFn (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1501:10)\n    at _callCircusTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1011:40)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at _runTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:951:3)\n    at /Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:853:7\n    at _runTestsForDescribeBlock (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:866:11)\n    at _runTestsForDescribeBlock (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:861:11)\n    at _runTestsForDescribeBlock (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:861:11)\n    at run (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:765:3)\n    at runAndTransformResultsToJestFormat (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1993:21)\n    at jestAdapter (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/runner.js:111:19)\n    at runTestInternal (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runner/build/index.js:276:16)\n    at runTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runner/build/index.js:344:7)</failure>\n    </testcase>\n    <testcase classname=\"Test 1 › Test 1.1\" name=\"Exception in target unit\" time=\"0\">\n      <failure>Error: Some error\n    at Object.throwError (/Users/izso/Developer/test-reporter/reports/jest/lib/main.js:2:9)\n    at Object.throwError (/Users/izso/Developer/test-reporter/reports/jest/__tests__/main.test.js:14:11)\n    at Promise.finally.completed (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1561:28)\n    at new Promise (&lt;anonymous&gt;)\n    at callAsyncCircusFn (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1501:10)\n    at _callCircusTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1011:40)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at _runTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:951:3)\n    at /Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:853:7\n    at _runTestsForDescribeBlock (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:866:11)\n    at _runTestsForDescribeBlock (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:861:11)\n    at _runTestsForDescribeBlock (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:861:11)\n    at run (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:765:3)\n    at runAndTransformResultsToJestFormat (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1993:21)\n    at jestAdapter (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/runner.js:111:19)\n    at runTestInternal (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runner/build/index.js:276:16)\n    at runTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runner/build/index.js:344:7)</failure>\n    </testcase>\n    <testcase classname=\"Test 2\" name=\"Exception in test\" time=\"0\">\n      <failure>Error: Some error\n    at Object.&lt;anonymous&gt; (/Users/izso/Developer/test-reporter/reports/jest/__tests__/main.test.js:21:11)\n    at Promise.finally.completed (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1561:28)\n    at new Promise (&lt;anonymous&gt;)\n    at callAsyncCircusFn (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1501:10)\n    at _callCircusTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1011:40)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at _runTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:951:3)\n    at /Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:853:7\n    at _runTestsForDescribeBlock (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:866:11)\n    at _runTestsForDescribeBlock (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:861:11)\n    at run (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:765:3)\n    at runAndTransformResultsToJestFormat (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/jestAdapterInit.js:1993:21)\n    at jestAdapter (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/runner.js:111:19)\n    at runTestInternal (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runner/build/index.js:276:16)\n    at runTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runner/build/index.js:344:7)</failure>\n    </testcase>\n  </testsuite>\n  <testsuite name=\"__tests__/second.test.js\" errors=\"0\" failures=\"1\" skipped=\"1\" timestamp=\"2026-07-11T12:47:20\" time=\"0.041\" tests=\"2\">\n    <testcase classname=\"\" name=\"Timeout test\" time=\"0.023\">\n      <failure>Error: thrown: &quot;Exceeded timeout of 1 ms for a test.\nAdd a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;\n    at Object.test (/Users/izso/Developer/test-reporter/reports/jest/__tests__/second.test.js:1:1)\n    at ModuleExecutor.exec (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runtime/build/index.js:2078:26)\n    at CjsLoader.loadModule (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runtime/build/index.js:323:36)\n    at CjsLoader.requireModule (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runtime/build/index.js:289:12)\n    at Runtime.requireModule (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runtime/build/index.js:3657:27)\n    at jestAdapter (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-circus/build/runner.js:96:13)\n    at runTestInternal (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runner/build/index.js:276:16)\n    at runTest (/Users/izso/Developer/test-reporter/reports/jest/node_modules/jest-runner/build/index.js:344:7)</failure>\n    </testcase>\n    <testcase classname=\"\" name=\"Skipped test\" time=\"0\">\n      <skipped/>\n    </testcase>\n  </testsuite>\n</testsuites>"
+    }
+  ]
+}

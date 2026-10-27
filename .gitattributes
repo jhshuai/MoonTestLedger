@@ -7,3 +7,6 @@ examples/upstream/LICENSE.dorny-test-reporter -text
 
 # Captured producer reports retain their original encoding and newlines.
 examples/producers/*.xml -text whitespace=cr-at-eol
+
+# Historical delivery data are exact bytes, including embedded XML/ZIP.
+examples/golden/delivery-v1/** -text whitespace=cr-at-eol

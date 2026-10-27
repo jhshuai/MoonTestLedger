@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "kind": "moontestledger/ci-delivery",
+  "profile": "mtl-ci-delivery-v1",
+  "run_id": "upstream-jest-demo",
+  "revision": "cc52f364a405169afe07bb00dab3d375b451229d",
+  "exit_code": 1,
+  "complete": true,
+  "files": [
+    "evidence.json",
+    "summary.json",
+    "integrity.json",
+    "report.html",
+    "evidence.zip",
+    "delivery.json"
+  ]
+}

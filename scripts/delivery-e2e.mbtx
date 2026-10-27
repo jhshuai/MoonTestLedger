@@ -147,6 +147,32 @@ async fn delivery(
     @fs.remove(completion)
     ignore(command(target, ["verify-delivery", directory], 2))
     @fs.write_file(completion, original)
+    let future = @fs.read_file(completion)
+      .text()
+      .replace(old="mtl-ci-delivery-v1", new="mtl-ci-delivery-v999")
+    @fs.write_file(completion, future)
+    let incompatible = command(target, ["verify-delivery", directory], 2)
+    guard incompatible
+      is { "error": { "code": String("DeliveryProfileUnsupported"), .. }, .. } else {
+      fail("unknown future profiles must not be labelled corrupted v1 evidence")
+    }
+    @fs.write_file(completion, original)
+    let duplicate = @fs.read_file(completion)
+      .text()
+      .replace(
+        old="\"schema\": 1,",
+        new="\"schema\": 1, \"profile\": \"mtl-ci-delivery-v1\",",
+      )
+    @fs.write_file(completion, duplicate)
+    ignore(command(target, ["verify-delivery", directory], 2))
+    @fs.write_file(completion, "{")
+    let malformed = command(target, ["verify-delivery", directory], 2)
+    guard malformed
+      is { "error": { "code": String("DeliveryReceipt"), .. }, .. } else {
+      fail("malformed receipts need an input diagnostic")
+    }
+    @fs.write_file(completion, original)
+    assert_eq(command(target, ["verify-delivery", directory], gate), receipt)
     let extra = directory + "/.hidden"
     @fs.write_file(extra, "unlisted")
     let invalid = command(target, ["verify-delivery", directory], 2)

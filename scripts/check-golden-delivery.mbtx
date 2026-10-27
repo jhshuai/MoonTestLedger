@@ -1,0 +1,97 @@
+///|
+import {
+  "moonbitlang/async@0.22.4",
+  "moonbitlang/async@0.22.4/fs",
+  "moonbitlang/async@0.22.4/shell",
+  "moonbitlang/core/env",
+  "moonbitlang/core/json",
+  "moonbitlang/x@0.5.5/crypto",
+}
+
+///|
+async fn main {
+  let target = @env.args().get(1).unwrap_or("wasm")
+  guard target == "wasm" || target == "native" else {
+    fail("expected wasm or native CLI target")
+  }
+  let moon = @env.get_env_var("MOON_TEST_LEDGER_MOON").unwrap_or("moon")
+  @shell.Cmd(
+    moon,
+    ["build", "--target", target, "--deny-warn"],
+    stdout=Inherit,
+    stderr=Inherit,
+  ).run()
+  let base = "examples/golden/delivery-v1"
+  guard @fs.read_file(base + "/fixtures.json").json()
+    is {
+      "source_revision": String("477835abbfa59e0706153dbe7247bf0f750dd0cc"),
+      "fixtures": Array(fixtures),
+      ..
+    } else {
+    fail("expected immutable historical delivery provenance")
+  }
+  let output = @fs.tmpdir(prefix="mtl-golden-delivery")
+  for fixture in fixtures {
+    guard fixture
+      is {
+        "name": String(name),
+        "gate": Number(gate, ..),
+        "files": Array(files),
+        ..
+      } else {
+      fail("invalid historical fixture")
+    }
+    let original = base + "/" + name
+    for file in files {
+      guard file
+        is {
+          "name": String(filename),
+          "sha256": String(hash),
+          "bytes": Number(size, ..),
+          ..
+        } else {
+        fail("missing member receipt")
+      }
+      let bytes = @fs.read_file(original + "/" + filename).binary()
+      assert_eq(
+        @crypto.bytes_to_hex_string(@crypto.sha256(bytes)),
+        hash,
+        msg=name + "/" + filename,
+      )
+      assert_eq(bytes.length().to_double(), size)
+    }
+    let verified = @shell.Cmd(moon, [
+      "run", "--target", target, "cmd/moontestledger", "--", "verify-delivery", original,
+    ]).output()
+    assert_eq(verified.exit_code(), gate.to_int(), msg=verified.stderr())
+    assert_eq(verified.stderr(), "")
+    let regenerated = output + "/" + name
+    let created = @shell.Cmd(moon, [
+      "run",
+      "--target",
+      target,
+      "cmd/moontestledger",
+      "--",
+      "ci-report",
+      original + "/evidence.json",
+      regenerated,
+    ]).output()
+    assert_eq(created.exit_code(), gate.to_int(), msg=created.stderr())
+    assert_eq(created.stderr(), "")
+    assert_eq(created.stdout(), verified.stdout())
+    for file in files {
+      guard file is { "name": String(filename), .. } else {
+        fail("missing filename")
+      }
+      assert_eq(
+        @fs.read_file(regenerated + "/" + filename).binary(),
+        @fs.read_file(original + "/" + filename).binary(),
+        msg="v1 representation drift: " + name + "/" + filename,
+      )
+    }
+    println(
+      "Historical v1 delivery preserved on \{target}: \{name}, original gate=\{gate}, all six members byte-identical",
+    )
+  }
+  println("Retained golden comparison output: " + output)
+}

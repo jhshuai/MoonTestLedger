@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "kind": "moontestledger/integrity",
+  "algorithm": "sha256",
+  "canonicalization": "mtl-evidence-v1",
+  "run_id": "upstream-jest-demo",
+  "revision": "cc52f364a405169afe07bb00dab3d375b451229d",
+  "deny_recovered": false,
+  "plan_sha256": "544790a21bb9d6c444de05a0a4414358bd3b8b2ab7136cad1e5477c3da113794",
+  "archive_sha256": "1fc6df0a332c2648e14246c0670fd8d7f94d19d05d36f93678fb932e16a0411e",
+  "documents": [
+    {
+      "id": "jest-main",
+      "run_id": "upstream-jest-demo",
+      "revision": "cc52f364a405169afe07bb00dab3d375b451229d",
+      "environment": "upstream-macos-jest",
+      "shard": "all",
+      "attempt": 1,
+      "sha256": "8e18da3a6e4252c34fe7899fad28f8eceeb43849329989b36f2ff68dc7698e58",
+      "utf8_bytes": 7997
+    }
+  ],
+  "missing_reports": []
+}

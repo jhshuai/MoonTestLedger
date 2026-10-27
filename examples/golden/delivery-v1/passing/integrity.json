@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "kind": "moontestledger/integrity",
+  "algorithm": "sha256",
+  "canonicalization": "mtl-evidence-v1",
+  "run_id": "surefire-passing-delivery",
+  "revision": "fixtures-20261028",
+  "deny_recovered": false,
+  "plan_sha256": "cceaee0f194d3afa2f99bc8838ab142b6c15c4c8bdda9bc57673e58b80dc910e",
+  "archive_sha256": "829171c5dd64c625fa5f39323cc1d97446e89dc4b78dd15336c1ec2e03c77929",
+  "documents": [
+    {
+      "id": "surefire-parameterized.xml",
+      "run_id": "surefire-passing-delivery",
+      "revision": "fixtures-20261028",
+      "environment": "surefire-windows",
+      "shard": "parameters",
+      "attempt": 1,
+      "sha256": "3641552ba8ae0b1aa00f1bddb79c2566d7fb7b742fa3bdcd844f4619bc730b3d",
+      "utf8_bytes": 8240
+    }
+  ],
+  "missing_reports": []
+}

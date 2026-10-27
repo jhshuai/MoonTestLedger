@@ -5,7 +5,7 @@ priv struct DeliveryFile {
 }
 
 ///|
-fn delivery_files(
+fn delivery_v1_files(
   evidence : @ledger.Evidence,
 ) -> (Array[DeliveryFile], String) raise @ledger.InputError {
   let snapshot = evidence.snapshot()
@@ -56,7 +56,7 @@ async fn ci_report(path : String, directory : String) -> Int32 {
     read_text(path, @ledger.Limits::default()),
   )
   // Complete validation/rendering/serialization precede any filesystem write.
-  let (files, receipt) = delivery_files(evidence)
+  let (files, receipt) = delivery_v1_files(evidence)
   @fs.mkdir(directory)
   let owned : Array[String] = []
   errdefer {
@@ -145,6 +145,42 @@ async fn verify_delivery(directory : String) -> Int32 {
       "DeliveryInventory", directory, "Delivery requires all six members including its completion receipt",
     )
   }
+  // Select a known representation before interpreting its evidence. This read
+  // only dispatches; the complete v1 receipt is still compared byte-for-byte,
+  // so duplicate/unknown fields cannot become accepted data.
+  let receipt_path = directory + "/delivery.json"
+  if @fs.kind(receipt_path, follow_symlink=false) != @fs.FileKind::Regular {
+    raise refusal(
+      "DeliveryFileKind", receipt_path, "Receipt must be a real regular file",
+    )
+  }
+  let receipt_source = read_text(receipt_path, @ledger.Limits::default())
+  let receipt_json = @json.parse(receipt_source) catch {
+    _ =>
+      raise refusal(
+        "DeliveryReceipt", receipt_path, "Expected a valid delivery receipt; preserve the original files for diagnosis",
+      )
+  }
+  guard receipt_json
+    is {
+      "schema": Number(1, ..),
+      "kind": String("moontestledger/ci-delivery"),
+      "profile": String(profile),
+      ..
+    } else {
+    raise refusal(
+      "DeliveryReceipt", receipt_path, "Expected schema-1 CI delivery receipt with a named profile",
+    )
+  }
+  if profile != "mtl-ci-delivery-v1" {
+    raise refusal(
+      "DeliveryProfileUnsupported",
+      receipt_path,
+      "Unsupported delivery profile '" +
+      profile +
+      "'; preserve all original members and use a compatible verifier. This does not establish corruption.",
+    )
+  }
   let archive_path = directory + "/evidence.json"
   if @fs.kind(archive_path, follow_symlink=false) != @fs.FileKind::Regular {
     raise refusal(
@@ -154,7 +190,7 @@ async fn verify_delivery(directory : String) -> Int32 {
   let evidence = @ledger.decode_evidence(
     read_text(archive_path, @ledger.Limits::default()),
   )
-  let (files, receipt) = delivery_files(evidence)
+  let (files, receipt) = delivery_v1_files(evidence)
   for file in files {
     check_delivery_file(directory + "/" + file.name, file.data)
   }

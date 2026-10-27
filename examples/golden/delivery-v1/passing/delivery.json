@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "kind": "moontestledger/ci-delivery",
+  "profile": "mtl-ci-delivery-v1",
+  "run_id": "surefire-passing-delivery",
+  "revision": "fixtures-20261028",
+  "exit_code": 0,
+  "complete": true,
+  "files": [
+    "evidence.json",
+    "summary.json",
+    "integrity.json",
+    "report.html",
+    "evidence.zip",
+    "delivery.json"
+  ]
+}
