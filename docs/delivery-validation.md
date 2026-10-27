@@ -1,5 +1,11 @@
 # Delivery validation — 2026-10-25
 
+## Native diagnostic follow-up — 2026-10-28
+
+The historical segmentation fault has not been reproduced or diagnosed. A complete original-source native verifier passed under `strace`, followed by ten consecutive traced executions of the originally affected delivery evaluator (all status 0, no delivered SIGSEGV/SIGBUS). A deliberate SIGSEGV utility probe identified the actual `sleep` executable/PID, distinguished handler installation from signal delivery, and then passed a clean-process recovery probe. Raw trace paths: `/var/tmp/mtl-native-investigation.*`, `/var/tmp/mtl-native-repeat-20261028/` and `/var/tmp/mtl-native-probe-20261028/`; these local artifacts are retained, not bundled in Git.
+
+The new [diagnostic workflow](native-diagnostics.md) preserves process/signal trace, command status/output and toolchain/script inputs, and stops at the first failure. Linux native CI uses it without retries and uploads diagnostics on failure. This addresses the original missing attribution, not the unknown historical memory-fault cause. Product code, evidence encoding and library interfaces are unchanged. Wasm 114, Wasm-GC 106 and JS 106 tests plus the existing strict checks and applicable E2Es passed locally. The updated current-source native verifier also passed under tracing: 116 tests, strict check/build, formatting/interface checks and all existing E2Es; logs are retained at `/var/tmp/mtl-native-current-20261028/`. The changed executable scripts were copied into the frozen library source and their format/contents checked by that verifier.
+
 ## Complete CI delivery and offline verification
 
 Final checks with the documented pinned toolchain passed formatting (including the independent consumer), eight generated-interface drift checks, strict check/build, encapsulation and tests: Wasm 114/114, Wasm-GC 106/106, JS 106/106, Linux native 116/116. The frozen Linux source copy compared equal to workspace code before execution. Original Jest audit stdout remains byte-for-byte unchanged; public library interfaces are unchanged.

@@ -17,7 +17,14 @@ async fn command(
     @env.get_env_var("MOON_TEST_LEDGER_MOON").unwrap_or("moon"),
     ["run", "--target", target, "cmd/moontestledger", "--", ..args],
   ).output(max_output_bytes=4194304)
-  assert_eq(result.exit_code(), expected, msg=result.stderr())
+  assert_eq(
+    result.exit_code(),
+    expected,
+    msg="CLI arguments=" +
+      Json::array(args.map(Json::string)).stringify() +
+      "; stderr=" +
+      result.stderr(),
+  )
   if expected == 2 {
     assert_eq(result.stdout(), "")
     @json.parse(result.stderr())

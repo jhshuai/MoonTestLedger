@@ -326,6 +326,8 @@ moon run scripts/e2e.mbtx native
 
 Moon run scripts/verify.mbtx TARGET also snapshots the eight generated interfaces, regenerates them and checks drift, without requiring Git. Automation is written in MoonBit .mbtx. CI declares Linux, macOS and Windows jobs for the four library backends, plus applicable file CLI workflows. CI configuration is distinct from a successful remote run; [validation evidence](docs/validation.md) records what actually executed.
 
+Linux native verification now retains process/signal diagnostics on CI failure. See [native crash investigation](docs/native-diagnostics.md) for the tracer, its signal-attribution self-test and the still unresolved historical fault.
+
 Core tests cover malformed input, exact identities, limits, inventory completeness, retry ordering, deterministic output, JSON round trips, exact numeric lexemes, atomic rejection and recovery, source preservation and caller-array isolation. A compile-negative probe verifies that downstream code cannot mutate the ledger's internal inventory.
 
 ## License and sources

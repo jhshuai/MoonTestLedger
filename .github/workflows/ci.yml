@@ -32,6 +32,26 @@ jobs:
       - name: Resolve pinned module dependencies
         run: moon update
       - name: Check formatting, interfaces, strict check/build, tests and applicable CLI workflows
+        if: runner.os != 'Linux' || matrix.target != 'native'
         run: moon run scripts/verify.mbtx ${{ matrix.target }}
+      - name: Install native process tracer
+        if: runner.os == 'Linux' && matrix.target == 'native'
+        run: sudo apt-get install --yes strace
+      - name: Trace native verification without retrying a failure
+        if: runner.os == 'Linux' && matrix.target == 'native'
+        run: |
+          mkdir -p output
+          moon run scripts/diagnose-native.mbtx output/native-signal-probe 1 --self-test
+          moon run scripts/diagnose-native.mbtx output/native-diagnostics 1
+      - name: Preserve native diagnostics on failure
+        if: failure() && runner.os == 'Linux' && matrix.target == 'native'
+        uses: actions/upload-artifact@v7
+        with:
+          name: native-diagnostics
+          path: |
+            output/native-diagnostics/
+            output/native-signal-probe/
+          if-no-files-found: warn
+          retention-days: 7
       - name: Check an independent consumer against a clean Git source export
         run: moon run scripts/check-consumer.mbtx ${{ matrix.target }}

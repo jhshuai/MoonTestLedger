@@ -9,7 +9,15 @@ import {
 ///|
 async fn moon(args : Array[String]) -> Unit {
   let command = @env.get_env_var("MOON_TEST_LEDGER_MOON").unwrap_or("moon")
-  @shell.Cmd(command, args, stdout=Inherit, stderr=Inherit).run()
+  println("[verify:start] " + Json::array(args.map(Json::string)).stringify())
+  let status = @shell.Cmd(command, args, stdout=Inherit, stderr=Inherit).status()
+  if status != 0 {
+    fail(
+      "Verification command failed (status=\{status}, negative POSIX statuses are signals): \{command} " +
+      Json::array(args.map(Json::string)).stringify(),
+    )
+  }
+  println("[verify:ok] " + Json::array(args.map(Json::string)).stringify())
 }
 
 ///|
@@ -27,7 +35,7 @@ async fn main {
   moon([
     "fmt", "--check", "scripts/verify.mbtx", "scripts/e2e.mbtx", "scripts/check-encapsulation.mbtx",
     "scripts/render-demo.mbtx", "scripts/output-e2e.mbtx", "scripts/check-consumer.mbtx",
-    "scripts/delivery-e2e.mbtx",
+    "scripts/delivery-e2e.mbtx", "scripts/diagnose-native.mbtx",
   ])
   let paths = [
     "pkg.generated.mbti", "ledger/pkg.generated.mbti", "junit/pkg.generated.mbti",

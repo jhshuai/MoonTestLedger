@@ -1,0 +1,166 @@
+///|
+import {
+  "moonbitlang/async",
+  "moonbitlang/async/fs",
+  "moonbitlang/async/shell",
+  "moonbitlang/core/env",
+  "moonbitlang/core/json",
+  "moonbitlang/core/string",
+}
+
+///|
+// strace's process prefix identifies the actual signalled child, even when an
+// outer moon invocation translates a signal into an ordinary nonzero status.
+fn faults(trace : String) -> Array[Json] {
+  let executables : Map[String, String] = Map([])
+  let result : Array[Json] = []
+  for raw in trace.split("\n") {
+    let line = raw.trim().to_owned()
+    guard line.split_once(" ") is Some((pid, rest)) else { continue }
+    let event = rest.trim().to_owned()
+    if event.has_prefix("execve(") && event.has_suffix("= 0") {
+      executables[pid.to_owned()] = event
+    }
+    if event.has_prefix("--- SIGSEGV ") || event.has_prefix("--- SIGBUS ") {
+      result.push(
+        Json::object({
+          "pid": Json::string(pid.to_owned()),
+          "last_successful_execve": Json::string(
+            executables
+            .get(pid.to_owned())
+            .unwrap_or(
+              "unknown: no successful execve recorded for this PID; inspect clone/exec trace",
+            ),
+          ),
+          "signal_event": Json::string(event),
+        }),
+      )
+    }
+  }
+  result
+}
+
+///|
+async fn trace_command(
+  root : String,
+  name : String,
+  program : String,
+  args : Array[String],
+) -> (Int32, Array[Json]) {
+  let path = root + "/" + name
+  println("[native-diagnostic:start] " + name)
+  let result = @shell.Cmd(
+    "strace",
+    [
+      "-f",
+      "-s",
+      "4096",
+      "-e",
+      "trace=process,signal",
+      "-o",
+      path + ".trace",
+      "--",
+      program,
+      ..args,
+    ],
+  ).output(max_output_bytes=16777216)
+  @fs.write_file(path + ".stdout", result.stdout_bytes(), create_mode=CreateNew)
+  @fs.write_file(path + ".stderr", result.stderr(), create_mode=CreateNew)
+  let signals = faults(@fs.read_file(path + ".trace").text())
+  @fs.write_file(
+    path + ".json",
+    Json::object({
+      "program": Json::string(program),
+      "arguments": Json::array(args.map(Json::string)),
+      "status": Json::number(result.exit_code().to_double()),
+      "faults": Json::array(signals),
+    }).stringify(indent=2) +
+    "\n",
+    create_mode=CreateNew,
+  )
+  println(
+    "[native-diagnostic:finish] \{name}: status=\{result.exit_code()}, faults=\{signals.length()}",
+  )
+  (result.exit_code(), signals)
+}
+
+///|
+async fn main {
+  let arguments = @env.args()
+  guard arguments.length() == 3 || arguments.length() == 4 else {
+    fail(
+      "usage: moon run scripts/diagnose-native.mbtx NEW-DIRECTORY REPEATS [--delivery-only|--self-test]",
+    )
+  }
+  let root = arguments[1]
+  let repeats = @string.parse_int(arguments[2])
+  guard repeats >= 1 && repeats <= 20 else { fail("repeats must be 1..20") }
+  let mode = arguments.get(3).unwrap_or("--full")
+  guard mode == "--full" || mode == "--delivery-only" || mode == "--self-test" else {
+    fail("unknown diagnostic mode")
+  }
+  let platform = @shell.Cmd("uname", ["-s"]).output()
+  guard platform.exit_code() == 0 && platform.stdout().trim() == "Linux" else {
+    fail("this tracer requires Linux and strace")
+  }
+  @shell.Cmd("strace", ["--version"], stdout=Discard, stderr=Inherit).run()
+  // Caller supplies an existing parent; refuse to overwrite earlier evidence.
+  @fs.mkdir(root)
+  let moon = @env.get_env_var("MOON_TEST_LEDGER_MOON").unwrap_or("moon")
+  let version = @shell.Cmd(moon, ["version", "--all"]).output()
+  version.check()
+  @fs.write_file(
+    root + "/toolchain.txt",
+    version.stdout() + version.stderr(),
+    create_mode=CreateNew,
+  )
+  let system = @shell.Cmd("uname", ["-a"]).output()
+  system.check()
+  @fs.write_file(root + "/system.txt", system.stdout(), create_mode=CreateNew)
+  for path in ["moon.mod", "scripts/verify.mbtx", "scripts/delivery-e2e.mbtx"] {
+    let name = path.replace(old="/", new="_")
+    @fs.write_file(
+      root + "/" + name,
+      @fs.read_file(path).binary(),
+      create_mode=CreateNew,
+    )
+  }
+  if mode == "--self-test" {
+    assert_eq(faults("10 rt_sigaction(SIGSEGV, {}, NULL, 8) = 0\n").length(), 0)
+    let (code, signals) = trace_command(root, "signal-probe", "timeout", [
+      "--preserve-status", "--signal=SEGV", "0.05", "sleep", "2",
+    ])
+    assert_true(code != 0)
+    assert_true(
+      signals.any(event => {
+        event is { "last_successful_execve": String(exec), .. } &&
+        exec.contains("sleep")
+      }),
+    )
+    let (code, signals) = trace_command(root, "recovery-probe", "true", [])
+    assert_eq(code, 0)
+    assert_eq(signals.length(), 0)
+    println(
+      "Signal attribution and recovery probe passed; these are deliberately signalled utility processes, not product failures.",
+    )
+  } else {
+    let script = if mode == "--delivery-only" {
+      "scripts/delivery-e2e.mbtx"
+    } else {
+      "scripts/verify.mbtx"
+    }
+    for index in 0..<repeats {
+      let (code, signals) = trace_command(root, "run-\{index + 1}", moon, [
+        "run", "--deny-warn", script, "native",
+      ])
+      if code != 0 || !signals.is_empty() {
+        fail(
+          "Native validation stopped at first failure; status=\{code}, faults=\{signals.length()}. Evidence retained at \{root}; no retry was performed.",
+        )
+      }
+    }
+    println(
+      "All \{repeats} traced native runs passed. This does not diagnose or fix an unreproduced historical crash. Logs: \{root}",
+    )
+  }
+}
