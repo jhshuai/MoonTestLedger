@@ -1,0 +1,294 @@
+///|
+import {
+  "moonbitlang/async@0.22.4",
+  "moonbitlang/async@0.22.4/fs",
+  "moonbitlang/async@0.22.4/shell",
+  "moonbitlang/core/env",
+  "moonbitlang/core/json",
+  "moonbitlang/x@0.5.5/crypto",
+}
+
+///|
+fn report(fixture : Json) -> Json raise {
+  guard fixture is { "file": String(file), "cases": Array(cases), .. } else {
+    fail("invalid fixture contract")
+  }
+  Json::object({
+    "id": Json::string(file),
+    "environment": Json::string(file),
+    "shard": Json::string("all"),
+    "attempt": Json::number(1),
+    "cases": Json::array(
+      cases.map(case => {
+        guard case is [String(classname), String(name), String(_)] else {
+          fail("invalid case contract")
+        }
+        Json::object({
+          "classname": Json::string(classname),
+          "name": Json::string(name),
+        })
+      }),
+    ),
+  })
+}
+
+///|
+fn specification(reports : Array[Json]) -> Json {
+  Json::object({
+    "schema": Json::number(1),
+    "kind": Json::string("moontestledger/collection"),
+    "deny_recovered": Json::boolean(false),
+    "plan": Json::object({
+      "schema": Json::number(1),
+      "run_id": Json::string("producer-conformance"),
+      "revision": Json::string("fixtures-20261028"),
+      "reports": Json::array(reports),
+    }),
+    "files": Json::array(
+      reports.map(report => {
+        guard report is { "id": String(id), .. } else {
+          abort("invalid internal report")
+        }
+        Json::object({ "id": Json::string(id), "path": Json::string(id) })
+      }),
+    ),
+  })
+}
+
+///|
+async fn checked_source(fixture : Json) -> (String, Bytes) {
+  guard fixture is { "file": String(file), "sha256": String(hash), .. } else {
+    fail("invalid fixture receipt")
+  }
+  let data = @fs.read_file("examples/producers/" + file)
+  assert_eq(
+    @crypto.bytes_to_hex_string(@crypto.sha256(data.binary())),
+    hash,
+    msg=file,
+  )
+  (data.text(), data.binary())
+}
+
+///|
+async fn cli(
+  moon : String,
+  target : String,
+  args : Array[String],
+  expected : Int32,
+) -> Json {
+  let result = @shell.Cmd(
+    moon,
+    ["run", "--target", target, "cmd/moontestledger", "--", ..args],
+  ).output(max_output_bytes=4194304)
+  assert_eq(
+    result.exit_code(),
+    expected,
+    msg=Json::array(args.map(Json::string)).stringify() + result.stderr(),
+  )
+  if expected == 2 {
+    assert_eq(result.stdout(), "")
+    @json.parse(result.stderr())
+  } else if result.stdout().is_empty() {
+    Json::null()
+  } else {
+    assert_eq(result.stderr(), "")
+    @json.parse(result.stdout())
+  }
+}
+
+///|
+async fn main {
+  let target = @env.args().get(1).unwrap_or("wasm-gc")
+  let moon = @env.get_env_var("MOON_TEST_LEDGER_MOON").unwrap_or("moon")
+  let contracts = @fs.read_file("examples/producers/fixtures.json").json()
+  guard contracts is { "positive": Array(positive), "rejected": rejected, .. } else {
+    fail("missing fixture contracts")
+  }
+  let complete_specification = specification(positive.map(report))
+  if target == "--write-collection" {
+    @fs.write_file(
+      "examples/producers/collection.json",
+      complete_specification.stringify(indent=2) + "\n",
+    )
+    return
+  }
+  guard ["wasm", "wasm-gc", "js", "native"].contains(target) else {
+    fail("expected supported target or --write-collection")
+  }
+  assert_eq(
+    @fs.read_file("examples/producers/collection.json").json(),
+    complete_specification,
+  )
+  let root = @fs.tmpdir(prefix="mtl-producer-conformance")
+  // Preserve the evaluator's source/build/output tree for inspection. The
+  // workspace references the CURRENT library, including uncommitted fixes.
+  let library = @fs.realpath(".")
+  @fs.write_file(
+    root + "/moon.work",
+    "members = [" + Json::string(library).stringify() + ", \"consumer\"]\n",
+  )
+  let consumer = root + "/consumer"
+  @fs.mkdir(consumer)
+  for name in ["moon.mod", "moon.pkg", "main.mbt"] {
+    @fs.write_file(
+      consumer + "/" + name,
+      @fs.read_file("examples/consumer/" + name).binary(),
+    )
+  }
+  @shell.Cmd(
+    moon,
+    ["-C", consumer, "check", "--target", target, "--deny-warn"],
+    stdout=Inherit,
+    stderr=Inherit,
+  ).run()
+  @shell.Cmd(
+    moon,
+    ["-C", consumer, "build", "--target", target, "--deny-warn"],
+    stdout=Inherit,
+    stderr=Inherit,
+  ).run()
+  for fixture in positive {
+    guard fixture
+      is {
+        "file": String(file),
+        "gate": Number(gate, ..),
+        "cases": Array(expected),
+        ..
+      } else {
+      fail("invalid positive contract")
+    }
+    let (source, bytes) = checked_source(fixture)
+    let spec = specification([report(fixture)])
+    let result = @shell.Cmd(moon, [
+      "-C",
+      consumer,
+      "run",
+      "--target",
+      target,
+      "--deny-warn",
+      ".",
+      "--",
+      spec.stringify(),
+      file,
+      source,
+    ]).output(max_output_bytes=4194304)
+    assert_eq(result.exit_code(), 0, msg=file + result.stderr())
+    guard @json.parse(result.stdout())
+      is {
+        "summary": { "complete": True, "exit_code": Number(actual, ..), .. },
+        "missing_gate": Number(3, ..),
+        "observations": Array(observed),
+        "integrity": {
+          "documents": [
+            {
+              "sha256": String(xml_hash),
+              "utf8_bytes": Number(utf8_bytes, ..),
+              ..
+            },
+          ],
+          ..
+        },
+        ..
+      } else {
+      fail("consumer must preserve the complete and missing gates")
+    }
+    assert_eq(actual, gate)
+    guard fixture is { "sha256": String(expected_hash), .. } else {
+      fail("missing hash")
+    }
+    assert_eq(
+      xml_hash,
+      expected_hash,
+      msg=file +
+        ": exact original UTF-8 through argument transport and evidence",
+    )
+    assert_eq(utf8_bytes, bytes.length().to_double())
+    assert_eq(observed.length(), expected.length())
+    for case in expected {
+      assert_true(observed.contains(case), msg=file + ": " + case.stringify())
+    }
+    println(
+      "[producer:ok] \{target} \{file}: \{expected.length()} exact observations, gate=\{gate}",
+    )
+  }
+  let (unsupported, _) = checked_source(rejected)
+  guard rejected is { "code": String(code), .. } else {
+    fail("missing rejection code")
+  }
+  let result = @shell.Cmd(moon, [
+    "-C", consumer, "run", "--target", target, "--deny-warn", ".", "--", "--reject-producer",
+    unsupported, code,
+  ]).output()
+  assert_eq(result.exit_code(), 0, msg=result.stderr())
+  guard @json.parse(result.stdout())
+    is { "error": { "code": String(actual), .. }, .. } else {
+    fail("expected diagnostic")
+  }
+  assert_eq(actual, code)
+  if target == "wasm" || target == "native" {
+    let artifacts = root + "/artifacts"
+    @fs.mkdir(artifacts)
+    let reports : Array[Json] = []
+    for fixture in positive {
+      reports.push(report(fixture))
+      guard fixture is { "file": String(file), .. } else {
+        fail("missing filename")
+      }
+      let (_, bytes) = checked_source(fixture)
+      @fs.write_file(artifacts + "/" + file, bytes)
+    }
+    let spec = root + "/collection.json"
+    @fs.write_file(spec, specification(reports).stringify(indent=2))
+    let complete = root + "/complete.json"
+    ignore(
+      cli(moon, target, ["collect", spec, artifacts, "--output", complete], 0),
+    )
+    let summary = cli(moon, target, ["verify", complete], 1)
+    guard summary is { "complete": True, "cases": Array(all_cases), .. } else {
+      fail("combined report must be complete")
+    }
+    assert_eq(all_cases.length(), 17)
+    let original = @fs.read_file(complete).binary()
+    let removed = artifacts + "/pytest-xunit2.xml"
+    let bytes = @fs.read_file(removed).binary()
+    @fs.remove(removed)
+    let missing = root + "/missing.json"
+    ignore(
+      cli(moon, target, ["collect", spec, artifacts, "--output", missing], 0),
+    )
+    let summary = cli(moon, target, ["verify", missing], 3)
+    guard summary
+      is {
+        "complete": False,
+        "missing_reports": [String("pytest-xunit2.xml")],
+        "cases": Array(all_cases),
+        ..
+      } else {
+      fail("full declared missing inventory must remain")
+    }
+    assert_eq(all_cases.length(), 17)
+    @fs.write_file(removed, unsupported)
+    let refused = root + "/refused.json"
+    let diagnostic = cli(
+      moon,
+      target,
+      ["collect", spec, artifacts, "--output", refused],
+      2,
+    )
+    guard diagnostic
+      is { "error": { "code": String("MTL_JUNIT_UNSUPPORTED"), .. }, .. } else {
+      fail("retry extension must be refused atomically")
+    }
+    assert_true(!@fs.exists(refused))
+    @fs.write_file(removed, bytes)
+    let recovered = root + "/recovered.json"
+    ignore(
+      cli(moon, target, ["collect", spec, artifacts, "--output", recovered], 0),
+    )
+    ignore(cli(moon, target, ["verify", recovered], 1))
+    assert_eq(@fs.read_file(recovered).binary(), original)
+  }
+  println(
+    "Producer conformance passed on \{target}; inspect retained workspace: \{root}",
+  )
+}

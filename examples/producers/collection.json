@@ -1,0 +1,142 @@
+{
+  "schema": 1,
+  "kind": "moontestledger/collection",
+  "deny_recovered": false,
+  "plan": {
+    "schema": 1,
+    "run_id": "producer-conformance",
+    "revision": "fixtures-20261028",
+    "reports": [
+      {
+        "id": "pytest-xunit2.xml",
+        "environment": "pytest-xunit2.xml",
+        "shard": "all",
+        "attempt": 1,
+        "cases": [
+          {
+            "classname": "examples.producers.pytest.test_example",
+            "name": "test_amount[empty]"
+          },
+          {
+            "classname": "examples.producers.pytest.test_example",
+            "name": "test_amount[full]"
+          },
+          {
+            "classname": "examples.producers.pytest.test_example",
+            "name": "test_failure"
+          },
+          {
+            "classname": "examples.producers.pytest.test_example",
+            "name": "test_setup_error"
+          },
+          {
+            "classname": "examples.producers.pytest.test_example",
+            "name": "test_offline"
+          }
+        ]
+      },
+      {
+        "id": "surefire-example.xml",
+        "environment": "surefire-example.xml",
+        "shard": "all",
+        "attempt": 1,
+        "cases": [
+          {
+            "classname": "example.ExampleTest",
+            "name": "offline"
+          },
+          {
+            "classname": "example.ExampleTest",
+            "name": "errors"
+          },
+          {
+            "classname": "example.ExampleTest",
+            "name": "passes"
+          },
+          {
+            "classname": "example.ExampleTest",
+            "name": "fails"
+          }
+        ]
+      },
+      {
+        "id": "surefire-parameterized.xml",
+        "environment": "surefire-parameterized.xml",
+        "shard": "all",
+        "attempt": 1,
+        "cases": [
+          {
+            "classname": "example.ParameterizedTest",
+            "name": "acceptsAmount[amount=0]"
+          },
+          {
+            "classname": "example.ParameterizedTest",
+            "name": "acceptsAmount[amount=100]"
+          }
+        ]
+      },
+      {
+        "id": "gradle-example.xml",
+        "environment": "gradle-example.xml",
+        "shard": "all",
+        "attempt": 1,
+        "cases": [
+          {
+            "classname": "example.ExampleTest",
+            "name": "offline"
+          },
+          {
+            "classname": "example.ExampleTest",
+            "name": "errors"
+          },
+          {
+            "classname": "example.ExampleTest",
+            "name": "passes"
+          },
+          {
+            "classname": "example.ExampleTest",
+            "name": "fails"
+          }
+        ]
+      },
+      {
+        "id": "gradle-parameterized.xml",
+        "environment": "gradle-parameterized.xml",
+        "shard": "all",
+        "attempt": 1,
+        "cases": [
+          {
+            "classname": "example.ParameterizedTest",
+            "name": "acceptsAmount[amount=0]"
+          },
+          {
+            "classname": "example.ParameterizedTest",
+            "name": "acceptsAmount[amount=100]"
+          }
+        ]
+      }
+    ]
+  },
+  "files": [
+    {
+      "id": "pytest-xunit2.xml",
+      "path": "pytest-xunit2.xml"
+    },
+    {
+      "id": "surefire-example.xml",
+      "path": "surefire-example.xml"
+    },
+    {
+      "id": "surefire-parameterized.xml",
+      "path": "surefire-parameterized.xml"
+    },
+    {
+      "id": "gradle-example.xml",
+      "path": "gradle-example.xml"
+    },
+    {
+      "id": "gradle-parameterized.xml",
+      "path": "gradle-parameterized.xml"
+    }
+  ]
+}

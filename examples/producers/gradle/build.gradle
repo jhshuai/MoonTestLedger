@@ -1,0 +1,10 @@
+// Project-authored producer configuration, Apache-2.0.
+plugins { id 'java' }
+repositories { mavenCentral() }
+dependencies { testImplementation 'junit:junit:4.13.2' }
+sourceSets.test.java.srcDirs = ['../maven/src/test/java']
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+test {
+    include '**/ExampleTest.class', '**/ParameterizedTest.class'
+    reports.junitXml.outputPerTestCase = true
+}

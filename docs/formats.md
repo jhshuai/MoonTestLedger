@@ -33,6 +33,8 @@ Allowed attributes on result nodes:
 
 Disabled must be zero if present. Nonzero disabled counters need producer-specific outcome semantics that this version cannot safely infer. Timing and location metadata remain in source; they do not affect outcome or identity.
 
+One additional, closed metadata combination is accepted **only on the document-root `testsuite`**: `xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"`, `xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd"` and `version="3.0.2"`, all present with those exact decoded values. This is the annotation actually captured from Surefire 3.5.2, not a general XML namespace/schema feature. No XSD is fetched or used to override validation; no default/result namespace, arbitrary namespace alias, unknown schema version/location, extra prefixed attribute or nested copy is accepted. Source keeps the annotation and all original metadata/output bytes. [Producer conformance](../examples/producers/README.md) records exact tested versions and limits.
+
 Result nodes outside the allowlist, namespaces on result nodes, custom status/result attributes and embedded flakyFailure/rerunFailure conventions are refused. Express retries as separately bound documents and explicit attempts. Future producer profiles need real captured output and conformance tests before acceptance.
 
 Declared suite counters include descendant testcases. Failure/error counts count cases carrying each kind, not the number of payload nodes. A case with both failure and error has an error outcome and retains both payload kinds. A skipped case cannot also contain failure/error and cannot declare two skipped markers.

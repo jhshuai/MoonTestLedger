@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="1" failures="1" skipped="1" tests="5" time="0.398" timestamp="2026-10-28T03:04:38.291058+08:00" hostname="localhost"><testcase classname="examples.producers.pytest.test_example" name="test_amount[empty]" time="0.000"><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+captured payment output: 中文 &lt;receipt&gt;
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase><testcase classname="examples.producers.pytest.test_example" name="test_amount[full]" time="0.000"><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+captured payment output: 中文 &lt;receipt&gt;
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase><testcase classname="examples.producers.pytest.test_example" name="test_failure" time="0.000"><failure message="AssertionError: payment rejected &lt;declined&gt;&#10;assert 1 == 2">def test_failure():
+&gt;       assert 1 == 2, "payment rejected &lt;declined&gt;"
+E       AssertionError: payment rejected &lt;declined&gt;
+E       assert 1 == 2
+
+examples/producers/pytest/test_example.py:12: AssertionError</failure><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase><testcase classname="examples.producers.pytest.test_example" name="test_setup_error" time="0.000"><error message="failed on setup with &quot;RuntimeError: setup unavailable&quot;">@pytest.fixture
+    def unavailable():
+&gt;       raise RuntimeError("setup unavailable")
+E       RuntimeError: setup unavailable
+
+examples/producers/pytest/test_example.py:17: RuntimeError</error><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase><testcase classname="examples.producers.pytest.test_example" name="test_offline" time="0.000"><skipped type="pytest.skip" message="requires external service">/mnt/c/Users/27229/Desktop/nmoonbit/MoonTestLedger/examples/producers/pytest/test_example.py:24: requires external service</skipped><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase></testsuite></testsuites>

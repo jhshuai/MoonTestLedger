@@ -32,6 +32,8 @@ fn ParserState::text(
 /// Result identities are exact classname/name pairs. Nested suite counts include
 /// descendant testcases. Missing counts are permitted; supplied counts are checked.
 /// Every failure and error payload is retained; an error takes outcome precedence.
+/// The exact root Surefire schema-3.0.2 annotation is retained as inert metadata;
+/// no schema is fetched and result elements must remain unqualified.
 ///
 /// Unsupported outcome extensions, ambiguous skip/failure mixtures, duplicate
 /// identities, DTDs, malformed XML and resource-limit violations raise InputError.

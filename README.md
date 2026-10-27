@@ -258,6 +258,8 @@ JUnit XML has multiple producer conventions, so this version supports an explici
 
 Supported result-node attributes are listed in [the format contract](docs/formats.md). Unknown attributes or structural/outcome extensions are refused. DTDs, external entities, namespaced result elements, duplicate identities, malformed XML, contradictory counters and ambiguous skip-plus-failure evidence are refused. Custom inert data can remain inside properties/output subtrees.
 
+[Real producer conformance](examples/producers/README.md) now covers captured pytest 8.3.5 xunit2, Maven Surefire 3.5.2 and Gradle 7.6.4 JUnit 4 reports, including parameterized identities, skip/failure/error observations and source-preserving replay. The exact Surefire root schema-3.0.2 annotation is accepted; embedded retry extensions still produce a clear refusal. These fixtures establish those tested profiles, not compatibility with all releases/plugins.
+
 Default library limits are 256 reports, 100,000 expected/accepted observations, 4,194,304 UTF-16 source units per input, 33,554,432 total retained XML units, 500,000 XML events, depth 128, 128 attributes per element and 10,000 problem payloads. JSON nesting is capped at 64. Limits are validated and bounded.
 
 Summary JSON is a derived evidence view, not a lossless JUnit conversion. It includes case outcomes, ordered attempts, diagnostics and failure/error text. Inert XML metadata/output remains available through retained source. Input files are never rewritten.

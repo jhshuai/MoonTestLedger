@@ -14,6 +14,23 @@ fn input_arguments() -> Array[String] {
 // An independent module: domain types and methods are imported only through
 // the public facade. Fixture content is supplied by the evaluator as arguments.
 fn main raise {
+  if input_arguments() is ["--reject-producer", xml, expected] {
+    try @ledger.parse_junit(xml, report_id="rejected-producer") catch {
+      @ledger.InputError::Invalid(diagnostic) => {
+        assert_eq(diagnostic.code, expected)
+        assert_true(diagnostic.path.contains("flakyFailure"))
+        // A rejected report must not poison the next parse.
+        assert_eq(
+          @ledger.parse_junit("<testsuite><testcase name='ok'/></testsuite>").cases.length(),
+          1,
+        )
+        println(@ledger.encode_diagnostic(diagnostic))
+      }
+    } noraise {
+      _ => fail("unsupported embedded retry must not become a passing report")
+    }
+    return
+  }
   guard input_arguments() is [specification, id, xml] else {
     fail("expected collection JSON, report ID and original XML")
   }
@@ -55,6 +72,22 @@ fn main raise {
       ),
       "integrity": @json.parse(evidence.integrity().encode()),
       "missing_gate": Json::number(missing.exit_code().to_double()),
+      "observations": Json::array(
+        @ledger.parse_junit(xml, report_id=id).cases.map(case => {
+          Json::array([
+            Json::string(case.key.classname),
+            Json::string(case.key.name),
+            Json::string(
+              match case.outcome {
+                Pass => "pass"
+                Failure => "failure"
+                Error => "error"
+                Skip => "skip"
+              },
+            ),
+          ])
+        }),
+      ),
     }).stringify(),
   )
 }

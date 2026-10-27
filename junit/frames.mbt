@@ -118,19 +118,32 @@ fn ParserState::enter(
   let kind = match parent {
     Some({ kind: Inert, .. }) => Inert
     _ => {
+      let surefire = self.frames.is_empty() &&
+        element.name == "testsuite" &&
+        element.get("xmlns:xsi") ==
+        Some("http://www.w3.org/2001/XMLSchema-instance") &&
+        element.get("xsi:noNamespaceSchemaLocation") ==
+        Some(
+          "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd",
+        ) &&
+        element.get("version") == Some("3.0.2")
       if element.name.contains(":") ||
         element.attributes.any(attribute => {
-          attribute.name == "xmlns" || attribute.name.has_prefix("xmlns:")
+          attribute.name == "xmlns" ||
+          (
+            attribute.name.has_prefix("xmlns:") &&
+            !(surefire && attribute.name == "xmlns:xsi")
+          )
         }) {
         self.reject(
           "MTL_JUNIT_UNSUPPORTED",
           path,
-          "Namespaced JUnit elements are not supported by this profile",
+          "Result namespaces or schema annotations are unsupported; only unqualified results and the exact root Surefire 3.0.2 xsi schema annotation are accepted (see docs/formats.md)",
           position.line,
           position.column,
         )
       }
-      self.check_attributes(element, path)
+      self.check_attributes(element, path, surefire~)
       match parent {
         None => {
           if self.roots != 0 {
@@ -228,6 +241,7 @@ fn ParserState::check_attributes(
   self : ParserState,
   element : @xml.XmlElement,
   path : String,
+  surefire~ : Bool,
 ) -> Unit raise @ledger.InputError {
   let allowed : Array[String] = match element.name {
     "testsuite" | "testsuites" =>
@@ -241,6 +255,15 @@ fn ParserState::check_attributes(
     _ => return
   }
   for attribute in element.attributes {
+    // Only the exact observed root annotation is inert. It does not namespace
+    // any result element, and no schema URL is fetched. Original bytes remain
+    // in ParsedReport.source and every evidence carrier.
+    if surefire &&
+      ["xmlns:xsi", "xsi:noNamespaceSchemaLocation", "version"].contains(
+        attribute.name,
+      ) {
+      continue
+    }
     if !allowed.contains(attribute.name) {
       self.reject(
         "MTL_JUNIT_UNSUPPORTED",

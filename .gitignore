@@ -3,3 +3,8 @@ _build/
 /.moon/
 /target/
 /output/
+/examples/producers/maven/target/
+/examples/producers/gradle/.gradle/
+/examples/producers/gradle/build/
+/examples/producers/pytest/__pycache__/
+/examples/producers/pytest/.pytest_cache/

@@ -4,3 +4,6 @@ examples/transport/*.tar -text
 # Keep copied upstream fixtures byte-for-byte unchanged on every OS.
 examples/upstream/*.xml -text
 examples/upstream/LICENSE.dorny-test-reporter -text
+
+# Captured producer reports retain their original encoding and newlines.
+examples/producers/*.xml -text whitespace=cr-at-eol

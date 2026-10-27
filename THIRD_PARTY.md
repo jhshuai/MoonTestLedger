@@ -15,6 +15,8 @@ The two tiny platform exit declarations in cmd/moontestledger follow the native 
 
 ## Copied example data
 
+The [producer conformance fixtures](examples/producers/README.md) were actually generated on 2026-10-28 using pytest 8.3.5 (MIT), Maven 3.9.9 / Surefire 3.5.2 (Apache-2.0), Gradle 7.6.4 (Apache-2.0) and JUnit 4.13.2 (EPL-1.0). Project-authored Apache-2.0 test inputs/build definitions, exact original XML, pinned generator versions, hashes and expected outcomes are included. Generated output contains producer stack traces/metadata; no upstream test suite/implementation or producer binary is copied. The exact Surefire root schema annotation adapter and conformance/consumer tests are newly authored Apache-2.0. No XSD resource is copied or fetched at runtime. Producer tools are optional fixture generators, not new library runtime dependencies.
+
 Two report fixtures from dorny/test-reporter at commit cc52f364a405169afe07bb00dab3d375b451229d are bundled unchanged. Copyright (c) 2021 Michal Dorner and contributors; MIT license. The license is copied unchanged to [examples/upstream/LICENSE.dorny-test-reporter](examples/upstream/LICENSE.dorny-test-reporter). [Examples provenance](examples/README.md) lists original paths and SHA-256 values.
 
 No upstream test code was copied into the library or unit tests. Synthetic boundary reports and plan/bundle JSON are authored for this project. The sample suite's framework output is an interoperability fixture, not production usage evidence.

@@ -1,0 +1,67 @@
+{
+  "positive": [
+    {
+      "file": "pytest-xunit2.xml",
+      "producer": "pytest 8.3.5 / Python 3.13.13 / Linux",
+      "sha256": "956cf1afc27ec910dd3d86232f1fee3b864eed80371c6bd813abe2198b1f71b9",
+      "gate": 1,
+      "cases": [
+        ["examples.producers.pytest.test_example", "test_amount[empty]", "pass"],
+        ["examples.producers.pytest.test_example", "test_amount[full]", "pass"],
+        ["examples.producers.pytest.test_example", "test_failure", "failure"],
+        ["examples.producers.pytest.test_example", "test_setup_error", "error"],
+        ["examples.producers.pytest.test_example", "test_offline", "skip"]
+      ]
+    },
+    {
+      "file": "surefire-example.xml",
+      "producer": "Maven 3.9.9 / Surefire 3.5.2 / JUnit 4.13.2 / Temurin 8u492-b09 / Windows",
+      "sha256": "a5d1b9683022a91dec1064293869b8bc064c2e693e53fcfc9325f9aa12adb1bd",
+      "gate": 1,
+      "cases": [
+        ["example.ExampleTest", "offline", "skip"],
+        ["example.ExampleTest", "errors", "error"],
+        ["example.ExampleTest", "passes", "pass"],
+        ["example.ExampleTest", "fails", "failure"]
+      ]
+    },
+    {
+      "file": "surefire-parameterized.xml",
+      "producer": "Maven 3.9.9 / Surefire 3.5.2 / JUnit 4.13.2 / Temurin 8u492-b09 / Windows",
+      "sha256": "3641552ba8ae0b1aa00f1bddb79c2566d7fb7b742fa3bdcd844f4619bc730b3d",
+      "gate": 0,
+      "cases": [
+        ["example.ParameterizedTest", "acceptsAmount[amount=0]", "pass"],
+        ["example.ParameterizedTest", "acceptsAmount[amount=100]", "pass"]
+      ]
+    },
+    {
+      "file": "gradle-example.xml",
+      "producer": "Gradle 7.6.4 / JUnit 4.13.2 / Temurin 8u492-b09 / Windows / outputPerTestCase=true",
+      "sha256": "f6b68bad424d2ea4431ae20bfe046d599d30b94d3510f9fff1ff730b14fb2ff9",
+      "gate": 1,
+      "cases": [
+        ["example.ExampleTest", "offline", "skip"],
+        ["example.ExampleTest", "errors", "failure"],
+        ["example.ExampleTest", "passes", "pass"],
+        ["example.ExampleTest", "fails", "failure"]
+      ]
+    },
+    {
+      "file": "gradle-parameterized.xml",
+      "producer": "Gradle 7.6.4 / JUnit 4.13.2 / Temurin 8u492-b09 / Windows",
+      "sha256": "c13e4001e05accdd767987249dde8acac7c716d11d4ec5029c4e69eeacf25a0c",
+      "gate": 0,
+      "cases": [
+        ["example.ParameterizedTest", "acceptsAmount[amount=0]", "pass"],
+        ["example.ParameterizedTest", "acceptsAmount[amount=100]", "pass"]
+      ]
+    }
+  ],
+  "rejected": {
+    "file": "surefire-retry.xml",
+    "producer": "Maven 3.9.9 / Surefire 3.5.2 / JUnit 4.13.2 / rerunFailingTestsCount=1 / Windows",
+    "sha256": "f2e786d997f3906fc44162dac7c4466d50e0a31d3ea34f30d7af321b087dddca",
+    "code": "MTL_JUNIT_UNSUPPORTED"
+  }
+}
