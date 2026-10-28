@@ -313,6 +313,8 @@ The first path profile accepts ASCII letters/digits, dot, underscore, hyphen and
 
 ## Development and validation
 
+Native executables and source releases are delivered through the [GitHub preview release workflow](docs/releases.md), including `--version`, exact source/platform manifests, actual execution checks, SHA-256 and license copies. Mooncakes publication remains disabled. See [CHANGELOG](CHANGELOG.md) for implemented scope and known limitations.
+
 Complete inventory updates can be [reviewed before a future run](docs/inventory-review.md): `review-plan` retains both declarations and their changes; `apply-plan-review` requires the reviewed token, unchanged baseline, fresh run ID and new output file. Existing failed/incomplete archives retain their original plans and gates. The public `PlanReview` API supports the same workflow without a shell.
 
 Use MoonBit v0.10.15 for this version. The validated toolchain is moonc v0.10.15+943464bfa / moon 0.1.20261012. Dependencies are pinned in moon.mod; the project uses current moon.mod and moon.pkg formats.

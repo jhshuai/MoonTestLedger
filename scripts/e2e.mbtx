@@ -354,6 +354,26 @@ async fn tar_collection_workflow(
 async fn main {
   let target = @env.args().get(1).unwrap_or("wasm")
   assert_true(target == "wasm" || target == "native")
+  let version = cli(target, ["--version"], 0)
+  let mut module_version = ""
+  for line in @fs.read_file("moon.mod").text().split("\n") {
+    if line.split_once("=") is Some((key, value)) && key.trim() == "version" {
+      guard @json.parse(value.trim().to_owned()) is String(value) else {
+        fail("module version must be a string")
+      }
+      module_version = value
+    }
+  }
+  guard version
+    is {
+      "version": String(actual),
+      "delivery_profiles": [String("mtl-ci-delivery-v1")],
+      ..
+    } else {
+    fail("expected machine-readable CLI version")
+  }
+  assert_eq(actual, module_version)
+  assert_true(!module_version.is_empty())
   let original = cli(
     target,
     ["audit", "examples/upstream/plan.json", "examples/upstream/bundle.json"],

@@ -1,5 +1,11 @@
 # Delivery validation — 2026-10-25
 
+## Native release preflight — 2026-10-28
+
+Inventory review commit `23c7b1fea2b39e24ada94fab9b3bd90e10dfcbd3` passed [main CI 40605011042](https://github.com/jhshuai/MoonTestLedger/actions/runs/40605011042); the preceding profile commit passed [40574413693](https://github.com/jhshuai/MoonTestLedger/actions/runs/40574413693). Current release-preparation checks passed formatting/interface drift, strict check/build, Wasm 123, Wasm-GC 115, JS 115 and actual Linux native 125 tests, public consumers and all applicable CLI/review/golden/delivery E2Es. The existing dependency script-host/C warnings remain documented. `--version` agrees with the module version.
+
+An optimized native Linux binary was built and copied into `/var/tmp/mtl-native-preview-20261028/`, then actually executed from independent working directories. Version, reviewed inventory and passing/failing/invalid/missing gates 0/1/2/3 passed; the checksum-bound payload checker executed it again. Its local provenance explicitly says `working-tree`, not a committed release. The frozen preflight sources are at `/var/tmp/mtl-release-preflight-20261028/`; `ldd` observed libc and the system ELF loader for this local binary only. This is not a Windows/macOS execution claim or a claim that a GitHub release has already published. Those operations require the actual manual workflow and subsequent observed results. License text copies and upstream MIT notice provenance are included; no Mooncakes publication occurs.
+
 ## Complete future-inventory review — 2026-10-28
 
 The new public wire-owned/facade review API and real CLI passed strict full verification: Wasm 123, Wasm-GC 115, JavaScript 115, actual Linux native 125, with formatting, generated-interface drift, check/build and all applicable E2Es. The independent consumer exercised the public aliases/methods on all four targets and matched the committed six-change review. Native source matched the workspace before execution and passed under tracing without delivered faults; logs are retained at `/var/tmp/mtl-review-native-20261028/` and the actual CLI review outputs at `/tmp/mtl-plan-review.2619.9fb6f71/`. Subsequent changes were documentation only.

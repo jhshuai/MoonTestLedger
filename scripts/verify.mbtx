@@ -37,6 +37,7 @@ async fn main {
     "scripts/render-demo.mbtx", "scripts/output-e2e.mbtx", "scripts/check-consumer.mbtx",
     "scripts/delivery-e2e.mbtx", "scripts/diagnose-native.mbtx", "scripts/check-producers.mbtx",
     "scripts/check-ci-delivery.mbtx", "scripts/check-golden-delivery.mbtx", "scripts/review-e2e.mbtx",
+    "scripts/build-release.mbtx", "scripts/publish-release.mbtx",
   ])
   let paths = [
     "pkg.generated.mbti", "ledger/pkg.generated.mbti", "junit/pkg.generated.mbti",

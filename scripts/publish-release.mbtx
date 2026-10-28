@@ -1,0 +1,283 @@
+///|
+import {
+  "moonbitlang/async@0.22.4",
+  "moonbitlang/async@0.22.4/fs",
+  "moonbitlang/async@0.22.4/shell",
+  "moonbitlang/core/env",
+  "moonbitlang/core/json",
+  "moonbitlang/x@0.5.5/crypto",
+}
+
+///|
+async fn gh(args : Array[String]) -> String {
+  let result = @shell.Cmd("gh", args).output(max_output_bytes=16777216)
+  if result.exit_code() != 0 {
+    fail("GitHub release command failed: " + result.stderr())
+  }
+  result.stdout()
+}
+
+///|
+async fn absent(path : String) -> Unit {
+  let result = @shell.Cmd("gh", ["api", path]).output()
+  if result.exit_code() == 0 {
+    fail("Refusing to overwrite an existing GitHub tag/release: " + path)
+  }
+  guard result.stderr().contains("HTTP 404") else {
+    fail("Could not establish absence: " + result.stderr())
+  }
+}
+
+///|
+fn sha256(data : Bytes) -> String {
+  @crypto.bytes_to_hex_string(@crypto.sha256(data))
+}
+
+///|
+async fn main {
+  guard @env.args()[1:] is [mode, tag, .. rest] else {
+    fail("usage: gate TAG | publish TAG DOWNLOADED-ARTIFACTS")
+  }
+  guard @env.get_env_var("GITHUB_REPOSITORY") is Some(repo) &&
+    @env.get_env_var("GITHUB_SHA") is Some(revision) &&
+    revision.length() == 40 else {
+    fail("GitHub CI repository and immutable source SHA required")
+  }
+  let mut version = ""
+  for line in @fs.read_file("moon.mod").text().split("\n") {
+    if line.split_once("=") is Some((key, value)) && key.trim() == "version" {
+      guard @json.parse(value.trim().to_owned()) is String(parsed) else {
+        fail("module version is not a string")
+      }
+      version = parsed
+    }
+  }
+  guard !version.is_empty() && tag == "v" + version else {
+    fail("tag must match the current module/CLI version")
+  }
+  let prefix = "repos/" + repo
+  let runs = @json.parse(
+    gh([
+      "api",
+      prefix +
+      "/actions/workflows/ci.yml/runs?head_sha=" +
+      revision +
+      "&per_page=10",
+    ]),
+  )
+  guard runs is { "workflow_runs": Array(runs), .. } &&
+    runs.any(run => {
+      run is { "head_sha": String(head), "conclusion": String("success"), .. } &&
+      head == revision
+    }) else {
+    fail(
+      "The complete main CI must succeed for this exact revision before release",
+    )
+  }
+  absent(prefix + "/git/ref/tags/" + tag)
+  absent(prefix + "/releases/tags/" + tag)
+  if mode == "gate" {
+    assert_eq(rest.length(), 0)
+    println(
+      "Release preflight passed for " +
+      revision +
+      "; no existing tag/release will be replaced.",
+    )
+    return
+  }
+  guard mode == "publish" && rest is [downloads] else {
+    fail("expected publish TAG DOWNLOADED-ARTIFACTS")
+  }
+  let directories = @fs.readdir(downloads, include_hidden=true)
+  assert_eq(
+    directories.length(),
+    3,
+    msg="expected three independently tested OS artifacts",
+  )
+  let stage = @fs.tmpdir(prefix="mtl-release-assets")
+  let assets : Array[(String, String)] = []
+  let manifests : Array[Json] = []
+  let platforms : Set[String] = Set([])
+  let common : Map[String, Bytes] = Map([])
+  let mut linux_binary = ""
+  let mut linux_manifest = ""
+  for directory in directories {
+    let root = downloads + "/" + directory
+    assert_eq(@fs.kind(root, follow_symlink=false), @fs.FileKind::Directory)
+    let names = @fs.readdir(root, include_hidden=true)
+    assert_eq(names.length(), 4)
+    let metadata = names.filter(name => name.has_suffix(".json"))
+    guard metadata is [metadata] else { fail("expected one release manifest") }
+    let source = @fs.read_file(root + "/" + metadata).text()
+    let manifest = @json.parse(source)
+    guard manifest
+      is {
+        "schema": Number(1, ..),
+        "kind": String("moontestledger/native-release"),
+        "source_revision": String(source_revision),
+        "version": String(actual_version),
+        "tag": String(actual_tag),
+        "os": String(os),
+        "arch": String(arch),
+        "binary": String(binary),
+        "sha256": String(hash),
+        "bytes": Number(size, ..),
+        "smoke": {
+          "gates": [Number(0, ..), Number(1, ..), Number(2, ..), Number(3, ..)],
+          "inventory_review": True,
+          "independent_working_directory": True,
+          ..
+        },
+        ..
+      } else {
+      fail("expected successfully executed native release provenance")
+    }
+    assert_eq(source_revision, revision)
+    assert_eq((actual_version, actual_tag), (version, tag))
+    guard ["Linux", "Windows", "macOS"].contains(os) &&
+      ["x86_64", "aarch64"].contains(arch) &&
+      !platforms.contains(os) else {
+      fail("duplicate/unsupported release platform")
+    }
+    platforms.add(os)
+    let extension = if os == "Windows" { ".exe" } else { "" }
+    assert_eq(
+      binary,
+      "moontestledger-" + os.to_lower() + "-" + arch + extension,
+    )
+    assert_eq(metadata, binary + ".json")
+    for name in [binary, metadata, "LICENSE", "THIRD_PARTY_LICENSES.txt"] {
+      assert_true(names.contains(name))
+      assert_eq(
+        @fs.kind(root + "/" + name, follow_symlink=false),
+        @fs.FileKind::Regular,
+      )
+    }
+    let bytes = @fs.read_file(root + "/" + binary).binary()
+    assert_eq(bytes.length().to_double(), size)
+    assert_eq(sha256(bytes), hash)
+    for name in [binary, metadata] {
+      let bytes = @fs.read_file(root + "/" + name).binary()
+      @fs.write_file(stage + "/" + name, bytes, create_mode=CreateNew)
+      assets.push((name, sha256(bytes)))
+    }
+    for name in ["LICENSE", "THIRD_PARTY_LICENSES.txt"] {
+      let bytes = @fs.read_file(root + "/" + name).binary()
+      match common.get(name) {
+        Some(expected) => assert_eq(bytes, expected)
+        None => common[name] = bytes
+      }
+    }
+    manifests.push(manifest)
+    if os == "Linux" {
+      linux_binary = stage + "/" + binary
+      linux_manifest = stage + "/" + metadata
+    }
+  }
+  assert_eq(platforms.length(), 3)
+  for name in ["LICENSE", "THIRD_PARTY_LICENSES.txt"] {
+    @fs.write_file(stage + "/" + name, common[name], create_mode=CreateNew)
+    assets.push((name, sha256(common[name])))
+  }
+  let release_manifest = Json::object({
+      "schema": Json::number(1),
+      "kind": Json::string("moontestledger/github-release"),
+      "version": Json::string(version),
+      "source_revision": Json::string(revision),
+      "platforms": Json::array(manifests),
+    }).stringify(indent=2) +
+    "\n"
+  @fs.write_file(
+    stage + "/release-manifest.json",
+    release_manifest,
+    create_mode=CreateNew,
+  )
+  assets.push(
+    (
+      "release-manifest.json",
+      sha256(@fs.read_file(stage + "/release-manifest.json").binary()),
+    ),
+  )
+  assets.sort_by((a, b) => a.0[:].lexical_compare(b.0[:]))
+  let checksums = assets.map(asset => asset.1 + "  " + asset.0).join("\n") +
+    "\n"
+  @fs.write_file(stage + "/SHA256SUMS", checksums, create_mode=CreateNew)
+  let moon = @env.get_env_var("MOON_TEST_LEDGER_MOON").unwrap_or("moon")
+  @shell.Cmd(
+    moon,
+    [
+      "run", "--deny-warn", "scripts/build-release.mbtx", "check", linux_binary,
+      linux_manifest,
+    ],
+    stdout=Inherit,
+    stderr=Inherit,
+  ).run()
+  // Create a new tag at the checked commit only after every payload check. The API
+  // refuses an existing ref atomically; no force/clobber operation is used.
+  let body = stage + "/tag.json"
+  @fs.write_file(
+    body,
+    Json::object({
+      "ref": Json::string("refs/tags/" + tag),
+      "sha": Json::string(revision),
+    }).stringify(),
+  )
+  ignore(gh(["api", "--method", "POST", prefix + "/git/refs", "--input", body]))
+  ignore(
+    gh([
+      "release",
+      "create",
+      tag,
+      "-R",
+      repo,
+      "--verify-tag",
+      "--draft",
+      "--prerelease",
+      "--title",
+      "MoonTestLedger " + tag,
+      "--notes-file",
+      "CHANGELOG.md",
+    ]),
+  )
+  let paths = assets.map(asset => stage + "/" + asset.0)
+  paths.push(stage + "/SHA256SUMS")
+  ignore(gh(["release", "upload", tag, "-R", repo, ..paths]))
+  let downloaded = @fs.tmpdir(prefix="mtl-release-redownload")
+  ignore(gh(["release", "download", tag, "-R", repo, "--dir", downloaded]))
+  assert_eq(@fs.readdir(downloaded, include_hidden=true).length(), 10)
+  for (name, hash) in assets {
+    assert_eq(
+      sha256(@fs.read_file(downloaded + "/" + name).binary()),
+      hash,
+      msg=name,
+    )
+  }
+  assert_eq(@fs.read_file(downloaded + "/SHA256SUMS").text(), checksums)
+  guard linux_binary.split_once(stage) is Some((_, linux_suffix)) &&
+    linux_manifest.split_once(stage) is Some((_, manifest_suffix)) else {
+    fail("expected staged Linux paths")
+  }
+  @shell.Cmd(
+    moon,
+    [
+      "run",
+      "--deny-warn",
+      "scripts/build-release.mbtx",
+      "check",
+      downloaded + linux_suffix.to_owned(),
+      downloaded + manifest_suffix.to_owned(),
+    ],
+    stdout=Inherit,
+    stderr=Inherit,
+  ).run()
+  ignore(gh(["release", "edit", tag, "-R", repo, "--draft=false"]))
+  let published = @json.parse(
+    gh(["release", "view", tag, "-R", repo, "--json", "url,isDraft,tagName"]),
+  )
+  guard published
+    is { "url": String(url), "isDraft": False, "tagName": String(actual), .. } &&
+    actual == tag else {
+    fail("release did not reach published state")
+  }
+  println("Published checked preview release: " + url)
+}

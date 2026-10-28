@@ -264,6 +264,7 @@ pub async fn run(arguments : Array[String]) -> Int32 {
   try {
     let (arguments, output) = output_arguments(arguments)
     match arguments {
+      ["--version"] => version()
       ["audit", plan, bundle] => audit(plan, bundle, false)
       ["audit", plan, bundle, "--deny-recovered"] => audit(plan, bundle, true)
       ["capture", bundle] => capture(bundle)
@@ -297,6 +298,9 @@ pub async fn run(arguments : Array[String]) -> Int32 {
       ["append", path, bundle] => append(path, bundle, output~)
       ["repetitions", _, _, ..] => repetitions(arguments[1:])
       ["--help"] | ["help"] => {
+        @stdio.stdout.write(
+          "MoonTestLedger --version: machine-readable module version and supported CLI/delivery profiles.\n",
+        )
         @stdio.stdout.write(
           "Inventory change review:\n  review-plan BEFORE.json PROPOSED.json [--output NEW-REVIEW.json]\n  apply-plan-review REVIEW.json CURRENT.json --approve REVIEW-SHA256 --output NEW-PLAN.json\nReview full declarations first. Application requires an unchanged baseline, the exact review token and a fresh run ID. Existing plans/evidence are never rewritten.\n",
         )

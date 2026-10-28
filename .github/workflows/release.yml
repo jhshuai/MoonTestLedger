@@ -1,0 +1,83 @@
+name: Native preview release
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: New tag matching the module version
+        required: true
+        default: v0.1.0
+        type: string
+permissions:
+  contents: read
+  actions: read
+jobs:
+  gate:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: hustcer/setup-moonbit@9199da0ab63ea0c0bab1dc15f03d76e17ed4f75f
+        with:
+          version: 0.10.15+943464bfa
+          core-version: 0.10.15+943464bfa
+      - run: moon update
+      - name: Require successful main CI and a new tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: moon run scripts/publish-release.mbtx gate "$RELEASE_TAG"
+  build:
+    needs: gate
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: ilammy/msvc-dev-cmd@v1
+        if: runner.os == 'Windows'
+      - uses: hustcer/setup-moonbit@9199da0ab63ea0c0bab1dc15f03d76e17ed4f75f
+        with:
+          version: 0.10.15+943464bfa
+          core-version: 0.10.15+943464bfa
+      - run: moon update
+      - name: Strict native validation with actual workflows
+        run: moon run scripts/verify.mbtx native
+      - name: Build and actually execute the packaged native binary
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: moon run scripts/build-release.mbtx build release-payload
+      - uses: actions/upload-artifact@v7
+        with:
+          name: native-${{ runner.os }}-${{ runner.arch }}
+          path: release-payload/
+          if-no-files-found: error
+          retention-days: 7
+  publish:
+    needs: build
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: hustcer/setup-moonbit@9199da0ab63ea0c0bab1dc15f03d76e17ed4f75f
+        with:
+          version: 0.10.15+943464bfa
+          core-version: 0.10.15+943464bfa
+      - run: moon update
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: native-*
+          path: downloaded-release
+      - name: Verify, upload draft assets, redownload and publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: moon run scripts/publish-release.mbtx publish "$RELEASE_TAG" downloaded-release

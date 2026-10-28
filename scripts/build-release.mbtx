@@ -1,0 +1,292 @@
+///|
+import {
+  "moonbitlang/async@0.22.4",
+  "moonbitlang/async@0.22.4/fs",
+  "moonbitlang/async@0.22.4/shell",
+  "moonbitlang/core/env",
+  "moonbitlang/core/json",
+  "moonbitlang/x@0.5.5/crypto",
+}
+
+///|
+fn sha256(bytes : Bytes) -> String {
+  @crypto.bytes_to_hex_string(@crypto.sha256(bytes))
+}
+
+///|
+async fn module_version() -> String {
+  let values : Array[String] = []
+  for line in @fs.read_file("moon.mod").text().split("\n") {
+    if line.split_once("=") is Some((key, value)) && key.trim() == "version" {
+      guard @json.parse(value.trim().to_owned()) is String(version) else {
+        fail("expected module version")
+      }
+      values.push(version)
+    }
+  }
+  guard values is [version] else { fail("expected one module version") }
+  version
+}
+
+///|
+async fn platform() -> (String, String) {
+  let os = match @env.get_env_var("RUNNER_OS") {
+    Some(os) => os
+    None => {
+      let result = @shell.Cmd("uname", ["-s"]).output()
+      result.check()
+      match result.stdout().trim() {
+        "Linux" => "Linux"
+        "Darwin" => "macOS"
+        _ => fail("set RUNNER_OS for this platform")
+      }
+    }
+  }
+  let architecture = match @env.get_env_var("RUNNER_ARCH") {
+    Some(arch) => arch
+    None => {
+      let result = @shell.Cmd("uname", ["-m"]).output()
+      result.check()
+      result.stdout().trim().to_owned()
+    }
+  }
+  let arch = match architecture {
+    "X64" | "x86_64" => "x86_64"
+    "ARM64" | "aarch64" | "arm64" => "aarch64"
+    _ => fail("unsupported release architecture")
+  }
+  guard ["Linux", "Windows", "macOS"].contains(os) else {
+    fail("unsupported release OS")
+  }
+  (os, arch)
+}
+
+///|
+async fn smoke(binary : String, expected_version : String) -> Json {
+  let root = @fs.realpath(".")
+  let binary = @fs.realpath(binary)
+  let independent = @fs.tmpdir(prefix="mtl-release-smoke")
+  let version = @shell.Cmd(binary, ["--version"], cwd=independent).output()
+  version.check()
+  guard @json.parse(version.stdout()) is { "version": String(actual), .. } else {
+    fail("expected packaged version JSON")
+  }
+  assert_eq(actual, expected_version)
+  assert_eq(version.stderr(), "")
+  for
+    (plan, bundle, gate) in [
+      ("examples/upstream/plan.json", "examples/upstream/bundle.json", 1),
+      (
+        "examples/upstream/plan.json", "examples/upstream/missing-bundle.json", 3,
+      ),
+      ("examples/retry/plan.json", "examples/retry/bundle.json", 0),
+    ] {
+    let result = @shell.Cmd(
+      binary,
+      ["audit", root + "/" + plan, root + "/" + bundle],
+      cwd=independent,
+    ).output()
+    assert_eq(result.exit_code(), gate, msg=result.stderr())
+    assert_eq(result.stderr(), "")
+    guard @json.parse(result.stdout())
+      is { "exit_code": Number(actual, ..), .. } else {
+      fail("expected packaged audit")
+    }
+    assert_eq(actual, gate.to_double())
+  }
+  let invalid = independent + "/invalid.json"
+  @fs.write_file(invalid, "{}")
+  let rejected = @shell.Cmd(binary, ["verify", invalid], cwd=independent).output()
+  assert_eq(rejected.exit_code(), 2)
+  assert_eq(rejected.stdout(), "")
+  guard @json.parse(rejected.stderr())
+    is { "error": { "code": String(_), .. }, .. } else {
+    fail("expected packaged input diagnostic")
+  }
+  let review = @shell.Cmd(
+    binary,
+    [
+      "review-plan",
+      root + "/examples/review/before.json",
+      root + "/examples/review/proposed.json",
+    ],
+    cwd=independent,
+  ).output()
+  review.check()
+  assert_eq(
+    @json.parse(review.stdout()),
+    @fs.read_file("examples/review/review.json").json(),
+  )
+  Json::object({
+    "version": @json.parse(version.stdout()),
+    "gates": Json::array([
+      Json::number(0),
+      Json::number(1),
+      Json::number(2),
+      Json::number(3),
+    ]),
+    "inventory_review": Json::boolean(true),
+    "independent_working_directory": Json::boolean(true),
+  })
+}
+
+///|
+async fn main {
+  let args = @env.args()[1:].to_owned()
+  if args.length() == 2 && args[0] == "build" {
+    guard @env.get_env_var("RELEASE_TAG") is Some(tag) else {
+      fail("RELEASE_TAG is required when no tag argument is provided")
+    }
+    args.push(tag)
+  }
+  match args {
+    ["build", directory, tag, .. rest] => {
+      let is_local = match rest {
+        [] => false
+        ["--local"] => true
+        _ => fail("expected optional --local")
+      }
+      let version = module_version()
+      assert_eq(tag, "v" + version)
+      let source = if is_local {
+        "working-tree"
+      } else {
+        guard @env.get_env_var("GITHUB_SHA") is Some(sha) && sha.length() == 40 else {
+          fail("CI source SHA required")
+        }
+        let head = @shell.Cmd("git", ["rev-parse", "HEAD"]).output()
+        head.check()
+        assert_eq(head.stdout().trim().to_owned(), sha)
+        let dirty = @shell.Cmd("git", ["status", "--porcelain=v1"]).output()
+        dirty.check()
+        assert_eq(
+          dirty.stdout(),
+          "",
+          msg="release builds require clean committed sources",
+        )
+        sha
+      }
+      let (os, arch) = platform()
+      let moon = @env.get_env_var("MOON_TEST_LEDGER_MOON").unwrap_or("moon")
+      @shell.Cmd(
+        moon,
+        ["build", "--release", "--target", "native", "--deny-warn"],
+        stdout=Inherit,
+        stderr=Inherit,
+      ).run()
+      @fs.mkdir(directory)
+      let extension = if os == "Windows" { ".exe" } else { "" }
+      let name = "moontestledger-" + os.to_lower() + "-" + arch + extension
+      let bytes = @fs.read_file(
+        "_build/native/release/build/cmd/moontestledger/moontestledger.exe",
+      ).binary()
+      let packaged = directory + "/" + name
+      @fs.write_file(packaged, bytes, create_mode=CreateNew)
+      if os != "Windows" {
+        @fs.chmod(packaged, 493)
+      }
+      let result = smoke(packaged, version)
+      let toolchain = @shell.Cmd(moon, ["version", "--all"]).output()
+      toolchain.check()
+      let manifest = Json::object({
+        "schema": Json::number(1),
+        "kind": Json::string("moontestledger/native-release"),
+        "version": Json::string(version),
+        "tag": Json::string(tag),
+        "source_revision": Json::string(source),
+        "os": Json::string(os),
+        "arch": Json::string(arch),
+        "binary": Json::string(name),
+        "sha256": Json::string(sha256(bytes)),
+        "bytes": Json::number(bytes.length().to_double()),
+        "runner_image": Json::string(
+          @env.get_env_var("ImageOS").unwrap_or("local"),
+        ),
+        "runner_image_version": Json::string(
+          @env.get_env_var("ImageVersion").unwrap_or("local"),
+        ),
+        "toolchain": Json::string(toolchain.stdout().trim().to_owned()),
+        "smoke": result,
+      })
+      @fs.write_file(
+        directory + "/" + name + ".json",
+        manifest.stringify(indent=2) + "\n",
+        create_mode=CreateNew,
+      )
+      @fs.write_file(
+        directory + "/LICENSE",
+        @fs.read_file("LICENSE").binary(),
+        create_mode=CreateNew,
+      )
+      let home = match @env.get_env_var("MOON_HOME") {
+        Some(home) => home
+        None => {
+          let variable = if os == "Windows" { "USERPROFILE" } else { "HOME" }
+          guard @env.get_env_var(variable) is Some(user_directory) else {
+            fail("provide MOON_HOME to preserve the installed core license")
+          }
+          user_directory + "/.moon"
+        }
+      }
+      let notices = StringBuilder()
+      notices.write_string(
+        "MoonTestLedger native binary third-party licenses\nSee THIRD_PARTY.md in the source tag for full provenance.\nMoonBit native runtime: Copyright 2026 International Digital Economy Academy; Apache-2.0.\nmoonbitlang/x crypto: Copyright 2025 International Digital Economy Academy; Apache-2.0.\n\n",
+      )
+      for
+        (label, path) in [
+          (
+            "MoonBit core / native runtime (Apache-2.0)",
+            home + "/lib/core/LICENSE",
+          ),
+          (
+            "moonbitlang/async 0.22.4 (Apache-2.0)", ".mooncakes/moonbitlang/async/LICENSE",
+          ),
+          (
+            "Milky2018/xml 0.6.1 (Apache-2.0)", ".mooncakes/Milky2018/xml/LICENSE",
+          ),
+          ("hustcer/fzip 0.8.8 (Apache-2.0)", ".mooncakes/hustcer/fzip/LICENSE"),
+          (
+            "fflate lineage MIT notice (upstream 0.8.2 notice; no exact fzip lineage version asserted)",
+            "licenses/fflate-MIT.txt",
+          ),
+        ] {
+        notices.write_string("\n=== " + label + " ===\n")
+        notices.write_string(
+          @fs.read_file(path).text().replace(old="\r\n", new="\n"),
+        )
+        notices.write_string("\n")
+      }
+      @fs.write_file(
+        directory + "/THIRD_PARTY_LICENSES.txt",
+        notices.to_string(),
+        create_mode=CreateNew,
+      )
+      println(manifest.stringify(indent=2))
+    }
+    ["check", binary, manifest_path] => {
+      guard @fs.read_file(manifest_path).json()
+        is {
+          "version": String(version),
+          "os": String(os),
+          "arch": String(arch),
+          "sha256": String(hash),
+          "smoke": expected,
+          ..
+        } else {
+        fail("expected release manifest")
+      }
+      let (actual_os, actual_arch) = platform()
+      assert_eq((os, arch), (actual_os, actual_arch))
+      assert_eq(sha256(@fs.read_file(binary).binary()), hash)
+      if os != "Windows" {
+        @fs.chmod(binary, 493)
+      }
+      assert_eq(smoke(binary, version), expected)
+      println(
+        "Native payload actually executed with matching checksum, version, review and gates 0/1/2/3.",
+      )
+    }
+    _ =>
+      fail("usage: build NEW-DIRECTORY TAG [--local] | check BINARY MANIFEST")
+  }
+}
