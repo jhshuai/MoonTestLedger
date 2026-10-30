@@ -2,7 +2,9 @@
 
 **面向 CI 维护者的测试证据对账库与命令行工具：报告缺失不能变绿，重试通过也保留先前失败。**
 
-使用已验证的 MoonBit `v0.10.15+943464bfa`，从本仓库根目录开始：
+**状态：0.1.0 预览；尚未上传 Mooncakes。** 公共 API 可能演进；历史原生段错误尚未定位，不能把后续通过的运行视为已修复。参见[已知限制](CHANGELOG.md#scope-and-known-limitations)。
+
+使用已验证的 MoonBit `v0.10.15+943464bfa`，从源码仓库或解压后的完整源码包根目录开始：
 
 ```sh
 moon update
@@ -18,6 +20,17 @@ MoonTestLedger is a MoonBit library and local command-line tool for teams collec
 A missing artifact stays incomplete. A failing attempt followed by a passing attempt becomes **recovered_on_retry**, with both observations retained. Conflicting replacements and mismatched revisions return diagnostics.
 
 Source repository: [jhshuai/MoonTestLedger](https://github.com/jhshuai/MoonTestLedger). The module path is **jhshuai/moontestledger**; the package has not been published to Mooncakes. See [the ecosystem review](docs/ecosystem-review.md) for demand evidence, nearby MoonBit APIs and the limits of the differentiation claim.
+
+## Choose how to use it
+
+| Need | Entry point | Requirements |
+| --- | --- | --- |
+| Embed reconciliation in a MoonBit project | [Library setup and public API](#library-api) | Validated MoonBit toolchain; dependency resolution/cache |
+| Inspect reports and save replayable evidence | `moon run scripts/workflow-demo.mbtx wasm` from the source/package root | `moonrun` host; no GitHub account, Python or Java |
+| Use a native executable without compiling | [GitHub releases](https://github.com/jhshuai/MoonTestLedger/releases) and [platform/checksum instructions](docs/releases.md) | Exact supported release OS/architecture; preview limitations apply |
+| Contribute, benchmark or investigate faults | [Development and validation](#development-and-validation) from a Git checkout | Git and the tools specified by each development workflow |
+
+The publishable source archive keeps the library, file CLI, tests, real report fixtures, licenses, documentation and the two user demos. Benchmarks, deliberate crash probes and maintenance scripts remain in GitHub. [Package contents and isolated archive validation](docs/packaging.md) describe the boundary. This preparation does not establish registry availability or namespace ownership.
 
 ## Current capability
 
@@ -206,7 +219,7 @@ Relative report paths resolve against the **bundle file's directory**. Absolute 
 
 ## Library API
 
-The [independent consumer](examples/consumer/README.md) checks a clean Git source export in a separate module on each backend: `moon run scripts/check-consumer.mbtx wasm-gc`. It needs no Mooncakes publication and records the exact source revision tested.
+The [independent consumer](examples/consumer/README.md) checks a clean Git source export in a separate module on each backend: `moon run scripts/check-consumer.mbtx wasm-gc` from a Git checkout. To validate the actual `moon package` ZIP instead, use `moon run scripts/check-consumer.mbtx wasm-gc --package`. Both need no Mooncakes publication; the package check records the exact ZIP digest and runs the extracted library's tests before running the consumer.
 
 Import jhshuai/moontestledger from a local dependency during development. The root facade re-exports public types owned by ledger and wire; concrete types' constructors, fields and methods remain available, while Ledger is opaque. A [tested consumer example](facade_test.mbt) is included.
 
@@ -228,6 +241,8 @@ import { "jhshuai/moontestledger" }
 ~~~
 
 Workspace membership resolves this unpublished module from local source; the version selector is ignored for that workspace member. This follows [current MoonBit workspace dependency guidance](https://docs.moonbitlang.com/en/latest/toolchain/moon/module.html#dependency-management).
+
+After a version is actually published and verified in Mooncakes, a downstream project can use `moon add jhshuai/moontestledger@0.1.0` and the same `moon.pkg` import, without local workspace membership. This is a future registry installation path, **not a claim that the command works today**. Until then, use the workspace above or an extracted package as its `MoonTestLedger` member. Do not edit files inside Moon's dependency cache. Library targets are Wasm, Wasm-GC, JavaScript and native; the file CLI runs on Wasm/native and requires a filesystem host, not a browser or a generic WASI runtime.
 
 The smallest useful flow is:
 
@@ -324,7 +339,9 @@ The first path profile accepts ASCII letters/digits, dot, underscore, hyphen and
 
 ## Development and validation
 
-Native executables and source releases are delivered through the [GitHub preview release workflow](docs/releases.md), including `--version`, exact source/platform manifests, actual execution checks, SHA-256 and license copies. Mooncakes publication remains disabled. See [CHANGELOG](CHANGELOG.md) for implemented scope and known limitations.
+This section and development-only commands in linked documents require a **Git checkout**; maintenance scripts and benchmarks are deliberately omitted from the publishable source archive. The two demos at the top of this README are included in that archive.
+
+Native executables and source releases are delivered through the [GitHub preview release workflow](docs/releases.md), including `--version`, exact source/platform manifests, actual execution checks, SHA-256 and license copies. Mooncakes upload is a separate, currently unperformed operation. See [CHANGELOG](CHANGELOG.md) for implemented scope and known limitations.
 
 Complete inventory updates can be [reviewed before a future run](docs/inventory-review.md): `review-plan` retains both declarations and their changes; `apply-plan-review` requires the reviewed token, unchanged baseline, fresh run ID and new output file. Existing failed/incomplete archives retain their original plans and gates. The public `PlanReview` API supports the same workflow without a shell.
 
@@ -341,7 +358,7 @@ moon run scripts/e2e.mbtx wasm
 moon run scripts/e2e.mbtx native
 ~~~
 
-Moon run scripts/verify.mbtx TARGET also snapshots the eight generated interfaces, regenerates them and checks drift, without requiring Git. Automation is written in MoonBit .mbtx. CI declares Linux, macOS and Windows jobs for the four library backends, plus applicable file CLI workflows. CI configuration is distinct from a successful remote run; [validation evidence](docs/validation.md) records what actually executed.
+`moon run scripts/verify.mbtx TARGET` also snapshots the nine generated interfaces, regenerates them and checks drift. Automation is written in MoonBit .mbtx. CI declares Linux, macOS and Windows jobs for the four library backends, plus applicable file CLI workflows. Each matrix job also tests an independently extracted package and its consumer. CI configuration is distinct from a successful remote run; [validation evidence](docs/validation.md) records what actually executed.
 
 Linux native verification now retains process/signal diagnostics on CI failure. See [native crash investigation](docs/native-diagnostics.md) for the tracer, its signal-attribution self-test and the still unresolved historical fault.
 

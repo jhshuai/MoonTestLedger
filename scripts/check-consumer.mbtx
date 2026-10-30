@@ -5,11 +5,178 @@ import {
   "moonbitlang/async@0.22.4/shell",
   "moonbitlang/core/env",
   "moonbitlang/core/json",
+  "hustcer/fzip@0.8.8",
+  "moonbitlang/x@0.5.5/crypto",
+}
+
+///|
+fn package_member(name : String) -> Bool {
+  let parts = name.split("/").to_array()
+  !name.is_empty() &&
+  !name.contains("\\") &&
+  !name.contains(":") &&
+  parts.all(part => {
+    !part.is_empty() && part != "." && part != ".." && !part.has_prefix(".")
+  }) &&
+  !parts.contains("_build") &&
+  !parts.contains("target") &&
+  !parts.contains("output") &&
+  !parts.contains("__pycache__") &&
+  !parts.contains("build") &&
+  !name.has_prefix("cmd/benchmark/") &&
+  !name.has_prefix("examples/benchmark/") &&
+  !name.has_prefix("examples/diagnostics/") &&
+  (
+    !name.has_prefix("scripts/") ||
+    name == "scripts/workflow-demo.mbtx" ||
+    name == "scripts/render-demo.mbtx"
+  )
+}
+
+///|
+async fn unpack_package(moon : String, root : String, library : String) -> Json {
+  // These regression probes concern our own archive boundary, not a new ZIP API.
+  for name in ["moon.mod", "wire/zip_test.mbt", "scripts/workflow-demo.mbtx"] {
+    assert_true(package_member(name))
+  }
+  for
+    name in [
+      "../outside", "/absolute", "C:/escape", "a\\b", "a//b", ".git/config", "a/../b",
+      "_build/cache", "output/log", "examples/producers/maven/target/x", "cmd/benchmark/main.mbt",
+      "examples/diagnostics/asan-probe.c", "scripts/publish-release.mbtx",
+    ] {
+    assert_true(!package_member(name))
+  }
+  let packed = @shell.Cmd(moon, ["package", "--list"]).output(
+    max_output_bytes=4194304,
+  )
+  @fs.write_file(root + "/package.stdout", packed.stdout_bytes())
+  @fs.write_file(root + "/package.stderr", packed.stderr())
+  assert_eq(packed.exit_code(), 0, msg=packed.stderr())
+  // Match the module metadata rather than the native CLI's independent version.
+  let metadata = @fs.read_file("moon.mod").text()
+  let values : Map[String, String] = Map([])
+  for line in metadata.split("\n") {
+    if line.trim().split_once(" = ") is Some((key, value)) &&
+      (key == "name" || key == "version") {
+      let quoted = value.split("\"").to_array()
+      guard quoted.length() == 3 else {
+        fail("expected quoted module metadata")
+      }
+      values[key.to_owned()] = quoted[1].to_owned()
+    }
+  }
+  let stem = values["name"].split("/").to_array().join("-") +
+    "-" +
+    values["version"]
+  let bytes = @fs.read_file("_build/publish/" + stem + ".zip").binary()
+  @fs.write_file(root + "/package.zip", bytes, create_mode=CreateNew)
+  let index = @fzip.unzip_list(bytes.to_fixedarray())
+  let names : Set[String] = Set([])
+  let mut total = 0L
+  for entry in index {
+    assert_true(
+      package_member(entry.name),
+      msg="unexpected package member: " + entry.name,
+    )
+    assert_true(!names.contains(entry.name), msg="duplicate package member")
+    names.add(entry.name)
+    total += entry.original_size.to_int64()
+  }
+  assert_true(
+    index.length() > 0 && index.length() <= 1024 && total <= 16777216L,
+  )
+  let files = @fzip.unzip_sync(bytes.to_fixedarray(), opts={
+    verify_checksum: true,
+  })
+  assert_eq(files.length(), names.length())
+  for (name, data) in files {
+    let original = @fs.read_file(name).binary()
+    assert_eq(
+      Bytes::from_array(data[:]),
+      original,
+      msg="package changed source bytes: " + name,
+    )
+    let parts = name.split("/").to_array()
+    if parts.length() > 1 {
+      @fs.mkdir(
+        library + "/" + parts[0:parts.length() - 1].to_owned().join("/"),
+        recursive=true,
+        allow_exist=true,
+      )
+    }
+    @fs.write_file(
+      library + "/" + name,
+      Bytes::from_array(data[:]),
+      create_mode=CreateNew,
+    )
+  }
+  // Every production/test/interface file must survive filtering. An omitted
+  // .mbt cannot silently reduce the extracted package's test coverage.
+  let listing = @shell.Cmd("git", [
+    "ls-files", "--cached", "--others", "--exclude-standard",
+  ]).output()
+  listing.check()
+  for path in listing.stdout().split("\n") {
+    let name = path.trim().to_owned()
+    if (
+        name.has_suffix(".mbt") ||
+        name.has_suffix(".mbti") ||
+        name.has_suffix(".pkg")
+      ) &&
+      !name.has_prefix("cmd/benchmark/") {
+      assert_true(names.contains(name), msg="required source omitted: " + name)
+    }
+  }
+  for
+    name in [
+      "moon.mod", "README.md", "LICENSE", "THIRD_PARTY.md", "licenses/fflate-MIT.txt",
+      "examples/upstream/LICENSE.dorny-test-reporter", "examples/upstream/jest-junit.xml",
+      "examples/producers/fixtures.json", "examples/golden/delivery-v1/fixtures.json",
+      "scripts/workflow-demo.mbtx", "scripts/render-demo.mbtx",
+    ] {
+    assert_true(
+      names.contains(name),
+      msg="required package member omitted: " + name,
+    )
+  }
+  // Check relative Markdown file links against the actual archive, including
+  // preserved fixture license/provenance documents. Anchors aren't inspected.
+  for (name, _) in files {
+    if !name.has_suffix(".md") {
+      continue
+    }
+    let parts = name.split("/").to_array()
+    let parent = parts[0:parts.length() - 1].to_owned().join("/")
+    let source = @fs.read_file(library + "/" + name).text()
+    for piece in source.split("](").to_array()[1:] {
+      guard piece.split_once(")") is Some((link, _)) else { continue }
+      let link = link.split("#").to_array()[0].to_owned()
+      if link.is_empty() || link.contains("://") || link.has_prefix("mailto:") {
+        continue
+      }
+      assert_true(
+        @fs.exists(library + "/" + parent + "/" + link),
+        msg="broken package link: " + name + " -> " + link,
+      )
+    }
+  }
+  Json::object({
+    "sha256": Json::string(@crypto.bytes_to_hex_string(@crypto.sha256(bytes))),
+    "bytes": Json::number(bytes.length().to_double()),
+    "files": Json::number(files.length().to_double()),
+    "uncompressed_bytes": Json::number(total.to_double()),
+  })
 }
 
 ///|
 async fn main {
   let target = @env.args().get(1).unwrap_or("wasm-gc")
+  let packaged = match @env.args()[2:] {
+    [] => false
+    ["--package"] => true
+    _ => fail("usage: moon run scripts/check-consumer.mbtx TARGET [--package]")
+  }
   guard ["wasm", "wasm-gc", "js", "native"].contains(target) else {
     fail("expected a supported target")
   }
@@ -24,25 +191,31 @@ async fn main {
   let revision = @shell.Cmd("git", ["rev-parse", "HEAD"]).output()
   assert_eq(revision.exit_code(), 0)
   let root = @fs.tmpdir(prefix="mtl-source-consumer")
+  println("[consumer:workspace] " + root)
   // Retain the isolated export/build tree for inspection. Never recursively
   // delete a caller path, and never copy ignored or untracked workspace files.
-  let archive = root + "/source.tar"
-  @shell.Cmd(
-    "git",
-    ["archive", "--format=tar", "--output", archive, "HEAD"],
-    stdout=Inherit,
-    stderr=Inherit,
-  ).run()
   let library = root + "/library"
   let consumer = root + "/consumer"
   @fs.mkdir(library)
   @fs.mkdir(consumer)
-  @shell.Cmd(
-    "tar",
-    ["-xf", archive, "-C", library],
-    stdout=Inherit,
-    stderr=Inherit,
-  ).run()
+  let package_receipt = if packaged {
+    unpack_package(moon, root, library)
+  } else {
+    let archive = root + "/source.tar"
+    @shell.Cmd(
+      "git",
+      ["archive", "--format=tar", "--output", archive, "HEAD"],
+      stdout=Inherit,
+      stderr=Inherit,
+    ).run()
+    @shell.Cmd(
+      "tar",
+      ["-xf", archive, "-C", library],
+      stdout=Inherit,
+      stderr=Inherit,
+    ).run()
+    Json::null()
+  }
   assert_true(!@fs.exists(library + "/.git"))
   assert_true(!@fs.exists(library + "/_build"))
   assert_true(!@fs.exists(library + "/.mooncakes"))
@@ -50,8 +223,29 @@ async fn main {
   for name in ["moon.mod", "moon.pkg", "main.mbt"] {
     @fs.write_file(
       consumer + "/" + name,
-      @fs.read_file("examples/consumer/" + name),
+      @fs.read_file(
+        (if packaged { library + "/" } else { "" }) +
+        "examples/consumer/" +
+        name,
+      ),
     )
+  }
+  if packaged {
+    @shell.Cmd(
+      moon,
+      ["-C", library, "test", "--target", target, "--deny-warn"],
+      stdout=Inherit,
+      stderr=Inherit,
+    ).run()
+    if target == "wasm" || target == "native" {
+      @shell.Cmd(
+        moon,
+        ["run", "--deny-warn", "scripts/workflow-demo.mbtx", target],
+        cwd=library,
+        stdout=Inherit,
+        stderr=Inherit,
+      ).run()
+    }
   }
   @shell.Cmd(
     moon,
@@ -73,9 +267,9 @@ async fn main {
     target,
     ".",
     "--",
-    @fs.read_file("examples/upstream/collection.json").text(),
+    @fs.read_file(library + "/examples/upstream/collection.json").text(),
     "jest-main",
-    @fs.read_file("examples/upstream/jest-junit.xml").text(),
+    @fs.read_file(library + "/examples/upstream/jest-junit.xml").text(),
   ]).output(max_output_bytes=4194304)
   assert_eq(result.exit_code(), 0, msg=result.stderr())
   let evidence = @json.parse(result.stdout())
@@ -108,14 +302,26 @@ async fn main {
   assert_eq(
     xml_hash, "8e18da3a6e4252c34fe7899fad28f8eceeb43849329989b36f2ff68dc7698e58",
   )
-  println(
-    Json::object({
-      "target": Json::string(target),
-      "source_revision": Json::string(revision.stdout().trim().to_owned()),
-      "isolated_workspace": Json::string(root),
-      "complete_gate": Json::number(1),
-      "missing_gate": Json::number(3),
-      "archive_sha256": Json::string(hash),
-    }).stringify(),
+  let receipt = Json::object({
+    "target": Json::string(target),
+    "source_revision": Json::string(revision.stdout().trim().to_owned()),
+    "isolated_workspace": Json::string(root),
+    "complete_gate": Json::number(1),
+    "missing_gate": Json::number(3),
+    "archive_sha256": Json::string(hash),
+    "input": Json::string(
+      if packaged {
+        "moon-package-zip"
+      } else {
+        "git-archive"
+      },
+    ),
+    "package": package_receipt,
+  })
+  @fs.write_file(
+    root + "/results.json",
+    receipt.stringify(indent=2) + "\n",
+    create_mode=CreateNew,
   )
+  println(receipt.stringify())
 }

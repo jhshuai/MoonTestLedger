@@ -1,5 +1,7 @@
 # Third-party sources and licenses
 
+The source-package consumer check reuses the pinned hustcer/fzip ZIP listing/extraction and CRC verification plus moonbitlang/x/crypto SHA-256 primitives. Its package boundary, exact-source checks, documentation-link checks, isolated workspace and execution assertions are project-authored Apache-2.0. Packaging rules follow the [official MoonBit module documentation](https://docs.moonbitlang.com/en/latest/toolchain/moon/module.html#publishing-files-with-moonignore); no external packaging implementation or test suite is copied.
+
 The two C files under `examples/diagnostics/` are project-authored Apache-2.0 detector fixtures, not upstream source. They intentionally trigger ASan/UBSan in separate diagnostic processes and are never linked into the product. The memory-check runner and configuration adaptation are project-authored; compiler sanitizer runtimes are supplied by the local C toolchain, not vendored.
 
 The deterministic workload under `cmd/benchmark/`, its generated XML and the measurement runner are project-authored Apache-2.0; they do not copy third-party benchmark corpora. GNU time, timeout and lscpu are optional local measurement tools, not bundled dependencies. Timing uses the MoonBit core monotonic-clock API; hashing uses the already pinned x/crypto dependency.

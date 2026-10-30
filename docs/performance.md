@@ -35,7 +35,7 @@ The first native measurement attempt at `6d9e3fc` stopped before sampling: inval
 
 ## Observed Linux native baseline
 
-The [retained original report and receipt](../examples/benchmark/README.md) came from the `aa96c78` baseline job in [run 41040526071](https://github.com/jhshuai/MoonTestLedger/actions/runs/41040526071). The downloaded artifact SHA-256, CRCs, exact clean revision, all nine original sample/status files and the 100k Wasm/native data digests were checked before retaining the report. The hosted Ubuntu 22.04 x86-64 runner exposed four CPUs, reported as AMD EPYC 7763. Full metadata and per-phase microseconds are in the JSON.
+The [retained original report and receipt](https://github.com/jhshuai/MoonTestLedger/blob/main/examples/benchmark/README.md) came from the `aa96c78` baseline job in [run 41040526071](https://github.com/jhshuai/MoonTestLedger/actions/runs/41040526071). The downloaded artifact SHA-256, CRCs, exact clean revision, all nine original sample/status files and the 100k Wasm/native data digests were checked before retaining the report. The hosted Ubuntu 22.04 x86-64 runner exposed four CPUs, reported as AMD EPYC 7763. Full metadata and per-phase microseconds are in the JSON. Measurement commands require a Git checkout; the benchmark, its data and measurement scripts are not in the publishable library archive.
 
 | Cases | XML bytes | Archive bytes | Median process seconds (3 runs) | Maximum observed peak RSS (KiB) |
 | ---: | ---: | ---: | ---: | ---: |

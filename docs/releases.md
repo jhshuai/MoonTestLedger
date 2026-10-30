@@ -1,6 +1,6 @@
 # Native GitHub preview releases
 
-The repository provides a manual [release workflow](../.github/workflows/release.yml). It publishes to **GitHub only**; no Mooncakes publish command/token is configured. Version metadata is `moon.mod` plus the machine-readable `--version` response, checked for agreement by the actual CLI evaluator. Tag `vVERSION` must match them.
+The repository provides a manual [release workflow](https://github.com/jhshuai/MoonTestLedger/blob/main/.github/workflows/release.yml). It publishes to **GitHub only**; no Mooncakes publish command/token is configured. Version metadata is `moon.mod` plus the machine-readable `--version` response, checked for agreement by the actual CLI evaluator. Tag `vVERSION` must match them.
 
 ## Use a binary
 

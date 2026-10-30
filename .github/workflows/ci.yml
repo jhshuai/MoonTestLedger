@@ -55,6 +55,8 @@ jobs:
           retention-days: 7
       - name: Check an independent consumer against a clean Git source export
         run: moon run scripts/check-consumer.mbtx ${{ matrix.target }}
+      - name: Test the actual package ZIP and an independent consumer
+        run: moon run scripts/check-consumer.mbtx ${{ matrix.target }} --package
 
   workload-baseline:
     runs-on: ubuntu-22.04
