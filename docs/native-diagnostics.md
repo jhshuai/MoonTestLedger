@@ -25,3 +25,7 @@ Use the fault PID and successful exec in `run-N.json`, confirm `si_code` in the 
 ## Observations on 2026-10-28
 
 The original frozen source (`cb7fe53` library code) passed a complete native verifier with process/signal tracing. Signal attribution and recovery probes passed separately. Further bounded delivery repetitions and current-source validation are recorded in the delivery validation record. This improves capture and failure reporting; it does **not** close the historical root-cause question.
+
+## Additional memory checks
+
+The [isolated native memory checker](native-memory.md) records subsequent sanitizer/debugger/concurrent investigation, coverage limits and the early instrumentation link failure. Its reusable `.mbtx` runner exports committed source, demonstrates functioning detectors with separate controlled probes, executes native product tests/workflows and retains command logs on the first failure. CI runs it as a separate job. These checks complement process attribution and do not mark the historical fault fixed.

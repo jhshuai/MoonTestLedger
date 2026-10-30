@@ -345,6 +345,8 @@ Moon run scripts/verify.mbtx TARGET also snapshots the eight generated interface
 
 Linux native verification now retains process/signal diagnostics on CI failure. See [native crash investigation](docs/native-diagnostics.md) for the tracer, its signal-attribution self-test and the still unresolved historical fault.
 
+Linux users can also run [isolated ASan/UBSan checks](docs/native-memory.md) against committed source. Separate detector probes, unit tests and actual native workflows retain logs; CI runs the same check independently. Passing checks do not establish a fix for the historical crash.
+
 Core tests cover malformed input, exact identities, limits, inventory completeness, retry ordering, deterministic output, JSON round trips, exact numeric lexemes, atomic rejection and recovery, source preservation and caller-array isolation. A compile-negative probe verifies that downstream code cannot mutate the ledger's internal inventory.
 
 ## License and sources

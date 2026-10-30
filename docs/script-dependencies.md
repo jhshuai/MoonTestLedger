@@ -8,4 +8,6 @@ On 2026-10-30 a fresh GitHub runner selected `moonbitlang/async@0.22.7` for an u
 
 CI failure evidence: [fresh-run dependency resolution failure](https://github.com/jhshuai/MoonTestLedger/actions/runs/41036193505). Subsequent successful runs are distinct evidence; the failed run is not rewritten or converted into a passing product test.
 
+The correction at `aac733a` passed [all 12 OS/target jobs](https://github.com/jhshuai/MoonTestLedger/actions/runs/41037097666). Local full Wasm/native verification also passed (123/125 actual tests, respectively), including unchanged historical delivery bytes and the documented workflows.
+
 Checkout and Node setup use the recorded v6 commit SHAs, whose official action manifests select the Node 24 action runtime. This is separate from Node 22 used to execute the project's JavaScript target. Other workflow behavior and the fixed MoonBit version remain unchanged; the three-OS/four-target workflow is the execution check for this change. Ordinary pushes do not dispatch the evidence-upload or release workflows.

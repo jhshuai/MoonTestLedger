@@ -55,3 +55,32 @@ jobs:
           retention-days: 7
       - name: Check an independent consumer against a clean Git source export
         run: moon run scripts/check-consumer.mbtx ${{ matrix.target }}
+
+  native-memory:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: hustcer/setup-moonbit@9199da0ab63ea0c0bab1dc15f03d76e17ed4f75f
+        with:
+          version: 0.10.15+943464bfa
+          core-version: 0.10.15+943464bfa
+      - run: moon update
+      - name: Check isolated committed native source with ASan and UBSan
+        run: |
+          mkdir -p output
+          moon run scripts/check-native-memory.mbtx output/native-memory
+      - name: Preserve memory-check results and failure diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: native-memory
+          path: |
+            output/native-memory/*.json
+            output/native-memory/*.stdout
+            output/native-memory/*.stderr
+            output/native-memory/*.status
+            output/native-memory/runner.mbtx
+            output/native-memory/*-probe.c
+          if-no-files-found: warn
+          retention-days: 7

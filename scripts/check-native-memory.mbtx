@@ -1,0 +1,334 @@
+///|
+import {
+  "moonbitlang/async@0.22.4",
+  "moonbitlang/async@0.22.4/fs",
+  "moonbitlang/async@0.22.4/shell",
+  "moonbitlang/core/env",
+  "moonbitlang/core/json",
+}
+
+///|
+fn configured(source : String, executable : Bool, tests : Bool) -> String raise {
+  guard !source.contains("link:") else {
+    fail("Refuse to replace existing native link options")
+  }
+  if !tests && !executable && !source.contains("native-stub") {
+    return source
+  }
+  let flags = "-fsanitize=address,undefined -fno-omit-frame-pointer"
+  let options = if tests || executable {
+    "link: { \"native\": { \"cc-flags\": \"" +
+    flags +
+    "\", \"cc-link-flags\": \"-fsanitize=address,undefined\", \"stub-cc-flags\": \"" +
+    flags +
+    "\" } }"
+  } else {
+    "link: { \"native\": { \"stub-cc-flags\": \"" + flags + "\" } }"
+  }
+  if source.contains("options(") {
+    source.replace(old="options(", new="options(\n" + options + ",\n")
+  } else {
+    source + "\noptions(" + options + ")\n"
+  }
+}
+
+///|
+async fn prepare(destination : String, pristine : String, tests : Bool) -> Unit {
+  for name in @fs.readdir(pristine, include_hidden=true) {
+    if name == "_build" || name == ".git" {
+      continue
+    }
+    let from = pristine + "/" + name
+    let to = destination + "/" + name
+    guard @fs.kind(from, follow_symlink=false) != @fs.FileKind::SymLink else {
+      fail(
+        "Refuse linked source/cache entry while preparing an isolated memory check: " +
+        from,
+      )
+    }
+    if @fs.kind(from, follow_symlink=false) == @fs.FileKind::Directory {
+      prepare(to, from, tests)
+    } else if name == "moon.pkg" {
+      @fs.write_file(
+        to,
+        configured(
+          @fs.read_file(from).text(),
+          to.has_suffix("cmd/moontestledger/moon.pkg"),
+          tests,
+        ),
+      )
+    }
+  }
+}
+
+///|
+async fn command(
+  root : String,
+  label : String,
+  cwd : String,
+  program : String,
+  args : Array[String],
+  expected~ : Int32 = 0,
+) -> String {
+  @fs.write_file(
+    root + "/" + label + ".command.json",
+    Json::object({
+      "program": Json::string(program),
+      "arguments": Json::array(args.map(Json::string)),
+      "cwd": Json::string(cwd),
+      "expected_status": Json::number(expected.to_double()),
+    }).stringify(indent=2),
+    create_mode=CreateNew,
+  )
+  let result = @shell.Cmd(
+    program,
+    args,
+    cwd~,
+    env=Map([
+      ("ASAN_OPTIONS", "detect_leaks=0:halt_on_error=1"),
+      ("UBSAN_OPTIONS", "halt_on_error=1:print_stacktrace=1"),
+      ("MOONBIT_ALLOCATOR", "system"),
+    ]),
+  ).output(max_output_bytes=16777216)
+  @fs.write_file(
+    root + "/" + label + ".stdout",
+    result.stdout_bytes(),
+    create_mode=CreateNew,
+  )
+  @fs.write_file(
+    root + "/" + label + ".stderr",
+    result.stderr(),
+    create_mode=CreateNew,
+  )
+  @fs.write_file(
+    root + "/" + label + ".status",
+    result.exit_code().to_string(),
+    create_mode=CreateNew,
+  )
+  guard result.exit_code() == expected else {
+    fail(
+      "Memory check stopped at " +
+      label +
+      "; actual status=\{result.exit_code()}. Logs retained at " +
+      root +
+      "; no retry performed.",
+    )
+  }
+  println("[native-memory] " + label + ": expected status \{expected}")
+  result.stdout() + result.stderr()
+}
+
+///|
+async fn main {
+  guard @env.args().length() == 2 else {
+    fail(
+      "usage: moon run scripts/check-native-memory.mbtx NEW-DIRECTORY (Linux only)",
+    )
+  }
+  let platform = @shell.Cmd("uname", ["-s"]).output()
+  guard platform.exit_code() == 0 && platform.stdout().trim() == "Linux" else {
+    fail("This check requires Linux, cc, git, tar and nm")
+  }
+  let prefix = @shell.Cmd("git", ["rev-parse", "--show-prefix"]).output()
+  prefix.check()
+  assert_eq(
+    prefix.stdout().trim().to_owned(),
+    "",
+    msg="Run from repository root",
+  )
+  let root = @env.args()[1]
+  @fs.mkdir(root)
+  let root = @fs.realpath(root)
+  let original = @fs.realpath(".")
+  let moon = @env.get_env_var("MOON_TEST_LEDGER_MOON").unwrap_or("moon")
+  let revision = command(root, "revision", original, "git", [
+      "rev-parse", "HEAD",
+    ])
+    .trim()
+    .to_owned()
+  ignore(command(root, "toolchain", original, moon, ["version", "--all"]))
+  ignore(command(root, "compiler", original, "cc", ["--version"]))
+  @fs.write_file(
+    root + "/runner.mbtx",
+    @fs.read_file("scripts/check-native-memory.mbtx").binary(),
+    create_mode=CreateNew,
+  )
+  // Controlled, separate processes must demonstrate that both detectors work.
+  for
+    (name, flag, diagnostic) in [
+      (
+        "asan", "-fsanitize=address", "ERROR: AddressSanitizer: heap-use-after-free",
+      ),
+      ("ubsan", "-fsanitize=undefined", "runtime error: shift exponent"),
+    ] {
+    let fixture = @fs.read_file("examples/diagnostics/" + name + "-probe.c").binary()
+    @fs.write_file(
+      root + "/" + name + "-probe.c",
+      fixture,
+      create_mode=CreateNew,
+    )
+    ignore(
+      command(root, name + "-compile", original, "cc", [
+        "-O0",
+        "-g",
+        flag,
+        "-fno-sanitize-recover=all",
+        root + "/" + name + "-probe.c",
+        "-o",
+        root + "/" + name + "-probe",
+      ]),
+    )
+    assert_true(
+      command(
+        root,
+        name + "-probe",
+        original,
+        root + "/" + name + "-probe",
+        [],
+        expected=1,
+      ).contains(diagnostic),
+    )
+  }
+  assert_eq(configured("import {}\n", false, false), "import {}\n")
+  assert_true(configured("options()\n", true, false).contains("cc-link-flags"))
+  assert_true(
+    !configured("options(\"native-stub\": [\"stub.c\"])\n", false, false).contains(
+      "cc-link-flags",
+    ),
+  )
+  assert_true(
+    try {
+      ignore(configured("options(link: {})", true, true))
+      false
+    } catch {
+      _ => true
+    },
+  )
+  // A linked cache configuration must not redirect writes outside the copy.
+  let guard_source = root + "/guard-pristine"
+  let guard_copy = root + "/guard-copy"
+  @fs.mkdir(guard_source)
+  @fs.mkdir(guard_copy)
+  let sentinel = root + "/guard-target"
+  @fs.write_file(sentinel, "preserve", create_mode=CreateNew)
+  ignore(
+    command(root, "linked-config", original, "ln", [
+      "-s",
+      sentinel,
+      guard_source + "/moon.pkg",
+    ]),
+  )
+  assert_true(
+    try {
+      prepare(guard_copy, guard_source, true)
+      false
+    } catch {
+      error => error.to_string().contains("Refuse linked")
+    },
+  )
+  assert_eq(@fs.read_file(sentinel).text(), "preserve")
+  assert_true(!@fs.exists(guard_copy + "/moon.pkg"))
+  @fs.remove(guard_source + "/moon.pkg")
+  @fs.write_file(
+    guard_source + "/moon.pkg",
+    "import {}\n",
+    create_mode=CreateNew,
+  )
+  prepare(guard_copy, guard_source, false)
+  assert_eq(@fs.read_file(guard_copy + "/moon.pkg").text(), "import {}\n")
+  assert_eq(@fs.read_file(sentinel).text(), "preserve")
+  let pristine = root + "/pristine"
+  @fs.mkdir(pristine)
+  ignore(
+    command(root, "export", original, "git", [
+      "archive",
+      "--format=tar",
+      "--output",
+      root + "/source.tar",
+      "HEAD",
+    ]),
+  )
+  ignore(
+    command(root, "extract", original, "tar", [
+      "-xf",
+      root + "/source.tar",
+      "-C",
+      pristine,
+    ]),
+  )
+  if @fs.exists(".mooncakes") {
+    ignore(
+      command(root, "cached-dependencies", original, "cp", [
+        "-a",
+        original + "/.mooncakes",
+        pristine + "/.mooncakes",
+      ]),
+    )
+  }
+  ignore(command(root, "resolve", pristine, moon, ["update"]))
+  let source = root + "/source"
+  ignore(command(root, "clone", original, "cp", ["-a", pristine, source]))
+  prepare(source, pristine, true)
+  ignore(
+    command(root, "unit", source, moon, [
+      "test", "--target", "native", "--deny-warn",
+    ]),
+  )
+  // cc-flags on a library force executable linking. Restore library options
+  // before normal builds; keep stub-only flags and the CLI's executable flags.
+  prepare(source, pristine, false)
+  ignore(
+    command(root, "version", source, moon, [
+      "run", "--target", "native", "cmd/moontestledger", "--", "--version",
+    ]),
+  )
+  let plan = command(root, "build-plan", source, moon, [
+    "run", "--dry-run", "--target", "native", "cmd/moontestledger", "--", "--version",
+  ])
+  assert_true(plan.contains("-DMOONBIT_ALLOCATOR=MOONBIT_ALLOCATOR_SYSTEM"))
+  assert_true(!plan.contains("-DMOONBIT_ALLOCATOR=MOONBIT_ALLOCATOR_MIMALLOC"))
+  assert_true(plan.contains("-fsanitize=address,undefined"))
+  let symbols = command(root, "symbols", source, "nm", [
+    "-D",
+    source + "/_build/native/debug/build/cmd/moontestledger/moontestledger.exe",
+  ])
+  assert_true(
+    symbols.contains("__asan_init") && symbols.contains("__ubsan_handle_"),
+  )
+  for
+    (name, script) in [
+      ("review", "review-e2e"),
+      ("golden", "check-golden-delivery"),
+      ("delivery", "delivery-e2e"),
+      ("workflow", "workflow-demo"),
+    ] {
+    ignore(
+      command(root, name, source, moon, [
+        "run",
+        "--deny-warn",
+        "scripts/" + script + ".mbtx",
+        "native",
+      ]),
+    )
+  }
+  @fs.write_file(
+    root + "/results.json",
+    Json::object({
+      "schema": Json::number(1),
+      "source_revision": Json::string(revision),
+      "allocator": Json::string("system"),
+      "leak_detection": Json::boolean(false),
+      "detector_probes_passed": Json::boolean(true),
+      "unit_and_workflows_passed": Json::boolean(true),
+      "historical_crash_fixed": Json::boolean(false),
+    }).stringify(indent=2) +
+    "\n",
+    create_mode=CreateNew,
+  )
+  println(
+    "Native memory checks passed for committed source " +
+    revision +
+    ". This does not diagnose the historical crash. Logs: " +
+    root,
+  )
+}
