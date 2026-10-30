@@ -1,0 +1,9 @@
+# Captured Linux workload baseline
+
+`linux-aa96c78.json` is the **unchanged** `results.json` downloaded from the completed `workload-baseline` artifact of [GitHub Actions run 41040526071](https://github.com/jhshuai/MoonTestLedger/actions/runs/41040526071), source `aa96c789a6bdf09aa5bd3fc6649f2c0344ccf55c`. The report records a clean workspace and the actual optimized binary SHA-256. `receipt.json` records the artifact ID, ZIP digest and SHA-256 of the retained result bytes.
+
+The download was checked against GitHub's artifact ZIP SHA-256 before bounded, CRC-checked extraction. All nine recorded workloads/timings were compared with their original stdout and GNU time JSON, actual statuses were 0, and the invalid-count status was 2. The 100k XML/archive digests also matched the actual Wasm workload. Temporary command logs remain in the original seven-day artifact and local downloaded copy; this committed report preserves the result after artifact expiry.
+
+The runner was Ubuntu 22.04 x86-64 with four visible CPUs; its reported model was AMD EPYC 7763. Exact compiler, MoonBit toolchain, kernel, CPU fields, allocator, byte sizes, stage timings and all three rounds per size are in the JSON. Process elapsed time and peak RSS include generation, assertions, replay, limit refusal and digest calculation. These are synthetic-workload measurements, not production adoption evidence, parser-only allocation measurements or a claim of advantage over another implementation.
+
+The generator, runner, generated data and captured result are project-authored Apache-2.0. No third-party benchmark corpus is copied. Reproduce using [the measurement guide](../../docs/performance.md); newer code or another machine need not reproduce the same timings, but matching workload versions/sizes should preserve input/archive digests.

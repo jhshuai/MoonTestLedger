@@ -11,3 +11,5 @@ examples/producers/*.xml -text whitespace=cr-at-eol
 # Historical delivery data are exact bytes, including embedded XML/ZIP.
 examples/golden/delivery-v1/** -text whitespace=cr-at-eol
 licenses/fflate-MIT.txt -text
+# Preserve the exact downloaded measurement bytes bound by receipt.json.
+examples/benchmark/linux-*.json -text

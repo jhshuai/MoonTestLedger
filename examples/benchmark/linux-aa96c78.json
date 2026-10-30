@@ -1,0 +1,478 @@
+{
+  "schema": 1,
+  "informational": true,
+  "source_revision": "aa96c789a6bdf09aa5bd3fc6649f2c0344ccf55c",
+  "workspace_dirty": false,
+  "binary_sha256": "4aa8614dcb61aa6cac8613c5ed5d37dda1a78f9cfb5dd43688d125bbaed45c7e",
+  "allocator": "mimalloc",
+  "toolchain": "moon 0.1.20261012 (748b63c 2026-10-12) ~/.moon/bin/moon\nmoonc v0.10.15+943464bfa (2026-10-12) ~/.moon/bin/moonc\nmoonrun 0.1.20261012 (748b63c 2026-10-12) ~/.moon/bin/moonrun\n\nFeature flags enabled: rr_moon_mod,rr_moon_pkg\n",
+  "compiler": "cc (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0\nCopyright (C) 2021 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+  "system": "Linux 6.8.0-1070-azure x86_64\n",
+  "cpu": {
+    "lscpu": [
+      {
+        "field": "Architecture:",
+        "data": "x86_64"
+      },
+      {
+        "field": "CPU op-mode(s):",
+        "data": "32-bit, 64-bit"
+      },
+      {
+        "field": "Address sizes:",
+        "data": "48 bits physical, 48 bits virtual"
+      },
+      {
+        "field": "Byte Order:",
+        "data": "Little Endian"
+      },
+      {
+        "field": "CPU(s):",
+        "data": "4"
+      },
+      {
+        "field": "On-line CPU(s) list:",
+        "data": "0-3"
+      },
+      {
+        "field": "Vendor ID:",
+        "data": "AuthenticAMD"
+      },
+      {
+        "field": "Model name:",
+        "data": "AMD EPYC 7763 64-Core Processor"
+      },
+      {
+        "field": "CPU family:",
+        "data": "25"
+      },
+      {
+        "field": "Model:",
+        "data": "1"
+      },
+      {
+        "field": "Thread(s) per core:",
+        "data": "2"
+      },
+      {
+        "field": "Core(s) per socket:",
+        "data": "2"
+      },
+      {
+        "field": "Socket(s):",
+        "data": "1"
+      },
+      {
+        "field": "Stepping:",
+        "data": "1"
+      },
+      {
+        "field": "BogoMIPS:",
+        "data": "4890.84"
+      },
+      {
+        "field": "Flags:",
+        "data": "fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl tsc_reliable nonstop_tsc cpuid extd_apicid aperfmperf tsc_known_freq pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 movbe popcnt aes xsave avx f16c rdrand hypervisor lahf_lm cmp_legacy svm cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw topoext vmmcall fsgsbase bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves user_shstk clzero xsaveerptr rdpru arat npt nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthreshold v_vmsave_vmload umip vaes vpclmulqdq rdpid fsrm"
+      },
+      {
+        "field": "Virtualization:",
+        "data": "AMD-V"
+      },
+      {
+        "field": "Hypervisor vendor:",
+        "data": "Microsoft"
+      },
+      {
+        "field": "Virtualization type:",
+        "data": "full"
+      },
+      {
+        "field": "L1d cache:",
+        "data": "64 KiB (2 instances)"
+      },
+      {
+        "field": "L1i cache:",
+        "data": "64 KiB (2 instances)"
+      },
+      {
+        "field": "L2 cache:",
+        "data": "1 MiB (2 instances)"
+      },
+      {
+        "field": "L3 cache:",
+        "data": "32 MiB (1 instance)"
+      },
+      {
+        "field": "NUMA node(s):",
+        "data": "1"
+      },
+      {
+        "field": "NUMA node0 CPU(s):",
+        "data": "0-3"
+      },
+      {
+        "field": "Vulnerability Gather data sampling:",
+        "data": "Not affected"
+      },
+      {
+        "field": "Vulnerability Indirect target selection:",
+        "data": "Not affected"
+      },
+      {
+        "field": "Vulnerability Itlb multihit:",
+        "data": "Not affected"
+      },
+      {
+        "field": "Vulnerability L1tf:",
+        "data": "Not affected"
+      },
+      {
+        "field": "Vulnerability Mds:",
+        "data": "Not affected"
+      },
+      {
+        "field": "Vulnerability Meltdown:",
+        "data": "Not affected"
+      },
+      {
+        "field": "Vulnerability Mmio stale data:",
+        "data": "Not affected"
+      },
+      {
+        "field": "Vulnerability Reg file data sampling:",
+        "data": "Not affected"
+      },
+      {
+        "field": "Vulnerability Retbleed:",
+        "data": "Not affected"
+      },
+      {
+        "field": "Vulnerability Spec rstack overflow:",
+        "data": "Vulnerable: Safe RET, no microcode"
+      },
+      {
+        "field": "Vulnerability Spec store bypass:",
+        "data": "Vulnerable"
+      },
+      {
+        "field": "Vulnerability Spectre v1:",
+        "data": "Mitigation; usercopy/swapgs barriers and __user pointer sanitization"
+      },
+      {
+        "field": "Vulnerability Spectre v2:",
+        "data": "Mitigation; Retpolines; STIBP disabled; RSB filling; PBRSB-eIBRS Not affected; BHI Not affected"
+      },
+      {
+        "field": "Vulnerability Srbds:",
+        "data": "Not affected"
+      },
+      {
+        "field": "Vulnerability Tsa:",
+        "data": "Vulnerable: Clear CPU buffers attempted, no microcode"
+      },
+      {
+        "field": "Vulnerability Tsx async abort:",
+        "data": "Not affected"
+      },
+      {
+        "field": "Vulnerability Vmscape:",
+        "data": "Not affected"
+      }
+    ]
+  },
+  "summaries": [
+    {
+      "cases": 1000,
+      "median_elapsed_seconds": 0.03,
+      "max_peak_rss_kib": 7168,
+      "xml_bytes": 68113,
+      "archive_bytes": 162593
+    },
+    {
+      "cases": 10000,
+      "median_elapsed_seconds": 0.32,
+      "max_peak_rss_kib": 36224,
+      "xml_bytes": 690913,
+      "archive_bytes": 1640393
+    },
+    {
+      "cases": 100000,
+      "median_elapsed_seconds": 4,
+      "max_peak_rss_kib": 291400,
+      "xml_bytes": 7008913,
+      "archive_bytes": 16598393
+    }
+  ],
+  "samples": [
+    {
+      "count": 1000,
+      "round": 1,
+      "workload": {
+        "schema": 1,
+        "workload": "deterministic-junit-v1",
+        "cases": 1000,
+        "gate": 1,
+        "failure_cases": 100,
+        "skipped_cases": 100,
+        "xml_bytes": 68113,
+        "archive_bytes": 162593,
+        "xml_sha256": "58aa0553340e54f50d17cf8dcf889b7e17548bd2026b5e6b2544ec58426cd77d",
+        "archive_sha256": "470f85409d43132b0fe6db0859108893e8603eab9cc9265eeb81786c8aa39d76",
+        "max_source_units": 33554432,
+        "phase_microseconds": {
+          "generate": 1970.794,
+          "parse": 3571.933,
+          "reconcile": 1937.03,
+          "encode": 5631.443,
+          "replay": 14371.329
+        },
+        "checks_passed": true
+      },
+      "process": {
+        "elapsed_seconds": 0.03,
+        "peak_rss_kib": 7168,
+        "exit_code": 0
+      }
+    },
+    {
+      "count": 1000,
+      "round": 2,
+      "workload": {
+        "schema": 1,
+        "workload": "deterministic-junit-v1",
+        "cases": 1000,
+        "gate": 1,
+        "failure_cases": 100,
+        "skipped_cases": 100,
+        "xml_bytes": 68113,
+        "archive_bytes": 162593,
+        "xml_sha256": "58aa0553340e54f50d17cf8dcf889b7e17548bd2026b5e6b2544ec58426cd77d",
+        "archive_sha256": "470f85409d43132b0fe6db0859108893e8603eab9cc9265eeb81786c8aa39d76",
+        "max_source_units": 33554432,
+        "phase_microseconds": {
+          "generate": 1366.117,
+          "parse": 3147.716,
+          "reconcile": 1912.865,
+          "encode": 5753.894,
+          "replay": 14246.744
+        },
+        "checks_passed": true
+      },
+      "process": {
+        "elapsed_seconds": 0.03,
+        "peak_rss_kib": 7168,
+        "exit_code": 0
+      }
+    },
+    {
+      "count": 1000,
+      "round": 3,
+      "workload": {
+        "schema": 1,
+        "workload": "deterministic-junit-v1",
+        "cases": 1000,
+        "gate": 1,
+        "failure_cases": 100,
+        "skipped_cases": 100,
+        "xml_bytes": 68113,
+        "archive_bytes": 162593,
+        "xml_sha256": "58aa0553340e54f50d17cf8dcf889b7e17548bd2026b5e6b2544ec58426cd77d",
+        "archive_sha256": "470f85409d43132b0fe6db0859108893e8603eab9cc9265eeb81786c8aa39d76",
+        "max_source_units": 33554432,
+        "phase_microseconds": {
+          "generate": 2052.427,
+          "parse": 5578.874,
+          "reconcile": 2895.482,
+          "encode": 9044.538,
+          "replay": 16834.818
+        },
+        "checks_passed": true
+      },
+      "process": {
+        "elapsed_seconds": 0.04,
+        "peak_rss_kib": 7168,
+        "exit_code": 0
+      }
+    },
+    {
+      "count": 10000,
+      "round": 1,
+      "workload": {
+        "schema": 1,
+        "workload": "deterministic-junit-v1",
+        "cases": 10000,
+        "gate": 1,
+        "failure_cases": 1000,
+        "skipped_cases": 1000,
+        "xml_bytes": 690913,
+        "archive_bytes": 1640393,
+        "xml_sha256": "fb73bc8965450b259e749c2595bf943291019b444cced521cbe55445959c8825",
+        "archive_sha256": "0a1dac1a740c38ddf7c0772e1e71e51b806ac8166d199deab340f68dd77678f8",
+        "max_source_units": 33554432,
+        "phase_microseconds": {
+          "generate": 12797.1,
+          "parse": 32363.842,
+          "reconcile": 18400.971,
+          "encode": 53963.173,
+          "replay": 145127.37900000002
+        },
+        "checks_passed": true
+      },
+      "process": {
+        "elapsed_seconds": 0.32,
+        "peak_rss_kib": 36224,
+        "exit_code": 0
+      }
+    },
+    {
+      "count": 10000,
+      "round": 2,
+      "workload": {
+        "schema": 1,
+        "workload": "deterministic-junit-v1",
+        "cases": 10000,
+        "gate": 1,
+        "failure_cases": 1000,
+        "skipped_cases": 1000,
+        "xml_bytes": 690913,
+        "archive_bytes": 1640393,
+        "xml_sha256": "fb73bc8965450b259e749c2595bf943291019b444cced521cbe55445959c8825",
+        "archive_sha256": "0a1dac1a740c38ddf7c0772e1e71e51b806ac8166d199deab340f68dd77678f8",
+        "max_source_units": 33554432,
+        "phase_microseconds": {
+          "generate": 19046.464000000036,
+          "parse": 33807.084,
+          "reconcile": 18782.688000000002,
+          "encode": 55101.813,
+          "replay": 147591.279
+        },
+        "checks_passed": true
+      },
+      "process": {
+        "elapsed_seconds": 0.33,
+        "peak_rss_kib": 36096,
+        "exit_code": 0
+      }
+    },
+    {
+      "count": 10000,
+      "round": 3,
+      "workload": {
+        "schema": 1,
+        "workload": "deterministic-junit-v1",
+        "cases": 10000,
+        "gate": 1,
+        "failure_cases": 1000,
+        "skipped_cases": 1000,
+        "xml_bytes": 690913,
+        "archive_bytes": 1640393,
+        "xml_sha256": "fb73bc8965450b259e749c2595bf943291019b444cced521cbe55445959c8825",
+        "archive_sha256": "0a1dac1a740c38ddf7c0772e1e71e51b806ac8166d199deab340f68dd77678f8",
+        "max_source_units": 33554432,
+        "phase_microseconds": {
+          "generate": 12707.932,
+          "parse": 31821.091,
+          "reconcile": 18910.548,
+          "encode": 54440.591,
+          "replay": 144404.909
+        },
+        "checks_passed": true
+      },
+      "process": {
+        "elapsed_seconds": 0.32,
+        "peak_rss_kib": 36096,
+        "exit_code": 0
+      }
+    },
+    {
+      "count": 100000,
+      "round": 1,
+      "workload": {
+        "schema": 1,
+        "workload": "deterministic-junit-v1",
+        "cases": 100000,
+        "gate": 1,
+        "failure_cases": 10000,
+        "skipped_cases": 10000,
+        "xml_bytes": 7008913,
+        "archive_bytes": 16598393,
+        "xml_sha256": "d65e28f9aac5cb347eb83b2855b1effbd6f7ecb7869230fe791e22b4eff01a88",
+        "archive_sha256": "0b768a5a013f8b44d81a1d4c2a920c8f8f391859a64a49356741eeb3924e7ecd",
+        "max_source_units": 33554432,
+        "phase_microseconds": {
+          "generate": 130447.892,
+          "parse": 331077.998,
+          "reconcile": 318717.786,
+          "encode": 667272.3219999999,
+          "replay": 1926350.801
+        },
+        "checks_passed": true
+      },
+      "process": {
+        "elapsed_seconds": 4,
+        "peak_rss_kib": 291168,
+        "exit_code": 0
+      }
+    },
+    {
+      "count": 100000,
+      "round": 2,
+      "workload": {
+        "schema": 1,
+        "workload": "deterministic-junit-v1",
+        "cases": 100000,
+        "gate": 1,
+        "failure_cases": 10000,
+        "skipped_cases": 10000,
+        "xml_bytes": 7008913,
+        "archive_bytes": 16598393,
+        "xml_sha256": "d65e28f9aac5cb347eb83b2855b1effbd6f7ecb7869230fe791e22b4eff01a88",
+        "archive_sha256": "0b768a5a013f8b44d81a1d4c2a920c8f8f391859a64a49356741eeb3924e7ecd",
+        "max_source_units": 33554432,
+        "phase_microseconds": {
+          "generate": 128160.84700000001,
+          "parse": 327539.225,
+          "reconcile": 318455.833,
+          "encode": 661429.094,
+          "replay": 1914878.114
+        },
+        "checks_passed": true
+      },
+      "process": {
+        "elapsed_seconds": 4,
+        "peak_rss_kib": 291400,
+        "exit_code": 0
+      }
+    },
+    {
+      "count": 100000,
+      "round": 3,
+      "workload": {
+        "schema": 1,
+        "workload": "deterministic-junit-v1",
+        "cases": 100000,
+        "gate": 1,
+        "failure_cases": 10000,
+        "skipped_cases": 10000,
+        "xml_bytes": 7008913,
+        "archive_bytes": 16598393,
+        "xml_sha256": "d65e28f9aac5cb347eb83b2855b1effbd6f7ecb7869230fe791e22b4eff01a88",
+        "archive_sha256": "0b768a5a013f8b44d81a1d4c2a920c8f8f391859a64a49356741eeb3924e7ecd",
+        "max_source_units": 33554432,
+        "phase_microseconds": {
+          "generate": 136817.759,
+          "parse": 330268.72,
+          "reconcile": 316488.028,
+          "encode": 664226.576,
+          "replay": 1898263.138
+        },
+        "checks_passed": true
+      },
+      "process": {
+        "elapsed_seconds": 4,
+        "peak_rss_kib": 291268,
+        "exit_code": 0
+      }
+    }
+  ]
+}

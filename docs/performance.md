@@ -29,6 +29,18 @@ The runner measures its **working tree**, records Git HEAD and a dirty flag, and
 
 ## Executed correctness checks
 
-On 2026-10-30 the generator passed local strict tests on Wasm, Wasm-GC and JavaScript, with two new tests checking size refusal/recovery, decade boundaries and stable digests. Actual Wasm runs of 1k, 10k and 100k cases completed all correctness assertions. The 100k sample retained 10,000 failures and 10,000 skips, a 7,008,913-byte XML input and a 16,598,393-byte archive. Those Wasm executions do not establish Linux native timing or RSS; native measurements are recorded separately after the actual CI job completes.
+On 2026-10-30 the generator passed local strict tests on Wasm, Wasm-GC and JavaScript, with tests checking size refusal/recovery, decade boundaries, stable digests and CLI arguments. Actual Wasm runs of 1k, 10k and 100k cases completed all correctness assertions. The 100k sample retained 10,000 failures and 10,000 skips, a 7,008,913-byte XML input and a 16,598,393-byte archive. Actual 1k CLI runs and invalid-input/recovery checks also passed on Wasm-GC and Node/JavaScript.
 
 The first native measurement attempt at `6d9e3fc` stopped before sampling: invalid input reached an unhandled release-mode error and aborted, without the expected text. The developer command now validates arguments before executing the workload and explicitly returns structured exit 2 on all targets; regression tests cover malformed, oversized and ambiguous arguments. That failed job's partial artifact is not a completed baseline.
+
+## Observed Linux native baseline
+
+The [retained original report and receipt](../examples/benchmark/README.md) came from the `aa96c78` baseline job in [run 41040526071](https://github.com/jhshuai/MoonTestLedger/actions/runs/41040526071). The downloaded artifact SHA-256, CRCs, exact clean revision, all nine original sample/status files and the 100k Wasm/native data digests were checked before retaining the report. The hosted Ubuntu 22.04 x86-64 runner exposed four CPUs, reported as AMD EPYC 7763. Full metadata and per-phase microseconds are in the JSON.
+
+| Cases | XML bytes | Archive bytes | Median process seconds (3 runs) | Maximum observed peak RSS (KiB) |
+| ---: | ---: | ---: | ---: | ---: |
+| 1,000 | 68,113 | 162,593 | 0.03 | 7,168 |
+| 10,000 | 690,913 | 1,640,393 | 0.32 | 36,224 |
+| 100,000 | 7,008,913 | 16,598,393 | 4.00 | 291,400 |
+
+All samples completed replay, original-source and count checks, and resource refusal/recovery; their complete failing workload retained gate 1. These figures characterize the recorded end-to-end developer workload on that runner only. The original JSON is retained independently of temporary GitHub artifact availability.

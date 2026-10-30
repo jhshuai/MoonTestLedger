@@ -1,0 +1,12 @@
+{
+  "source_revision": "aa96c789a6bdf09aa5bd3fc6649f2c0344ccf55c",
+  "workflow_run_id": "41040526071",
+  "artifact": {
+    "artifact_id": "12970396588",
+    "zip_sha256": "127bb637560ec2954706c09570ab5e844673f63f613b9f2458e8847f53de52dc",
+    "source_revision": "aa96c789a6bdf09aa5bd3fc6649f2c0344ccf55c"
+  },
+  "result_file": "linux-aa96c78.json",
+  "result_sha256": "1be9be779eb6bdeefe80d495c31d609efb21bc1e7685746b7729229ebc26cff2",
+  "license": "Apache-2.0"
+}
