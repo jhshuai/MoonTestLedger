@@ -1,5 +1,16 @@
 # MoonTestLedger
 
+**面向 CI 维护者的测试证据对账库与命令行工具：报告缺失不能变绿，重试通过也保留先前失败。**
+
+使用已验证的 MoonBit `v0.10.15+943464bfa`，从本仓库根目录开始：
+
+```sh
+moon update
+moon run scripts/acceptance-demo.mbtx wasm
+```
+
+演示实际执行完整失败、报告缺失、重试恢复三个工作流，验证门禁 **1 / 3 / 0**，并检查篡改拒绝和出错后恢复。它打印独立结果目录，保留可本地打开的 HTML、原始 XML、可重放证据和命令日志；全部断言通过后演示退出 0。改用 `native` 可实际执行原生 CLI，需本机 C 编译器。安装与平台边界见下文；[中文验收与功能对照](docs/acceptance.md)提供逐项复现入口。
+
 **Know whether a CI test run is complete, and retain what happened before a retry passed.**
 
 MoonTestLedger is a MoonBit library and local command-line tool for teams collecting JUnit XML from sharded, retried or multi-environment CI jobs. A declared inventory records expected report IDs, exact testcase identities, revision, environment, shard and attempt order. The ledger reconciles received evidence against that inventory.

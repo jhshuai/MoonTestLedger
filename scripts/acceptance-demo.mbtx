@@ -1,0 +1,208 @@
+///|
+import {
+  "moonbitlang/async@0.22.4",
+  "moonbitlang/async@0.22.4/fs",
+  "moonbitlang/async@0.22.4/shell",
+  "moonbitlang/core/env",
+  "moonbitlang/core/json",
+}
+
+///|
+async fn cli(
+  target : String,
+  root : String,
+  name : String,
+  args : Array[String],
+  expected : Int32,
+) -> Json {
+  let moon = @env.get_env_var("MOON_TEST_LEDGER_MOON").unwrap_or("moon")
+  let result = @shell.Cmd(
+    moon,
+    ["run", "--target", target, "cmd/moontestledger", "--", ..args],
+  ).output(max_output_bytes=16777216)
+  @fs.write_file(
+    root + "/" + name + ".stdout",
+    result.stdout_bytes(),
+    create_mode=CreateNew,
+  )
+  @fs.write_file(
+    root + "/" + name + ".stderr",
+    result.stderr(),
+    create_mode=CreateNew,
+  )
+  @fs.write_file(
+    root + "/" + name + ".json",
+    Json::object({
+      "arguments": Json::array(args.map(Json::string)),
+      "expected_status": Json::number(expected.to_double()),
+      "actual_status": Json::number(result.exit_code().to_double()),
+    }).stringify(indent=2) +
+    "\n",
+    create_mode=CreateNew,
+  )
+  assert_eq(result.exit_code(), expected, msg=name + ": " + result.stderr())
+  let text = if expected == 2 {
+    assert_eq(result.stdout(), "")
+    result.stderr()
+  } else {
+    assert_eq(result.stderr(), "")
+    result.stdout()
+  }
+  if text.is_empty() {
+    Json::null()
+  } else {
+    @json.parse(text)
+  }
+}
+
+///|
+async fn main {
+  let args = @env.args()
+  guard args.length() <= 3 else {
+    fail(
+      "usage: moon run scripts/acceptance-demo.mbtx [wasm|native] [NEW-DIRECTORY]",
+    )
+  }
+  let target = args.get(1).unwrap_or("wasm")
+  guard target == "wasm" || target == "native" else {
+    fail("expected wasm or native")
+  }
+  let root = match args.get(2) {
+    Some(path) => {
+      @fs.mkdir(path)
+      @fs.realpath(path)
+    }
+    None => @fs.tmpdir(prefix="mtl-acceptance")
+  }
+  println("Acceptance evidence directory: " + root)
+  let rows : Array[Json] = []
+  for
+    (name, plan, bundle, gate, count) in [
+      (
+        "failed", "examples/upstream/plan.json", "examples/upstream/bundle.json",
+        1, 6,
+      ),
+      (
+        "missing", "examples/upstream/plan.json", "examples/upstream/missing-bundle.json",
+        3, 6,
+      ),
+      (
+        "recovered", "examples/retry/plan.json", "examples/retry/bundle.json", 0,
+        3,
+      ),
+    ] {
+    let archive = root + "/" + name + "-evidence.json"
+    ignore(
+      cli(
+        target,
+        root,
+        name + "-archive",
+        ["archive", plan, bundle, "--output", archive],
+        0,
+      ),
+    )
+    let original = @fs.read_file(archive).binary()
+    guard @fs.read_file(archive).json()
+      is { "plan": saved_plan, "documents": Array(documents), .. } else {
+      fail("Expected replayable evidence")
+    }
+    assert_eq(saved_plan, @fs.read_file(plan).json())
+    let summary = cli(target, root, name + "-verify", ["verify", archive], gate)
+    guard summary is { "cases": Array(cases), "complete": complete, .. } else {
+      fail("Expected summary")
+    }
+    assert_eq(cases.length(), count)
+    assert_eq(complete, Json::boolean(gate != 3))
+    if name == "failed" {
+      guard documents is [{ "xml": String(xml), .. }] else {
+        fail("Expected original Jest XML")
+      }
+      assert_eq(xml, @fs.read_file("examples/upstream/jest-junit.xml").text())
+    } else if name == "missing" {
+      assert_eq(documents.length(), 0)
+      guard summary is { "missing_reports": [String("jest-main")], .. } else {
+        fail("Missing report disappeared")
+      }
+    } else {
+      assert_eq(documents.length(), 2)
+      assert_true(
+        cases.any(row => {
+          row
+          is { "verdict": String("recovered_on_retry"), "attempts": [_, _], .. }
+        }),
+      )
+      ignore(
+        cli(
+          target,
+          root,
+          "recovered-denied",
+          ["audit", plan, bundle, "--deny-recovered"],
+          1,
+        ),
+      )
+    }
+    // Refusal preserves the original archive; the next operation can recover.
+    ignore(
+      cli(
+        target,
+        root,
+        name + "-existing",
+        ["archive", plan, bundle, "--output", archive],
+        2,
+      ),
+    )
+    assert_eq(@fs.read_file(archive).binary(), original)
+    let delivery = root + "/" + name + "-delivery"
+    let receipt = cli(
+      target,
+      root,
+      name + "-delivery",
+      ["ci-report", archive, delivery],
+      gate,
+    )
+    assert_eq(
+      cli(target, root, name + "-offline", ["verify-delivery", delivery], gate),
+      receipt,
+    )
+    let html_path = delivery + "/report.html"
+    let page = @fs.read_file(html_path).binary()
+    @fs.write_file(html_path, page + b"changed")
+    ignore(
+      cli(target, root, name + "-tampered", ["verify-delivery", delivery], 2),
+    )
+    @fs.write_file(html_path, page)
+    assert_eq(
+      cli(target, root, name + "-restored", ["verify-delivery", delivery], gate),
+      receipt,
+    )
+    assert_eq(@fs.read_file(archive).binary(), original)
+    rows.push(
+      Json::object({
+        "scenario": Json::string(name),
+        "gate": Json::number(gate.to_double()),
+        "cases": Json::number(count.to_double()),
+        "full_plan_preserved": Json::boolean(true),
+        "tamper_refused_and_recovered": Json::boolean(true),
+      }),
+    )
+    println(
+      "Verified " +
+      name +
+      ": gate=\{gate}, cases=\{count}; offline delivery retained",
+    )
+  }
+  @fs.write_file(
+    root + "/results.json",
+    Json::object({
+      "schema": Json::number(1),
+      "target": Json::string(target),
+      "scenarios": Json::array(rows),
+    }).stringify(indent=2) +
+    "\n",
+    create_mode=CreateNew,
+  )
+  println(
+    "Acceptance demonstration passed. Open a *-delivery/report.html locally; results.json and command logs are retained at " +
+    root,
+  )
+}
