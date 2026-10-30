@@ -43,5 +43,5 @@ Jest 数据来自 dorny/test-reporter，MIT，固定来源和哈希见[样例来
 ## 使用边界
 
 - 历史原生段错误仍未定位；[诊断说明](native-diagnostics.md)保留风险、捕获方法及检查局限。后续通过的运行不能当作根因修复。
-- 模块尚未发布到 Mooncakes；可以使用 GitHub 源码 workspace 或预览版原生二进制，见 README 和发行文档。
+- Mooncakes 可用版本及安装命令见 README；也可以使用 GitHub 源码 workspace 或预览版原生二进制，见发行文档。
 - 采用 Apache-2.0，依赖和样例保留各自许可证；完整依赖来源见 `THIRD_PARTY.md`。

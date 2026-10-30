@@ -1,6 +1,6 @@
 # Source package and downstream use
 
-MoonTestLedger's module is `jhshuai/moontestledger`, currently version `0.1.0`, Apache-2.0. It is a preview and has **not been uploaded to Mooncakes**. Local packaging and workspace checks neither reserve this namespace/version nor validate registry credentials. This document describes a source archive, not a new GitHub binary release.
+MoonTestLedger's module is `jhshuai/moontestledger`, currently version `0.1.0`, Apache-2.0. It is a preview; check [Mooncakes](https://mooncakes.io/docs/jhshuai/moontestledger) for available versions. Local packaging and workspace checks neither reserve this namespace/version nor validate registry credentials. This document describes a source archive, not a new GitHub binary release.
 
 ## What the archive contains
 
@@ -44,7 +44,7 @@ Extract the ZIP into a sibling directory named `MoonTestLedger`, create your own
 
 Run the two included demos from the extracted module root with the commands in the README. Development commands in other documents require the full [GitHub checkout](https://github.com/jhshuai/MoonTestLedger), including performance measurements, native fault diagnosis, producer evaluator scripts and release maintenance.
 
-Actual Mooncakes upload requires separate authorization, account/namespace/version checks and a successful publication preflight. After publication, verify installation from the registry in another independent project before changing the README's unpublished status. Do not infer that a successful local package or CI job has already published the module.
+Actual Mooncakes upload requires matching account/namespace permissions, an available version and a successful publication preflight. After publication, verify installation from the registry in another independent project. Do not infer that a successful local package or CI job has already published the module.
 
 ## Observed preparation checks — 2026-10-31
 

@@ -2,7 +2,7 @@
 
 **面向 CI 维护者的测试证据对账库与命令行工具：报告缺失不能变绿，重试通过也保留先前失败。**
 
-**状态：0.1.0 预览；尚未上传 Mooncakes。** 公共 API 可能演进；历史原生段错误尚未定位，不能把后续通过的运行视为已修复。参见[已知限制](CHANGELOG.md#scope-and-known-limitations)。
+**状态：0.1.0 预览。** 公共 API 可能演进；历史原生段错误尚未定位，不能把后续通过的运行视为已修复。参见[已知限制](CHANGELOG.md#scope-and-known-limitations)。
 
 使用已验证的 MoonBit `v0.10.15+943464bfa`，从源码仓库或解压后的完整源码包根目录开始：
 
@@ -19,7 +19,7 @@ MoonTestLedger is a MoonBit library and local command-line tool for teams collec
 
 A missing artifact stays incomplete. A failing attempt followed by a passing attempt becomes **recovered_on_retry**, with both observations retained. Conflicting replacements and mismatched revisions return diagnostics.
 
-Source repository: [jhshuai/MoonTestLedger](https://github.com/jhshuai/MoonTestLedger). The module path is **jhshuai/moontestledger**; the package has not been published to Mooncakes. See [the ecosystem review](docs/ecosystem-review.md) for demand evidence, nearby MoonBit APIs and the limits of the differentiation claim.
+Source repository: [jhshuai/MoonTestLedger](https://github.com/jhshuai/MoonTestLedger). The module path is **jhshuai/moontestledger**; release availability is listed on [Mooncakes](https://mooncakes.io/docs/jhshuai/moontestledger). See [the ecosystem review](docs/ecosystem-review.md) for demand evidence, nearby MoonBit APIs and the limits of the differentiation claim.
 
 ## Choose how to use it
 
@@ -221,9 +221,15 @@ Relative report paths resolve against the **bundle file's directory**. Absolute 
 
 The [independent consumer](examples/consumer/README.md) checks a clean Git source export in a separate module on each backend: `moon run scripts/check-consumer.mbtx wasm-gc` from a Git checkout. To validate the actual `moon package` ZIP instead, use `moon run scripts/check-consumer.mbtx wasm-gc --package`. Both need no Mooncakes publication; the package check records the exact ZIP digest and runs the extracted library's tests before running the consumer.
 
-Import jhshuai/moontestledger from a local dependency during development. The root facade re-exports public types owned by ledger and wire; concrete types' constructors, fields and methods remain available, while Ledger is opaque. A [tested consumer example](facade_test.mbt) is included.
+For a version available in Mooncakes, add the dependency from your own project root:
 
-For sibling folders named MoonTestLedger and consumer, place a workspace file in their parent directory:
+~~~sh
+moon add jhshuai/moontestledger@0.1.0
+~~~
+
+Then add `import { "jhshuai/moontestledger" }` to your consumer's `moon.pkg`. No workspace override is needed for registry installation. The root facade re-exports public types owned by ledger and wire; concrete types' constructors, fields and methods remain available, while Ledger is opaque. A [tested consumer example](facade_test.mbt) is included.
+
+For local development or an extracted source archive, use sibling folders named MoonTestLedger and consumer and place a workspace file in their parent directory:
 
 ~~~mbt
 // moon.work
@@ -240,9 +246,9 @@ import { "jhshuai/moontestledger@0.1.0" }
 import { "jhshuai/moontestledger" }
 ~~~
 
-Workspace membership resolves this unpublished module from local source; the version selector is ignored for that workspace member. This follows [current MoonBit workspace dependency guidance](https://docs.moonbitlang.com/en/latest/toolchain/moon/module.html#dependency-management).
+Workspace membership resolves the module from local source; the version selector is ignored for that workspace member. This follows [current MoonBit workspace dependency guidance](https://docs.moonbitlang.com/en/latest/toolchain/moon/module.html#dependency-management).
 
-After a version is actually published and verified in Mooncakes, a downstream project can use `moon add jhshuai/moontestledger@0.1.0` and the same `moon.pkg` import, without local workspace membership. This is a future registry installation path, **not a claim that the command works today**. Until then, use the workspace above or an extracted package as its `MoonTestLedger` member. Do not edit files inside Moon's dependency cache. Library targets are Wasm, Wasm-GC, JavaScript and native; the file CLI runs on Wasm/native and requires a filesystem host, not a browser or a generic WASI runtime.
+Do not edit files inside Moon's dependency cache. Library targets are Wasm, Wasm-GC, JavaScript and native; the file CLI runs on Wasm/native and requires a filesystem host, not a browser or a generic WASI runtime. Registry installation and local workspace consumption are separate validation paths; [package documentation](docs/packaging.md) describes the recorded checks.
 
 The smallest useful flow is:
 
@@ -341,7 +347,7 @@ The first path profile accepts ASCII letters/digits, dot, underscore, hyphen and
 
 This section and development-only commands in linked documents require a **Git checkout**; maintenance scripts and benchmarks are deliberately omitted from the publishable source archive. The two demos at the top of this README are included in that archive.
 
-Native executables and source releases are delivered through the [GitHub preview release workflow](docs/releases.md), including `--version`, exact source/platform manifests, actual execution checks, SHA-256 and license copies. Mooncakes upload is a separate, currently unperformed operation. See [CHANGELOG](CHANGELOG.md) for implemented scope and known limitations.
+Native executables and source releases are delivered through the [GitHub preview release workflow](docs/releases.md), including `--version`, exact source/platform manifests, actual execution checks, SHA-256 and license copies. Mooncakes library publication is a separate operation. See [CHANGELOG](CHANGELOG.md) for implemented scope and known limitations.
 
 Complete inventory updates can be [reviewed before a future run](docs/inventory-review.md): `review-plan` retains both declarations and their changes; `apply-plan-review` requires the reviewed token, unchanged baseline, fresh run ID and new output file. Existing failed/incomplete archives retain their original plans and gates. The public `PlanReview` API supports the same workflow without a shell.
 

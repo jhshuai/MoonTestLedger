@@ -1,6 +1,6 @@
 # MoonTestLedger v0.1.0 — 2026-10-28
 
-First GitHub preview release. The Mooncakes module remains unpublished by user choice.
+First GitHub preview release. Mooncakes publication was not part of this GitHub release.
 
 - Complete externally declared report/test inventory, exact identities, explicit retries and conservative 0/1/3 gates.
 - Bounded common JUnit profile with actual Jest, pytest 8.3.5, Surefire 3.5.2 and Gradle 7.6.4 conformance data. Unsupported embedded reruns remain explicit errors.
