@@ -60,7 +60,7 @@ async fn main {
   let args = @env.args()
   guard args.length() <= 3 else {
     fail(
-      "usage: moon run scripts/acceptance-demo.mbtx [wasm|native] [NEW-DIRECTORY]",
+      "usage: moon run scripts/workflow-demo.mbtx [wasm|native] [NEW-DIRECTORY]",
     )
   }
   let target = args.get(1).unwrap_or("wasm")
@@ -72,9 +72,9 @@ async fn main {
       @fs.mkdir(path)
       @fs.realpath(path)
     }
-    None => @fs.tmpdir(prefix="mtl-acceptance")
+    None => @fs.tmpdir(prefix="mtl-workflow")
   }
-  println("Acceptance evidence directory: " + root)
+  println("Workflow evidence directory: " + root)
   let rows : Array[Json] = []
   for
     (name, plan, bundle, gate, count) in [
@@ -202,7 +202,7 @@ async fn main {
     create_mode=CreateNew,
   )
   println(
-    "Acceptance demonstration passed. Open a *-delivery/report.html locally; results.json and command logs are retained at " +
+    "Workflow demonstration passed. Open a *-delivery/report.html locally; results.json and command logs are retained at " +
     root,
   )
 }

@@ -39,7 +39,7 @@ Implemented operations: construct and validate a run plan; construct a ledger; i
 
 Deliver a reusable portable library and an arbitrary-file CLI: plan + report files -> complete/incomplete/error/failed/recovered evidence -> deterministic JSON and documented exit codes. Include metadata, Apache-2.0, tested examples, generated interfaces, bounded diagnostics, correctness tests and OS/backend CI in the same capability. The library covers Wasm, Wasm-GC, JavaScript and native; the file CLI covers Wasm through moonrun host I/O and native.
 
-Acceptance requires actual report files from documented producers or clearly sourced upstream fixtures, plus an executed local end-to-end workflow. Example data provenance and licenses are recorded; synthetic boundary fixtures are identified as such. No private CI account or server is required.
+Validation uses actual report files from documented producers or clearly sourced upstream fixtures, plus an executed local end-to-end workflow. Example data provenance and licenses are recorded; synthetic boundary fixtures are identified as such. No private CI account or server is required.
 
 ## Roadmap
 

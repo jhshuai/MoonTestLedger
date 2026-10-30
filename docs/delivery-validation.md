@@ -44,7 +44,7 @@ Actual Wasm/native E2E runs retain gates 0/1/3 while producing all six members, 
 
 The initial full native verifier terminated with a segmentation fault during the delivery-script phase. Without source changes, the delivery evaluator then passed directly, direct native CLI creation returned its expected failing gate with all files, and the entire native verifier passed on repetition. The originating process/cause was not established; this observation is retained rather than represented as a diagnosed/fixed product bug. Previously recorded dependency host/C warnings remain. Remote matrix results provide separate evidence after publication. The manual GitHub upload workflow is provided but has not been dispatched; local validation does not claim an actual artifact upload. No Mooncakes upload/publication was performed.
 
-The module remains unpublished to Mooncakes. These milestones prepare GitHub source use and CI delivery; they do not claim registry installation or competition acceptance.
+The module remains unpublished to Mooncakes. These milestones prepare GitHub source use and CI delivery; they do not claim registry installation.
 
 ## Safe evidence file output
 

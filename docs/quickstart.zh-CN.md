@@ -1,4 +1,4 @@
-# 验收与复现入口
+# 中文上手与工作流
 
 MoonTestLedger 面向收集分片、多环境和重试 JUnit 报告的 CI 维护者。它核对**外部声明的完整预期清单**、保留每次尝试及原始 XML，并在报告缺失时返回“不完整”。它不执行测试、不自动缩小清单，也不将一次恢复解释为统计意义上的 flaky 结论。独立贡献与相邻 MoonBit API 见[生态调研](ecosystem-review.md)，第三方来源见[许可证记录](../THIRD_PARTY.md)。
 
@@ -8,10 +8,10 @@ MoonTestLedger 面向收集分片、多环境和重试 JUnit 报告的 CI 维护
 
 ```sh
 moon update
-moon run scripts/acceptance-demo.mbtx wasm
+moon run scripts/workflow-demo.mbtx wasm
 ```
 
-脚本创建独立临时目录，打印其完整路径并保留证据、HTML、每条实际命令的 stdout/stderr/退出状态及 `results.json`。也可指定**尚不存在且父目录已存在**的目录：`moon run scripts/acceptance-demo.mbtx wasm NEW-DIRECTORY`。已有目录被拒绝。用 `native` 替换 `wasm` 可实际运行原生 CLI，需要本机 C 编译器/SDK。无需 GitHub 账号、私有服务、Python 或 Java。
+脚本创建独立临时目录，打印其完整路径并保留证据、HTML、每条实际命令的 stdout/stderr/退出状态及 `results.json`。也可指定**尚不存在且父目录已存在**的目录：`moon run scripts/workflow-demo.mbtx wasm NEW-DIRECTORY`。已有目录被拒绝。用 `native` 替换 `wasm` 可实际运行原生 CLI，需要本机 C 编译器/SDK。无需 GitHub 账号、私有服务、Python 或 Java。
 
 | 使用场景 | 实际流程和预期结果 | 保留的证据 |
 | --- | --- | --- |
@@ -25,7 +25,7 @@ Jest 数据来自 dorny/test-reporter，MIT，固定来源和哈希见[样例来
 
 ## 功能与证据对照
 
-下表对应项目设计与已实现能力；正式提交时还应与**实际获批申报书**逐项对照。本仓库不将未提供的申报承诺自行认定为完成。
+以下入口帮助使用者选择对应的 API、命令和可运行样例。
 
 | 已实现能力 | 公共入口 / 工作流 | 检查与样例 |
 | --- | --- | --- |
@@ -40,9 +40,8 @@ Jest 数据来自 dorny/test-reporter，MIT，固定来源和哈希见[样例来
 
 2026-10-30 本地实测：固定工具链下，Windows/Wasm 完整验证器通过（123 项测试、接口/格式/严格检查及全部适用工作流）；新的一键演示分别实际运行于 Windows/Wasm 与 Linux/native，三个门禁、完整清单、原始 XML、覆盖拒绝及篡改后恢复均通过。该记录不声称已执行之后提交的远端 CI；远端结果以具体提交的 Actions 运行为准。
 
-## 尚未闭合的事项
+## 使用边界
 
 - 历史原生段错误仍未定位；[诊断说明](native-diagnostics.md)保留风险、捕获方法及检查局限。后续通过的运行不能当作根因修复。
-- 根据维护者要求，Gitlink 同步和 Mooncakes 发布暂不进行。GitHub 交付完成不代表这两项赛事发布要求已满足。
+- 模块尚未发布到 Mooncakes；可以使用 GitHub 源码 workspace 或预览版原生二进制，见 README 和发行文档。
 - 采用 Apache-2.0，依赖和样例保留各自许可证；完整依赖来源见 `THIRD_PARTY.md`。
-- 验收规则和批次以赛事方最新通知为准；本文件提供可核验工程证据，不保证赛事验收结论。
