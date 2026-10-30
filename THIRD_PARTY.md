@@ -2,6 +2,8 @@
 
 The two C files under `examples/diagnostics/` are project-authored Apache-2.0 detector fixtures, not upstream source. They intentionally trigger ASan/UBSan in separate diagnostic processes and are never linked into the product. The memory-check runner and configuration adaptation are project-authored; compiler sanitizer runtimes are supplied by the local C toolchain, not vendored.
 
+The deterministic workload under `cmd/benchmark/`, its generated XML and the measurement runner are project-authored Apache-2.0; they do not copy third-party benchmark corpora. GNU time, timeout and lscpu are optional local measurement tools, not bundled dependencies. Timing uses the MoonBit core monotonic-clock API; hashing uses the already pinned x/crypto dependency.
+
 ## Runtime dependencies
 
 | Component | Version/source | License | Use |

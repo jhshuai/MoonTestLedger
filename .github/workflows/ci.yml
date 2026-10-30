@@ -56,6 +56,29 @@ jobs:
       - name: Check an independent consumer against a clean Git source export
         run: moon run scripts/check-consumer.mbtx ${{ matrix.target }}
 
+  workload-baseline:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: hustcer/setup-moonbit@9199da0ab63ea0c0bab1dc15f03d76e17ed4f75f
+        with:
+          version: 0.10.15+943464bfa
+          core-version: 0.10.15+943464bfa
+      - run: moon update
+      - name: Measure deterministic native workloads without speed thresholds
+        run: |
+          mkdir -p output
+          moon run scripts/benchmark.mbtx output/workload-baseline
+      - name: Preserve baseline samples and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: workload-baseline
+          path: output/workload-baseline/
+          if-no-files-found: warn
+          retention-days: 7
+
   native-memory:
     runs-on: ubuntu-22.04
     timeout-minutes: 20

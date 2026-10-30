@@ -347,6 +347,8 @@ Linux native verification now retains process/signal diagnostics on CI failure. 
 
 Linux users can also run [isolated ASan/UBSan checks](docs/native-memory.md) against committed source. Separate detector probes, unit tests and actual native workflows retain logs; CI runs the same check independently. Passing checks do not establish a fix for the historical crash.
 
+The [workload baseline](docs/performance.md) exercises 1k/10k/100k cases with exact replay and resource-refusal checks. Its Linux runner records nine fresh-process timings, peak RSS, byte sizes, digests and machine/toolchain metadata; measurements are informational, with no unverified performance comparison.
+
 Core tests cover malformed input, exact identities, limits, inventory completeness, retry ordering, deterministic output, JSON round trips, exact numeric lexemes, atomic rejection and recovery, source preservation and caller-array isolation. A compile-negative probe verifies that downstream code cannot mutate the ledger's internal inventory.
 
 ## License and sources
