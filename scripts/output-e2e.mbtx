@@ -1,9 +1,9 @@
 ///|
 import {
-  "hustcer/fzip",
-  "moonbitlang/async",
-  "moonbitlang/async/fs",
-  "moonbitlang/async/shell",
+  "hustcer/fzip@0.8.8",
+  "moonbitlang/async@0.22.4",
+  "moonbitlang/async@0.22.4/fs",
+  "moonbitlang/async@0.22.4/shell",
   "moonbitlang/core/env",
   "moonbitlang/core/json",
 }

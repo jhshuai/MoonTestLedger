@@ -1,8 +1,8 @@
 ///|
 import {
-  "moonbitlang/async",
-  "moonbitlang/async/fs",
-  "moonbitlang/async/shell",
+  "moonbitlang/async@0.22.4",
+  "moonbitlang/async@0.22.4/fs",
+  "moonbitlang/async@0.22.4/shell",
   "moonbitlang/core/env",
 }
 
@@ -30,6 +30,7 @@ async fn main {
     fail("expected one of wasm, wasm-gc, js or native")
   }
   moon(["version", "--all"])
+  moon(["run", "--deny-warn", "scripts/check-script-imports.mbtx"])
   moon(["fmt", "--check"])
   moon(["-C", "examples/consumer", "fmt", "--check"])
   moon([
@@ -38,6 +39,7 @@ async fn main {
     "scripts/delivery-e2e.mbtx", "scripts/diagnose-native.mbtx", "scripts/check-producers.mbtx",
     "scripts/check-ci-delivery.mbtx", "scripts/check-golden-delivery.mbtx", "scripts/review-e2e.mbtx",
     "scripts/build-release.mbtx", "scripts/publish-release.mbtx", "scripts/workflow-demo.mbtx",
+    "scripts/check-script-imports.mbtx",
   ])
   let paths = [
     "pkg.generated.mbti", "ledger/pkg.generated.mbti", "junit/pkg.generated.mbti",

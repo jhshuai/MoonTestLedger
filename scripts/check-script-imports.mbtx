@@ -1,0 +1,87 @@
+///|
+import {
+  "moonbitlang/async@0.22.4",
+  "moonbitlang/async@0.22.4/fs",
+}
+
+///|
+fn exact_version(path : String) -> Bool {
+  let parts = path.split("/").to_array()
+  guard parts.length() >= 2 else { return false }
+  guard parts[1].split_once("@") is Some((name, version)) && !name.is_empty() else {
+    return false
+  }
+  let digits = version.split(".").to_array()
+  digits.length() == 3 &&
+  digits.all(part => {
+    !part.is_empty() && part.iter().all(char => char is ('0'..<='9'))
+  })
+}
+
+///|
+async fn main {
+  // Regression for scripts resolving a newly published async release against
+  // an older pinned compiler. Package/subpackage selectors must both be exact.
+  for
+    path in [
+      "moonbitlang/async@0.22.4", "moonbitlang/async@0.22.4/fs", "hustcer/fzip@0.8.8",
+    ] {
+    assert_true(exact_version(path))
+  }
+  for
+    path in [
+      "moonbitlang/async", "moonbitlang/async/fs", "moonbitlang/async@latest/fs",
+      "moonbitlang/async@^0.22.4", "moonbitlang/async@0..4", "moonbitlang/async@/fs",
+    ] {
+    assert_true(!exact_version(path))
+  }
+  let module_source = @fs.read_file("moon.mod").text()
+  let names = @fs.readdir("scripts")
+  let mut checked = 0
+  for name in names {
+    if !name.has_suffix(".mbtx") {
+      continue
+    }
+    let source = @fs.read_file("scripts/" + name).text()
+    let mut imports = false
+    for line in source.split("\n") {
+      let line = line.trim()
+      if line == "import {" {
+        imports = true
+        continue
+      }
+      if imports && line == "}" {
+        imports = false
+        continue
+      }
+      if !imports || !line.has_prefix("\"") {
+        continue
+      }
+      guard line[1:].split_once("\"") is Some((path, _)) else {
+        fail("Malformed import in " + name)
+      }
+      if path.has_prefix("moonbitlang/core/") {
+        continue
+      }
+      guard exact_version(path.to_owned()) else {
+        fail(
+          "Pin the external script import in " + name + ": " + path.to_owned(),
+        )
+      }
+      let parts = path.split("/").to_array()
+      let module_path = parts[0].to_owned() + "/" + parts[1].to_owned()
+      assert_true(
+        module_source.contains("\"" + module_path + "\""),
+        msg="Script dependency must match moon.mod: " +
+          name +
+          ": " +
+          module_path,
+      )
+      checked += 1
+    }
+  }
+  assert_true(checked > 0)
+  println(
+    "Script imports checked: \{checked} exact external selectors match moon.mod.",
+  )
+}
