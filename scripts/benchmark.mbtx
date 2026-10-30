@@ -124,9 +124,11 @@ async fn main {
     binary,
     ["0"],
   )
+  assert_eq(invalid, 2)
+  assert_eq(diagnostic, "")
   assert_true(
-    invalid != 0 &&
-    (invalid_output + diagnostic).contains("case count must be 1..100000"),
+    @json.parse(invalid_output)
+    is { "error": { "code": String("BenchmarkSize"), .. }, .. },
   )
   let samples : Array[Json] = []
   let summaries : Array[Json] = []

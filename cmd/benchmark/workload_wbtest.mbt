@@ -46,3 +46,21 @@ test "workload size refusal recovers and source digests are deterministic" {
   assert_eq(xml, again_xml)
   assert_eq(archive, again_archive)
 }
+
+///|
+test "benchmark CLI rejects malformed out-of-range and ambiguous arguments" {
+  for
+    args in [
+      [],
+      ["0"],
+      ["-1"],
+      ["100001"],
+      ["not-a-number"],
+      ["2147483648"],
+      ["1", "2"],
+    ] {
+    assert_eq(input_count(args), None)
+  }
+  assert_eq(input_count(["1"]), Some(1))
+  assert_eq(input_count(["100000"]), Some(100000))
+}

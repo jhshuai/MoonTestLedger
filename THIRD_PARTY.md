@@ -4,6 +4,8 @@ The two C files under `examples/diagnostics/` are project-authored Apache-2.0 de
 
 The deterministic workload under `cmd/benchmark/`, its generated XML and the measurement runner are project-authored Apache-2.0; they do not copy third-party benchmark corpora. GNU time, timeout and lscpu are optional local measurement tools, not bundled dependencies. Timing uses the MoonBit core monotonic-clock API; hashing uses the already pinned x/crypto dependency.
 
+The benchmark's small platform exit declarations follow the host ABI patterns in [MoonBit core argparse](https://github.com/moonbitlang/core/tree/main/argparse) and the existing CLI's [async Wasm integration](https://github.com/moonbitlang/async/blob/main/src/integration.wasm.mbt), Apache-2.0. They handle invalid developer-command arguments; the benchmark does not add a browser execution contract for Node's process API.
+
 ## Runtime dependencies
 
 | Component | Version/source | License | Use |
